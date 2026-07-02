@@ -1,0 +1,325 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { Save, Upload, Loader2, Image as ImageIcon, Plus, Trash2, FileImage } from 'lucide-react';
+import Image from 'next/image';
+import toast from 'react-hot-toast';
+import MediaModal from '@/components/MediaModal';
+
+interface SocialIcon {
+  id: string;
+  iconUrl: string;
+  link: string;
+}
+
+export default function GeneralSettings() {
+  const [settings, setSettings] = useState({
+    site_title: '',
+    site_tagline: '',
+    site_icon: '',
+    site_logo: '',
+    footer_logo: '',
+  });
+  const [socialIcons, setSocialIcons] = useState<SocialIcon[]>([]);
+  
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const [isUploadingIcon, setIsUploadingIcon] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingFooter, setIsUploadingFooter] = useState(false);
+  
+  const [modalTarget, setModalTarget] = useState<'site_icon' | 'site_logo' | 'footer_logo' | 'social_icon' | null>(null);
+  const [activeSocialId, setActiveSocialId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        setSettings({
+          site_title: data.site_title || '',
+          site_tagline: data.site_tagline || '',
+          site_icon: data.site_icon || '',
+          site_logo: data.site_logo || '',
+          footer_logo: data.footer_logo || '',
+        });
+        
+        if (data.social_icons) {
+          try {
+            setSocialIcons(JSON.parse(data.social_icons));
+          } catch (e) {
+            console.error('Failed to parse social icons');
+          }
+        }
+        setIsLoading(false);
+      });
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSettings(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleMediaInsert = (url: string) => {
+    if (modalTarget === 'site_icon') setSettings(prev => ({ ...prev, site_icon: url }));
+    else if (modalTarget === 'site_logo') setSettings(prev => ({ ...prev, site_logo: url }));
+    else if (modalTarget === 'footer_logo') setSettings(prev => ({ ...prev, footer_logo: url }));
+    else if (modalTarget === 'social_icon' && activeSocialId) {
+      setSocialIcons(prev => prev.map(icon => icon.id === activeSocialId ? { ...icon, iconUrl: url } : icon));
+    }
+  };
+
+  const addSocialIcon = () => {
+    setSocialIcons(prev => [...prev, { id: Math.random().toString(36).substr(2, 9), iconUrl: '', link: '' }]);
+  };
+
+  const updateSocialIcon = (id: string, field: 'link', value: string) => {
+    setSocialIcons(prev => prev.map(icon => icon.id === id ? { ...icon, [field]: value } : icon));
+  };
+
+  const removeSocialIcon = (id: string) => {
+    setSocialIcons(prev => prev.filter(icon => icon.id !== id));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    
+    const payload = {
+      ...settings,
+      social_icons: JSON.stringify(socialIcons)
+    };
+    
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        toast.success('Settings saved successfully!');
+      } else {
+        toast.error('Failed to save settings');
+      }
+    } catch (err) {
+      toast.error('An error occurred');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="flex justify-center p-8"><Loader2 className="animate-spin text-gray-400" /></div>;
+  }
+
+  return (
+    <div className="relative">
+      <MediaModal 
+        isOpen={modalTarget !== null}
+        onClose={() => { setModalTarget(null); setActiveSocialId(null); }}
+        onInsert={handleMediaInsert}
+      />
+      <form onSubmit={handleSubmit} className="max-w-4xl space-y-10">
+      
+      {/* SECTION: Site Identity */}
+      <section className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-6">
+        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Site Identity</h2>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Site Title</label>
+          <input
+            type="text"
+            name="site_title"
+            value={settings.site_title}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none max-w-2xl"
+          />
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
+          <input
+            type="text"
+            name="site_tagline"
+            value={settings.site_tagline}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none max-w-2xl"
+          />
+          <p className="mt-1 text-sm text-gray-500">In a few words, explain what this site is about.</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Site Icon</label>
+          <div className="flex items-start gap-6">
+            <div className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 overflow-hidden relative group">
+              {settings.site_icon ? (
+                <Image src={settings.site_icon} alt="Site Icon" fill className="object-cover" />
+              ) : (
+                <ImageIcon className="text-gray-300" size={48} />
+              )}
+              {isUploadingIcon && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                  <Loader2 className="animate-spin text-blue-600" />
+                </div>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => setModalTarget('site_icon')}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
+              >
+                <FileImage size={16} /> Choose a Site Icon
+              </button>
+              <p className="mt-2 text-sm text-gray-500 max-w-sm">
+                The Site Icon is what you see in browser tabs, bookmark bars, and within mobile apps. It should be square.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Site Logo (Header)</label>
+          <div className="flex items-start gap-6">
+            <div className="flex flex-col items-center justify-center w-64 h-32 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 overflow-hidden relative group">
+              {settings.site_logo ? (
+                <Image src={settings.site_logo} alt="Site Logo" fill className="object-contain p-4" />
+              ) : (
+                <ImageIcon className="text-gray-300" size={48} />
+              )}
+              {isUploadingLogo && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                  <Loader2 className="animate-spin text-blue-600" />
+                </div>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => setModalTarget('site_logo')}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
+              >
+                <FileImage size={16} /> Choose a Header Logo
+              </button>
+              <p className="mt-2 text-sm text-gray-500 max-w-sm">
+                The main logo displayed at the top of your public website.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION: Footer Configuration */}
+      <section className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-8">
+        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Footer Configuration</h2>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Footer Logo</label>
+          <div className="flex items-start gap-6">
+            <div className="flex flex-col items-center justify-center w-64 h-32 border-2 border-dashed border-gray-300 rounded-lg bg-slate-800 overflow-hidden relative group">
+              {settings.footer_logo ? (
+                <Image src={settings.footer_logo} alt="Footer Logo" fill className="object-contain p-4" />
+              ) : (
+                <ImageIcon className="text-gray-500" size={48} />
+              )}
+              {isUploadingFooter && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <Loader2 className="animate-spin text-white" />
+                </div>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => setModalTarget('footer_logo')}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
+              >
+                <FileImage size={16} /> Choose a Footer Logo
+              </button>
+              <p className="mt-2 text-sm text-gray-500 max-w-sm">
+                The alternate logo displayed in the dark footer area. Usually a lighter/white version of your logo.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Social Icons</label>
+              <p className="text-sm text-gray-500 mt-1">Manage the social media links displayed in your footer.</p>
+            </div>
+            <button
+              type="button"
+              onClick={addSocialIcon}
+              className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors text-sm font-medium"
+            >
+              <Plus size={16} /> Add Icon
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {socialIcons.length === 0 ? (
+              <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg text-gray-500 text-sm">
+                No social icons added yet. Click "Add Icon" to create one.
+              </div>
+            ) : (
+              socialIcons.map((icon, index) => (
+                <div key={icon.id} className="flex items-center gap-4 bg-gray-50 p-4 border border-gray-200 rounded-lg">
+                  <div className="flex-shrink-0">
+                    <div 
+                      onClick={() => {
+                        setActiveSocialId(icon.id);
+                        setModalTarget('social_icon');
+                      }}
+                      className="w-12 h-12 bg-white border border-gray-300 rounded flex items-center justify-center cursor-pointer hover:border-blue-500 transition-colors overflow-hidden group relative"
+                      title="Click to select icon from Media Library"
+                    >
+                      {icon.iconUrl ? (
+                        <Image src={icon.iconUrl} alt="Social Icon" width={24} height={24} className="object-contain" />
+                      ) : (
+                        <ImageIcon size={20} className="text-gray-400 group-hover:text-blue-500" />
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="https://facebook.com/yourpage"
+                      value={icon.link}
+                      onChange={(e) => updateSocialIcon(icon.id, 'link', e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  
+                  <button
+                    type="button"
+                    onClick={() => removeSocialIcon(icon.id)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
+                    title="Remove"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Sticky Save Button */}
+      <div className="sticky bottom-0 bg-white/80 backdrop-blur border-t border-gray-200 p-4 -mx-8 px-8 flex justify-end">
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="flex items-center gap-2 px-8 py-2.5 bg-[#2271b1] text-white rounded font-medium hover:bg-[#135e96] disabled:opacity-50 transition-colors"
+        >
+          {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+          Save Changes
+        </button>
+      </div>
+    </form>
+    </div>
+  );
+}

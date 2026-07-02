@@ -1,0 +1,142 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
+import ClassicEditor from '@/components/ClassicEditor';
+import ClassicSidebar from '@/components/ClassicSidebar';
+import SeoAnalyzer from '@/components/SeoAnalyzer';
+import toast from 'react-hot-toast';
+
+export default function EditPost() {
+  const router = useRouter();
+  const params = useParams();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [title, setTitle] = useState('');
+  const [contentHtml, setContentHtml] = useState('');
+  const [contentText, setContentText] = useState('');
+  
+  const [focusKeyword, setFocusKeyword] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [slug, setSlug] = useState('');
+  const [status, setStatus] = useState('Draft');
+  
+  const [seoScore, setSeoScore] = useState(0);
+
+  useEffect(() => {
+    if (!params?.id) return;
+    
+    fetch(`/api/posts/${params.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          toast.error('Post not found');
+          router.push('/admin/posts');
+          return;
+        }
+        setTitle(data.title || '');
+        setSlug(data.slug || '');
+        setContentHtml(data.contentHtml || '');
+        setContentText(data.contentText || '');
+        setMetaDescription(data.metaDescription || '');
+        setFocusKeyword(data.focusKeyword || '');
+        setStatus(data.status || 'Draft');
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setIsLoading(false);
+      });
+  }, [params.id, router]);
+
+  const handleUpdate = async () => {
+    if (!title) {
+      toast.error('Please enter a title');
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/posts/${params.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          slug: slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+          contentHtml,
+          contentText,
+          metaDescription,
+          focusKeyword,
+          status
+        }),
+      });
+      if (res.ok) {
+        // Just refresh the data, don't navigate away
+        toast.success('Post updated successfully!');
+        router.refresh();
+      } else {
+        toast.error('Failed to update post.');
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error('An error occurred.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-gray-500">Loading editor...</div>;
+  }
+
+  return (
+    <div className="max-w-[1200px] mx-auto pt-4">
+      <div className="flex items-center gap-3 mb-4">
+        <h1 className="text-[23px] text-[#1d2327]">Edit Post</h1>
+        <Link href="/admin/posts/new" className="border border-[#2271b1] text-[#2271b1] hover:bg-[#f6f7f7] px-2.5 py-0.5 text-[13px] rounded-[3px] font-medium transition-colors">
+          Add Post
+        </Link>
+      </div>
+      <div className="flex gap-4">
+        <div className="flex-1 min-w-0 flex flex-col gap-4">
+        <ClassicEditor 
+          title={title}
+          setTitle={setTitle}
+          slug={slug}
+          setSlug={setSlug}
+          contentHtml={contentHtml}
+          setContentHtml={setContentHtml}
+          setContentText={setContentText}
+        />
+        
+        <div className="mt-4">
+          <SeoAnalyzer 
+            title={title}
+            setTitle={setTitle}
+            slug={slug}
+            setSlug={setSlug}
+            metaDescription={metaDescription}
+            setMetaDescription={setMetaDescription}
+            content={contentText}
+            focusKeyword={focusKeyword}
+            setFocusKeyword={setFocusKeyword}
+            onScoreChange={setSeoScore}
+          />
+        </div>
+      </div>
+
+      <div className="w-[280px] shrink-0">
+        <ClassicSidebar 
+          status={status}
+          setStatus={setStatus}
+          onPublish={handleUpdate}
+          isSaving={isSaving}
+          score={seoScore}
+        />
+      </div>
+    </div>
+    </div>
+  );
+}
