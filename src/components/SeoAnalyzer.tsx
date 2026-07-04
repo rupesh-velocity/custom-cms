@@ -473,13 +473,6 @@ export default function SeoAnalyzer({
     if (onScoreChange) onScoreChange(score);
   }, [score, onScoreChange]);
 
-  const [origin, setOrigin] = useState('');
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin);
-    }
-  }, []);
-  
   let scoreColor = 'bg-red-100 text-red-600 border-red-200';
   if (score > 50) scoreColor = 'bg-yellow-100 text-yellow-700 border-yellow-200';
   if (score >= 80) scoreColor = 'bg-green-100 text-green-700 border-green-200';
