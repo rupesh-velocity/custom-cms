@@ -39,7 +39,8 @@ export default async function Home() {
   // 1. Fetch settings
   const settingsRecords = await prisma.setting.findMany({
     where: {
-      key: { in: ['homepage_displays', 'homepage_page_id', 'blog_pages_at_most', 'feed_include'] }
+      key: { in: ['homepage_displays', 'homepage_page_id', 'blog_pages_at_most', 'feed_include'] },
+      OR: [ { key: { startsWith: 'seo_' } } ]
     }
   });
   
@@ -49,6 +50,18 @@ export default async function Home() {
   }, {});
 
   const displayMode = settings.homepage_displays || 'latest_posts';
+
+  // 1.5 Global Redirection for Homepage
+  const redirection = await prisma.redirection.findFirst({
+    where: {
+      sourceUrl: `/`,
+      status: true
+    }
+  });
+
+  if (redirection) {
+    redirect(redirection.destinationUrl);
+  }
 
   // 2. Render Static Page Mode
   if (displayMode === 'static_page') {
@@ -88,7 +101,7 @@ export default async function Home() {
           />
         )}
         <main className="w-full">
-          <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml) }} />
+          <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml, settings) }} />
         </main>
       </div>
     );
@@ -129,7 +142,7 @@ export default async function Home() {
                 </div>
                 
                 {feedInclude === 'full_text' ? (
-                  <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(post.contentHtml) }} />
+                  <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(post.contentHtml, settings) }} />
                 ) : (
                   <div className="prose prose-blue max-w-none">
                     <p>{(post.contentText || '').substring(0, 300)}...</p>

@@ -1,4 +1,4 @@
-export function optimizeHtmlImages(html: string | null): string {
+export function optimizeHtmlImages(html: string | null, seoSettings?: Record<string, string>): string {
   if (!html) return '';
   
   let isFirstImage = true;
@@ -18,14 +18,51 @@ export function optimizeHtmlImages(html: string | null): string {
     
     if (isFirstImage) {
       isFirstImage = false;
-      return `<img ${newAttribs} loading="eager" fetchpriority="high">`;
+      newAttribs += ' loading="eager" fetchpriority="high"';
     } else {
-      return `<img ${newAttribs} loading="lazy">`;
+      newAttribs += ' loading="lazy"';
     }
+
+    // SEO: Add missing ALT
+    if (seoSettings?.seo_add_missing_alt === 'true' && !/alt=/i.test(newAttribs)) {
+      newAttribs += ' alt="Image"'; // Generic fallback if missing
+    }
+
+    // SEO: Add missing TITLE
+    if (seoSettings?.seo_add_missing_title === 'true' && !/title=/i.test(newAttribs)) {
+      newAttribs += ' title="Image"';
+    }
+
+    return `<img ${newAttribs}>`;
   });
 
-  // 3. Lazy load iframes (like Vimeo/YouTube)
   let optimized = htmlWithOptimizedImages;
+
+  // SEO: Optimize Links
+  if (seoSettings) {
+    optimized = optimized.replace(/<a([^>]*)>/gi, (match, attribs) => {
+      let newAttribs = attribs;
+      
+      const isExternal = /href="https?:\/\//i.test(newAttribs) && !newAttribs.includes(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+      const isImageFile = /href="[^"]+\.(jpg|jpeg|png|gif|webp|svg)"/i.test(newAttribs);
+
+      if (isExternal && seoSettings.seo_nofollow_external === 'true' && !/rel=/i.test(newAttribs)) {
+        newAttribs += ' rel="nofollow"';
+      }
+
+      if (isImageFile && seoSettings.seo_nofollow_image === 'true' && !/rel=/i.test(newAttribs)) {
+        newAttribs += ' rel="nofollow"';
+      }
+
+      if (isExternal && seoSettings.seo_open_external_new_tab === 'true' && !/target=/i.test(newAttribs)) {
+        newAttribs += ' target="_blank"';
+      }
+
+      return `<a ${newAttribs}>`;
+    });
+  }
+
+  // 3. Lazy load iframes (like Vimeo/YouTube)
   optimized = optimized.replace(/<iframe([^>]*)>/gi, (match, attribs) => {
     let newAttribs = attribs.replace(/loading="[^"]*"/i, '');
     return `<iframe ${newAttribs} loading="lazy">`;

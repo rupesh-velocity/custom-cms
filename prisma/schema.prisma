@@ -94,3 +94,14 @@ model Media {
   altText   String?
   createdAt DateTime @default(now())
 }
+
+model Redirection {
+  id             Int      @id @default(autoincrement())
+  sourceUrl      String
+  ignoreCase     Boolean  @default(false)
+  destinationUrl String
+  redirectType   String   @default("301") // 301, 302, 307, 410, 451
+  status         Boolean  @default(true)  // Active (true) or Deactivated (false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
