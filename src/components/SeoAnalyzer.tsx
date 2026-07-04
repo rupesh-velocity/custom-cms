@@ -408,7 +408,7 @@ export default function SeoAnalyzer({
   const densityGood = parseFloat(keywordDensity) > 0.5 && parseFloat(keywordDensity) < 2.5;
   
   const urlLengthGood = slug.length > 0 && slug.length <= 75;
-  const hrefMatches = content.match(/href="([^"]+)"/ig) || [];
+  const hrefMatches: string[] = content.match(/href="([^"]+)"/ig) || [];
   let hasInternalLinks = false;
   let hasOutboundLinks = false;
   
