@@ -3,13 +3,18 @@ import { prisma } from '@/lib/prisma';
 import { ChevronDown } from 'lucide-react';
 
 // Helper to build a nested tree from the flat items list
-function buildTree(items: any[], parentId: number | null = null): any[] {
+function buildTree(items: any[], parentId: number | null = null, homepageSlug: string = ''): any[] {
   return items
     .filter(item => item.parentId === parentId)
-    .map(item => ({
-      ...item,
-      children: buildTree(items, item.id)
-    }));
+    .map(item => {
+      // If the URL matches the homepage slug, change it to "/"
+      const url = item.url === homepageSlug ? '/' : item.url;
+      return {
+        ...item,
+        url,
+        children: buildTree(items, item.id, homepageSlug)
+      };
+    });
 }
 
 // Recursive component for rendering menu items
@@ -73,10 +78,10 @@ function MenuNode({ node, depth = 0 }: { node: any, depth?: number }) {
 }
 
 export default async function SiteHeader() {
-  // Fetch settings for branding
+  // Fetch settings for branding and homepage
   const settingsRecords = await prisma.setting.findMany({
     where: {
-      key: { in: ['site_title', 'site_icon', 'site_logo'] }
+      key: { in: ['site_title', 'site_icon', 'site_logo', 'homepage_displays', 'homepage_page_id'] }
     }
   });
   
@@ -96,6 +101,12 @@ export default async function SiteHeader() {
       'https://res.cloudinary.com/$1/image/upload/f_auto,q_auto,h_100/$2'
     );
   };
+
+  let homepageSlug = '';
+  if (settings.homepage_displays === 'static_page' && settings.homepage_page_id) {
+    const hpPage = await prisma.page.findUnique({ where: { id: parseInt(settings.homepage_page_id) } });
+    if (hpPage) homepageSlug = `/${hpPage.slug}`;
+  }
 
   // Fetch primary menu
   let primaryMenu = await prisma.menu.findUnique({
@@ -119,7 +130,7 @@ export default async function SiteHeader() {
     primaryMenu = firstMenu;
   }
 
-  const menuTree = primaryMenu ? buildTree(primaryMenu.items) : [];
+  const menuTree = primaryMenu ? buildTree(primaryMenu.items, null, homepageSlug) : [];
 
   return (
     <header className="site-header">

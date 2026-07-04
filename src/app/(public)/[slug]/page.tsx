@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { optimizeHtmlImages } from '@/lib/html-optimizer';
 
@@ -23,8 +23,17 @@ export default async function FrontendPage(context: any) {
   const params = await context.params;
   const slug = params.slug;
   
+  // Check if this slug is actually the homepage
+  const displayModeSetting = await prisma.setting.findUnique({ where: { key: 'homepage_displays' } });
+  const homepageSetting = await prisma.setting.findUnique({ where: { key: 'homepage_page_id' } });
+  
   // Try to find a Page first
   let data: any = await prisma.page.findUnique({ where: { slug } });
+  
+  // If this page is currently set as the static homepage, redirect to root
+  if (data && displayModeSetting?.value === 'static_page' && homepageSetting?.value === String(data.id)) {
+    redirect('/');
+  }
   
   // If no Page is found, try to find a Post
   if (!data) {
