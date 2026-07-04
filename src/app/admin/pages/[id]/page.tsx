@@ -24,6 +24,11 @@ export default function EditPage() {
   const [status, setStatus] = useState('Draft');
   const [hideTitle, setHideTitle] = useState(false);
   
+  const [seoTitle, setSeoTitle] = useState('');
+  const [redirectUrl, setRedirectUrl] = useState('');
+  const [redirectType, setRedirectType] = useState('301');
+  const [noIndex, setNoIndex] = useState(false);
+  
   const [seoScore, setSeoScore] = useState(0);
   const [isHomepage, setIsHomepage] = useState(false);
 
@@ -46,6 +51,10 @@ export default function EditPage() {
         setFocusKeyword(data.focusKeyword || '');
         setStatus(data.status || 'Draft');
         setHideTitle(data.hideTitle || false);
+        setSeoTitle(data.seoTitle || '');
+        setRedirectUrl(data.redirectUrl || '');
+        setRedirectType(data.redirectType || '301');
+        setNoIndex(data.noIndex || false);
         
         // Check if this is the homepage
         fetch('/api/settings')
@@ -82,6 +91,10 @@ export default function EditPage() {
           contentText,
           metaDescription,
           focusKeyword,
+          seoTitle,
+          redirectUrl,
+          redirectType,
+          noIndex,
           status,
           hideTitle
         }),
@@ -137,6 +150,14 @@ export default function EditPage() {
             content={contentText}
             focusKeyword={focusKeyword}
             setFocusKeyword={setFocusKeyword}
+            seoTitle={seoTitle}
+            setSeoTitle={setSeoTitle}
+            redirectUrl={redirectUrl}
+            setRedirectUrl={setRedirectUrl}
+            redirectType={redirectType}
+            setRedirectType={setRedirectType}
+            noIndex={noIndex}
+            setNoIndex={setNoIndex}
             onScoreChange={setSeoScore}
           />
         </div>

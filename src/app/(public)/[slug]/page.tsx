@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound, redirect, permanentRedirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { optimizeHtmlImages } from '@/lib/html-optimizer';
 
@@ -16,8 +16,12 @@ export async function generateMetadata(context: any) {
   if (!data) return {};
 
   return {
-    title: data.title,
+    title: data.seoTitle || data.title,
     description: data.metaDescription || (data.contentText ? data.contentText.substring(0, 160) : ''),
+    robots: {
+      index: !data.noIndex,
+      follow: true,
+    }
   };
 }
 
@@ -45,6 +49,15 @@ export default async function FrontendPage(context: any) {
   // If still no data, or if it's explicitly set to Draft, show 404
   if (!data || data.status === 'Draft') {
     notFound();
+  }
+
+  // Handle SEO redirect if configured
+  if (data.redirectUrl) {
+    if (data.redirectType === '301') {
+      permanentRedirect(data.redirectUrl);
+    } else {
+      redirect(data.redirectUrl);
+    }
   }
 
   return (

@@ -14,6 +14,10 @@ model Post {
   contentText     String
   metaDescription String
   focusKeyword    String
+  seoTitle        String?
+  redirectUrl     String?
+  redirectType    String?
+  noIndex         Boolean  @default(false)
   status          String   @default("Draft")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -27,6 +31,10 @@ model Page {
   contentText     String
   metaDescription String
   focusKeyword    String
+  seoTitle        String?
+  redirectUrl     String?
+  redirectType    String?
+  noIndex         Boolean  @default(false)
   status          String   @default("Draft")
   hideTitle       Boolean  @default(false)
   createdAt       DateTime @default(now())

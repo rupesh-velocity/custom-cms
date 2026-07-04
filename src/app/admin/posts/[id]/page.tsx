@@ -23,6 +23,11 @@ export default function EditPost() {
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
   
+  const [seoTitle, setSeoTitle] = useState('');
+  const [redirectUrl, setRedirectUrl] = useState('');
+  const [redirectType, setRedirectType] = useState('301');
+  const [noIndex, setNoIndex] = useState(false);
+  
   const [seoScore, setSeoScore] = useState(0);
 
   useEffect(() => {
@@ -43,6 +48,10 @@ export default function EditPost() {
         setMetaDescription(data.metaDescription || '');
         setFocusKeyword(data.focusKeyword || '');
         setStatus(data.status || 'Draft');
+        setSeoTitle(data.seoTitle || '');
+        setRedirectUrl(data.redirectUrl || '');
+        setRedirectType(data.redirectType || '301');
+        setNoIndex(data.noIndex || false);
         setIsLoading(false);
       })
       .catch(err => {
@@ -69,6 +78,10 @@ export default function EditPost() {
           contentText,
           metaDescription,
           focusKeyword,
+          seoTitle,
+          redirectUrl,
+          redirectType,
+          noIndex,
           status
         }),
       });
@@ -122,6 +135,14 @@ export default function EditPost() {
             content={contentText}
             focusKeyword={focusKeyword}
             setFocusKeyword={setFocusKeyword}
+            seoTitle={seoTitle}
+            setSeoTitle={setSeoTitle}
+            redirectUrl={redirectUrl}
+            setRedirectUrl={setRedirectUrl}
+            redirectType={redirectType}
+            setRedirectType={setRedirectType}
+            noIndex={noIndex}
+            setNoIndex={setNoIndex}
             onScoreChange={setSeoScore}
           />
         </div>

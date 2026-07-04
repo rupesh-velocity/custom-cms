@@ -1,9 +1,39 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { notFound } from 'next/navigation';
+import { notFound, redirect, permanentRedirect } from 'next/navigation';
 import { optimizeHtmlImages } from '@/lib/html-optimizer';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata() {
+  const settingsRecords = await prisma.setting.findMany({
+    where: { key: { in: ['homepage_displays', 'homepage_page_id'] } }
+  });
+  const settings = settingsRecords.reduce((acc: any, setting: any) => {
+    acc[setting.key] = setting.value;
+    return acc;
+  }, {});
+
+  if (settings.homepage_displays === 'static_page' && settings.homepage_page_id) {
+    const pageId = parseInt(settings.homepage_page_id);
+    const page = await prisma.page.findUnique({ where: { id: pageId } });
+    if (page) {
+      return {
+        title: page.seoTitle || page.title,
+        description: page.metaDescription || (page.contentText ? page.contentText.substring(0, 160) : ''),
+        robots: {
+          index: !page.noIndex,
+          follow: true,
+        }
+      };
+    }
+  }
+
+  return {
+    title: 'Velocity CMS',
+    description: 'A powerful headless CMS built with Next.js',
+  };
+}
 
 export default async function Home() {
   // 1. Fetch settings
@@ -40,6 +70,14 @@ export default async function Home() {
     });
 
     if (!page) return notFound();
+
+    if (page.redirectUrl) {
+      if (page.redirectType === '301') {
+        permanentRedirect(page.redirectUrl);
+      } else {
+        redirect(page.redirectUrl);
+      }
+    }
 
     return (
       <div className="min-h-screen bg-white">

@@ -19,6 +19,14 @@ interface SeoAnalyzerProps {
   content: string;
   focusKeyword: string;
   setFocusKeyword: (k: string) => void;
+  seoTitle?: string;
+  setSeoTitle?: (t: string) => void;
+  redirectUrl?: string;
+  setRedirectUrl?: (url: string) => void;
+  redirectType?: string;
+  setRedirectType?: (type: string) => void;
+  noIndex?: boolean;
+  setNoIndex?: (val: boolean) => void;
   onScoreChange?: (score: number) => void;
 }
 
@@ -262,7 +270,9 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
 };
 
 export default function SeoAnalyzer({
-  title, setTitle, slug, setSlug, metaDescription, setMetaDescription, content, focusKeyword, setFocusKeyword, onScoreChange
+  title, setTitle, slug, setSlug, metaDescription, setMetaDescription, content, focusKeyword, setFocusKeyword,
+  seoTitle, setSeoTitle, redirectUrl, setRedirectUrl, redirectType, setRedirectType, noIndex, setNoIndex,
+  onScoreChange
 }: SeoAnalyzerProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [isSnippetExpanded, setIsSnippetExpanded] = useState(false);
@@ -276,25 +286,16 @@ export default function SeoAnalyzer({
   });
 
   // Advanced Tab State
-  const [robotsIndex, setRobotsIndex] = useState(true);
-  const [robotsNoIndex, setRobotsNoIndex] = useState(false);
-  const [isRedirect, setIsRedirect] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState('');
+  const [isRedirect, setIsRedirect] = useState(!!redirectUrl);
 
   const handleIndexToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
-    setRobotsIndex(isChecked);
-    if (isChecked) {
-      setRobotsNoIndex(false);
-    }
+    if (setNoIndex) setNoIndex(!isChecked);
   };
   
   const handleNoIndexToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
-    setRobotsNoIndex(isChecked);
-    if (isChecked) {
-      setRobotsIndex(false);
-    }
+    if (setNoIndex) setNoIndex(isChecked);
   };
 
   // Schema Tab State
@@ -453,6 +454,13 @@ export default function SeoAnalyzer({
   useEffect(() => {
     if (onScoreChange) onScoreChange(score);
   }, [score, onScoreChange]);
+
+  const [origin, setOrigin] = useState('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
   
   let scoreColor = 'bg-red-100 text-red-600 border-red-200';
   if (score > 50) scoreColor = 'bg-yellow-100 text-yellow-700 border-yellow-200';
@@ -510,8 +518,8 @@ export default function SeoAnalyzer({
           <div className="p-5 border-b border-[#e2e4e7]">
             <h3 className="text-[13px] font-semibold text-[#1d2327] mb-3">Preview</h3>
             <div className="mb-4">
-              <div className="text-[13px] text-[#006621] truncate mb-1">http://localhost:3000/{slug || 'sample-page'}/ <span className="text-gray-400">⋮</span></div>
-              <div className="text-[18px] text-[#1a0dab] font-medium hover:underline cursor-pointer truncate mb-1">{title || 'Sample Page - Test'}</div>
+              <div className="text-[13px] text-[#006621] truncate mb-1">{origin || 'http://localhost:3000'}/{slug || 'sample-page'}/ <span className="text-gray-400">⋮</span></div>
+              <div className="text-[18px] text-[#1a0dab] font-medium hover:underline cursor-pointer truncate mb-1">{seoTitle || title || 'Sample Page - Test'}</div>
               <div className="text-[13px] text-[#545454] leading-snug line-clamp-2">{metaDescription || "This is an example page. It's different from a blog post because it will stay in one place and will show up in your site navigation (in most themes)."}</div>
             </div>
             <button onClick={() => setIsSnippetExpanded(!isSnippetExpanded)} className="bg-[#0085ba] text-white text-[13px] px-4 py-1.5 rounded-[3px] hover:bg-[#0073aa] transition-colors">Edit Snippet</button>
@@ -519,8 +527,8 @@ export default function SeoAnalyzer({
               <div className="mt-4 p-4 bg-[#f9f9f9] border border-[#e2e4e7] rounded-sm space-y-4">
                 <div>
                   <label className="block text-[13px] font-semibold text-[#1d2327] mb-1">Title</label>
-                  <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
-                  <div className={`h-1 mt-1 rounded-full ${title.length > 40 && title.length < 60 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${Math.min(100, (title.length / 60) * 100)}%` }} />
+                  <input type="text" value={seoTitle || title} onChange={(e) => setSeoTitle && setSeoTitle(e.target.value)} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
+                  <div className={`h-1 mt-1 rounded-full ${(seoTitle || title).length > 40 && (seoTitle || title).length < 60 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${Math.min(100, ((seoTitle || title).length / 60) * 100)}%` }} />
                 </div>
                 <div>
                   <label className="block text-[13px] font-semibold text-[#1d2327] mb-1">Permalink</label>
@@ -566,8 +574,8 @@ export default function SeoAnalyzer({
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-4 text-[13px] font-semibold text-[#1d2327] uppercase">Robots Meta</div>
             <div className="col-span-8 grid grid-cols-2 gap-3 text-[13px] text-[#1d2327]">
-              <label className="flex items-center gap-2"><input type="checkbox" checked={robotsIndex} onChange={handleIndexToggle} className="text-[#0085ba]" /> Index <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={robotsNoIndex} onChange={handleNoIndexToggle} className="text-[#0085ba]" /> No Index <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={!noIndex} onChange={handleIndexToggle} className="text-[#0085ba]" /> Index <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={noIndex} onChange={handleNoIndexToggle} className="text-[#0085ba]" /> No Index <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
               <label className="flex items-center gap-2"><input type="checkbox" className="text-[#0085ba]" /> Nofollow <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
               <label className="flex items-center gap-2"><input type="checkbox" className="text-[#0085ba]" /> No Archive <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
               <label className="flex items-center gap-2"><input type="checkbox" className="text-[#0085ba]" /> No Image Index <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
@@ -595,7 +603,7 @@ export default function SeoAnalyzer({
           <hr className="border-[#e2e4e7]" />
           <div className="grid grid-cols-12 gap-4 items-center">
              <div className="col-span-4 text-[13px] font-semibold text-[#1d2327] flex items-center gap-1">Canonical URL <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></div>
-             <div className="col-span-8"><input type="text" placeholder="http://localhost:3000/sample-page/" className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#0085ba]" /></div>
+             <div className="col-span-8"><input type="text" placeholder={`${origin || 'http://localhost:3000'}/sample-page/`} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#0085ba]" /></div>
           </div>
           <hr className="border-[#e2e4e7]" />
           <div className="grid grid-cols-12 gap-4 items-start">
@@ -608,11 +616,11 @@ export default function SeoAnalyzer({
                   <div className="space-y-3 bg-[#f9f9f9] p-4 border border-[#e2e4e7] rounded-[3px]">
                      <div>
                        <label className="block text-[12px] font-semibold text-[#1d2327] mb-1">Redirection Type</label>
-                       <select className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] outline-none"><option>301 Permanent Move</option><option>302 Temporary Move</option></select>
+                       <select value={redirectType || '301'} onChange={(e) => setRedirectType && setRedirectType(e.target.value)} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] outline-none"><option value="301">301 Permanent Move</option><option value="302">302 Temporary Move</option></select>
                      </div>
                      <div>
                        <label className="block text-[12px] font-semibold text-[#1d2327] mb-1">Destination URL</label>
-                       <input type="text" value={redirectUrl} onChange={(e) => setRedirectUrl(e.target.value)} placeholder="https://example.com" className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] outline-none" />
+                       <input type="text" value={redirectUrl || ''} onChange={(e) => setRedirectUrl && setRedirectUrl(e.target.value)} placeholder="https://example.com" className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] outline-none" />
                      </div>
                   </div>
                 )}

@@ -30,6 +30,10 @@ export async function PATCH(req: Request, context: any) {
         contentText: data.contentText,
         metaDescription: data.metaDescription,
         focusKeyword: data.focusKeyword,
+        seoTitle: data.seoTitle,
+        redirectUrl: data.redirectUrl,
+        redirectType: data.redirectType,
+        noIndex: data.noIndex,
         status: data.status,
       },
     });
