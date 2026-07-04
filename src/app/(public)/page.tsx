@@ -34,7 +34,7 @@ export default async function Home() {
       );
     }
 
-    const page = await prisma.page.findUnique({
+    const page = await prisma.page.findFirst({
       where: { id: pageId, status: 'Published' }
     });
 
