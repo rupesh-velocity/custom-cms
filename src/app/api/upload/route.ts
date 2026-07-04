@@ -16,11 +16,19 @@ export async function POST(req: Request) {
     
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    
+    // Generate a short random string to prevent overwriting files with the same name
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    // Remove the file extension (e.g., .png or .jpg) to get just the base name
+    const baseName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-");
+    const publicId = `${baseName}_${randomSuffix}`;
+
     // Upload directly to Cloudinary using a stream
     const uploadResult = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: 'custom-cms' },
+        { 
+          folder: 'custom-cms',
+          public_id: publicId
+        },
         (error, result) => {
           if (error) reject(error);
           else resolve(result);
