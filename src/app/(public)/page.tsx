@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
+import { optimizeHtmlImages } from '@/lib/html-optimizer';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +44,7 @@ export default async function Home() {
     return (
       <div className="min-h-screen bg-white">
         <main className="w-full">
-          <div dangerouslySetInnerHTML={{ __html: page.contentHtml || '' }} />
+          <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml) }} />
         </main>
       </div>
     );
@@ -84,7 +85,7 @@ export default async function Home() {
                 </div>
                 
                 {feedInclude === 'full_text' ? (
-                  <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: post.contentHtml || '' }} />
+                  <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(post.contentHtml) }} />
                 ) : (
                   <div className="prose prose-blue max-w-none">
                     <p>{(post.contentText || '').substring(0, 300)}...</p>

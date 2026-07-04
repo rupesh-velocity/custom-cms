@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { optimizeHtmlImages } from '@/lib/html-optimizer';
 
 export async function generateMetadata(context: any) {
   const params = await context.params;
@@ -46,7 +47,7 @@ export default async function FrontendPage(context: any) {
           </div>
         )}
         
-        <div dangerouslySetInnerHTML={{ __html: data.contentHtml }} />
+        <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml) }} />
       </main>
     </>
   );

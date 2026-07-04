@@ -89,6 +89,14 @@ export default async function SiteHeader() {
   const siteIcon = settings.site_icon;
   const siteLogo = settings.site_logo;
 
+  const optimizeLogoUrl = (url: string) => {
+    if (!url) return url;
+    return url.replace(
+      /https:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(v[0-9]+\/.+)/i,
+      'https://res.cloudinary.com/$1/image/upload/f_auto,q_auto,h_100/$2'
+    );
+  };
+
   // Fetch primary menu
   let primaryMenu = await prisma.menu.findUnique({
     where: { slug: 'primary' },
@@ -118,9 +126,9 @@ export default async function SiteHeader() {
       <div className="container h-full flex items-center justify-between gap-6">
         <Link href="/">
           {siteLogo ? (
-            <img src={siteLogo} alt={siteTitle} className="logo-img" />
+            <img src={optimizeLogoUrl(siteLogo)} alt={siteTitle} className="logo-img" loading="eager" fetchpriority="high" />
           ) : siteIcon ? (
-            <img src={siteIcon} alt={siteTitle} className="logo-img" />
+            <img src={optimizeLogoUrl(siteIcon)} alt={siteTitle} className="logo-img" loading="eager" fetchpriority="high" />
           ) : (
             <span className="text-xl font-bold">{siteTitle}</span>
           )}

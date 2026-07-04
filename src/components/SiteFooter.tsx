@@ -22,6 +22,14 @@ export default async function SiteFooter() {
 
   const footerLogo = settings.footer_logo || 'assets/images/Fitness Arts Logo 2.png';
   const siteTagline = settings.site_tagline || 'Yoga, Pilates, Dance and other Creative Movement!';
+
+  const optimizeImageUrl = (url: string) => {
+    if (!url) return url;
+    return url.replace(
+      /https:\/\/res\.cloudinary\.com\/([^/]+)\/image\/upload\/(v[0-9]+\/.+)/i,
+      'https://res.cloudinary.com/$1/image/upload/f_auto,q_auto,w_auto/$2'
+    );
+  };
   
   let socialIcons: SocialIcon[] = [];
   try {
@@ -67,13 +75,13 @@ export default async function SiteFooter() {
       <div className="container">
         <div className="footer-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
           <div className="footer-brand-col lg:col-span-3">
-            <img src={footerLogo} alt="Fitness Arts" className="footer-logo" />
+            <img src={optimizeImageUrl(footerLogo)} alt="Fitness Arts" className="footer-logo" loading="lazy" />
             <p className="footer-text">{siteTagline}</p>
             <div className="footer-social flex gap-5">
               {socialIcons.length > 0 ? (
                 socialIcons.map((icon) => (
                   <a key={icon.id} href={icon.link || '#'} className="social-icon" target="_blank" rel="noopener noreferrer">
-                    {icon.iconUrl && <img src={icon.iconUrl} alt="Social Icon" />}
+                    {icon.iconUrl && <img src={optimizeImageUrl(icon.iconUrl)} alt="Social Icon" loading="lazy" />}
                   </a>
                 ))
               ) : (
