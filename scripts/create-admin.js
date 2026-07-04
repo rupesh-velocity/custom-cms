@@ -5,12 +5,8 @@ const bcrypt = require('bcryptjs');
 const { loadEnvConfig } = require('@next/env');
 loadEnvConfig(process.cwd());
 
-const url = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL || process.env.PRISMA_DATABASE_URL;
-if (url) {
-  process.env.DATABASE_URL = url; // Ensure Prisma sees it
-}
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const url = process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL;
+const pool = new Pool({ connectionString: url });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
