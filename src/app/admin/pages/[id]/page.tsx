@@ -25,6 +25,7 @@ export default function EditPage() {
   const [hideTitle, setHideTitle] = useState(false);
   
   const [seoScore, setSeoScore] = useState(0);
+  const [isHomepage, setIsHomepage] = useState(false);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -45,7 +46,17 @@ export default function EditPage() {
         setFocusKeyword(data.focusKeyword || '');
         setStatus(data.status || 'Draft');
         setHideTitle(data.hideTitle || false);
-        setIsLoading(false);
+        
+        // Check if this is the homepage
+        fetch('/api/settings')
+          .then(res => res.json())
+          .then(settings => {
+            if (settings.homepage_displays === 'static_page' && settings.homepage_page_id === params.id) {
+              setIsHomepage(true);
+            }
+            setIsLoading(false);
+          })
+          .catch(() => setIsLoading(false));
       })
       .catch(err => {
         console.error(err);
@@ -112,6 +123,7 @@ export default function EditPage() {
           contentHtml={contentHtml}
           setContentHtml={setContentHtml}
           setContentText={setContentText}
+          isHomepage={isHomepage}
         />
         
         <div className="mt-4">

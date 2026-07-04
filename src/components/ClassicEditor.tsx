@@ -13,6 +13,7 @@ interface ClassicEditorProps {
   contentHtml: string;
   setContentHtml: (val: string) => void;
   setContentText: (val: string) => void;
+  isHomepage?: boolean;
 }
 
 export default function ClassicEditor({
@@ -22,7 +23,8 @@ export default function ClassicEditor({
   setSlug,
   contentHtml,
   setContentHtml,
-  setContentText
+  setContentText,
+  isHomepage = false
 }: ClassicEditorProps) {
   const [activeTab, setActiveTab] = useState<'visual' | 'code'>('visual');
   const [isEditingSlug, setIsEditingSlug] = useState(false);
@@ -65,25 +67,29 @@ export default function ClassicEditor({
           <span className="font-semibold">Permalink:</span>
           <span className="text-[#0073aa]">
             http://localhost:3000/
-            {isEditingSlug ? (
-              <input 
-                type="text" 
-                value={tempSlug} 
-                onChange={(e) => setTempSlug(e.target.value)}
-                className="border border-[#8c8f94] rounded-[3px] px-1 h-[22px] bg-white ml-1 text-black outline-none"
-              />
-            ) : (
-              <span>{slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}</span>
+            {!isHomepage && (
+              isEditingSlug ? (
+                <input 
+                  type="text" 
+                  value={tempSlug} 
+                  onChange={(e) => setTempSlug(e.target.value)}
+                  className="border border-[#8c8f94] rounded-[3px] px-1 h-[22px] bg-white ml-1 text-black outline-none"
+                />
+              ) : (
+                <span>{slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}</span>
+              )
             )}
-            /
+            {!isHomepage && '/'}
           </span>
-          {isEditingSlug ? (
-            <div className="flex gap-1 ml-2">
-              <button onClick={handleSlugSave} className="bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-2 py-0.5 rounded-[3px] hover:bg-[#f1f1f1]">OK</button>
-              <button onClick={() => setIsEditingSlug(false)} className="text-[#0071a1] underline px-2 py-0.5 hover:text-[#005a80]">Cancel</button>
-            </div>
-          ) : (
-            <button onClick={() => setIsEditingSlug(true)} className="ml-2 bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-2 py-0.5 rounded-[3px] hover:bg-[#f1f1f1]">Edit</button>
+          {!isHomepage && (
+            isEditingSlug ? (
+              <div className="flex gap-1 ml-2">
+                <button onClick={handleSlugSave} className="bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-2 py-0.5 rounded-[3px] hover:bg-[#f1f1f1]">OK</button>
+                <button onClick={() => setIsEditingSlug(false)} className="text-[#0071a1] underline px-2 py-0.5 hover:text-[#005a80]">Cancel</button>
+              </div>
+            ) : (
+              <button onClick={() => setIsEditingSlug(true)} className="ml-2 bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-2 py-0.5 rounded-[3px] hover:bg-[#f1f1f1]">Edit</button>
+            )
           )}
         </div>
       )}
