@@ -35,6 +35,7 @@ export async function PATCH(req: Request, context: any) {
         redirectType: data.redirectType,
         noIndex: data.noIndex,
         status: data.status,
+        schemaJson: data.schemaJson,
       },
     });
     return NextResponse.json(post);

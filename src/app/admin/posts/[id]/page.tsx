@@ -27,6 +27,7 @@ export default function EditPost() {
   const [redirectUrl, setRedirectUrl] = useState('');
   const [redirectType, setRedirectType] = useState('301');
   const [noIndex, setNoIndex] = useState(false);
+  const [schemaJson, setSchemaJson] = useState('');
   
   const [seoScore, setSeoScore] = useState(0);
 
@@ -52,6 +53,8 @@ export default function EditPost() {
         setRedirectUrl(data.redirectUrl || '');
         setRedirectType(data.redirectType || '301');
         setNoIndex(data.noIndex || false);
+        setSchemaJson(data.schemaJson || '');
+        
         setIsLoading(false);
       })
       .catch(err => {
@@ -82,7 +85,8 @@ export default function EditPost() {
           redirectUrl,
           redirectType,
           noIndex,
-          status
+          status,
+          schemaJson
         }),
       });
       if (res.ok) {
@@ -143,6 +147,8 @@ export default function EditPost() {
             setRedirectType={setRedirectType}
             noIndex={noIndex}
             setNoIndex={setNoIndex}
+            schemaJson={schemaJson}
+            setSchemaJson={setSchemaJson}
             onScoreChange={setSeoScore}
           />
         </div>

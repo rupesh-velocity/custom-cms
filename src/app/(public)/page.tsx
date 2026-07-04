@@ -81,6 +81,12 @@ export default async function Home() {
 
     return (
       <div className="min-h-screen bg-white">
+        {page.schemaJson && (
+          <script 
+            type="application/ld+json" 
+            dangerouslySetInnerHTML={{ __html: page.schemaJson }} 
+          />
+        )}
         <main className="w-full">
           <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml) }} />
         </main>

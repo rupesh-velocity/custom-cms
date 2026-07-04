@@ -27,6 +27,8 @@ interface SeoAnalyzerProps {
   setRedirectType?: (type: string) => void;
   noIndex?: boolean;
   setNoIndex?: (val: boolean) => void;
+  schemaJson?: string;
+  setSchemaJson?: (val: string) => void;
   onScoreChange?: (score: number) => void;
 }
 
@@ -272,7 +274,7 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
 export default function SeoAnalyzer({
   title, setTitle, slug, setSlug, metaDescription, setMetaDescription, content, focusKeyword, setFocusKeyword,
   seoTitle, setSeoTitle, redirectUrl, setRedirectUrl, redirectType, setRedirectType, noIndex, setNoIndex,
-  onScoreChange
+  schemaJson = '', setSchemaJson, onScoreChange
 }: SeoAnalyzerProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [isSnippetExpanded, setIsSnippetExpanded] = useState(false);
@@ -305,12 +307,10 @@ export default function SeoAnalyzer({
     if (setNoIndex) setNoIndex(isChecked);
   };
 
-  // Schema Tab State
   const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
   const [isSchemaBuilderOpen, setIsSchemaBuilderOpen] = useState(false);
   const [schemaModalTab, setSchemaModalTab] = useState('templates');
   const [selectedSchema, setSelectedSchema] = useState('Article');
-  const [customSchemaJson, setCustomSchemaJson] = useState('');
   
   const [schemaData, setSchemaData] = useState<Record<string, string>>({
     'Article_HEADLINE *': '%seo_title%',
@@ -406,8 +406,8 @@ export default function SeoAnalyzer({
   ];
   const basicErrors = basicChecks.filter(c => !c.pass).length;
 
-  const hasH2H3 = /<h[2-3]>[^<]*<\/h[2-3]>/i.test(content);
-  const keywordInH2 = hasKeyword && hasH2H3 && safeContent.includes(safeKeyword); 
+  const headings: string[] = content.match(/<h[2-6][^>]*>([\s\S]*?)<\/h[2-6]>/ig) || [];
+  const keywordInH2 = hasKeyword && headings.some(h => h.toLowerCase().includes(safeKeyword)); 
   const keywordInImageAlt = hasKeyword && safeContent.includes(`alt="`) && safeContent.includes(safeKeyword);
   
   const keywordCount = hasKeyword ? (safeContent.match(new RegExp(safeKeyword, 'g')) || []).length : 0;
@@ -719,15 +719,15 @@ export default function SeoAnalyzer({
                  </div>
                )}
                {schemaModalTab === 'custom' && (
-                 <div className="h-full flex flex-col">
-                   <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Custom Schema (JSON-LD)</h3>
-                   <p className="text-[13px] text-gray-500 mb-4">Add your own custom JSON-LD schema markup below. It will be injected directly into the page's head tag.</p>
-                   <textarea value={customSchemaJson} onChange={(e) => setCustomSchemaJson(e.target.value)} placeholder="{\n  &quot;@context&quot;: &quot;https://schema.org&quot;,\n  &quot;@type&quot;: &quot;Event&quot;,\n  ...\n}" className="flex-1 w-full border border-[#8c8f94] rounded-[3px] p-4 text-[13px] font-mono outline-none focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] min-h-[300px]" />
-                   <div className="mt-4 flex justify-end">
-                     <button onClick={() => setIsSchemaModalOpen(false)} className="bg-[#0085ba] text-white px-5 py-2 rounded-[3px] text-[13px] font-medium hover:bg-[#0073aa] transition-colors">Save Custom Schema</button>
-                   </div>
-                 </div>
-               )}
+                  <div className="h-full flex flex-col">
+                    <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Custom Schema (JSON-LD)</h3>
+                    <p className="text-[13px] text-gray-500 mb-4">Add your own custom JSON-LD schema markup below. It will be injected directly into the page's head tag.</p>
+                    <textarea value={schemaJson} onChange={(e) => setSchemaJson && setSchemaJson(e.target.value)} placeholder="{\n  &quot;@context&quot;: &quot;https://schema.org&quot;,\n  &quot;@type&quot;: &quot;Event&quot;,\n  ...\n}" className="flex-1 w-full border border-[#8c8f94] rounded-[3px] p-4 text-[13px] font-mono outline-none focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] min-h-[300px]" />
+                    <div className="mt-4 flex justify-end">
+                      <button onClick={() => setIsSchemaModalOpen(false)} className="bg-[#0085ba] text-white px-5 py-2 rounded-[3px] text-[13px] font-medium hover:bg-[#0073aa] transition-colors">Save Custom Schema</button>
+                    </div>
+                  </div>
+                )}
              </div>
           </div>
         </div>
@@ -791,7 +791,7 @@ export default function SeoAnalyzer({
                  return (
                    <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white">
                      <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">
-                       {field.label.replace(' *', '')} {field.label.includes('*') && <span className="text-red-500">*</span>}
+                       {field.label.replace(/\s*\*\s*$/, '')} {field.label.includes('*') && <span className="text-red-500">*</span>}
                      </div>
                      <div className="p-4">
                        {field.type === 'text' && (
@@ -838,14 +838,27 @@ export default function SeoAnalyzer({
                })}
              </div>
 
-             <div className="p-4 bg-white border-t border-[#e2e4e7]">
-               <button 
-                 onClick={() => setIsSchemaBuilderOpen(false)}
-                 className="bg-[#0085ba] text-white px-5 py-2.5 rounded-[3px] text-[14px] font-semibold hover:bg-[#0073aa]"
-               >
-                 Save for this Post
-               </button>
-             </div>
+              <div className="p-4 bg-white border-t border-[#e2e4e7]">
+                <button 
+                  onClick={() => {
+                    const schemaObj: any = {
+                      "@context": "https://schema.org",
+                      "@type": selectedSchema,
+                    };
+                    Object.keys(schemaData).forEach(k => {
+                      if (k.startsWith(selectedSchema + '_') && schemaData[k]) {
+                        const cleanKey = k.replace(selectedSchema + '_', '').toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
+                        schemaObj[cleanKey] = schemaData[k];
+                      }
+                    });
+                    if (setSchemaJson) setSchemaJson(JSON.stringify(schemaObj, null, 2));
+                    setIsSchemaBuilderOpen(false);
+                  }}
+                  className="bg-[#0085ba] text-white px-5 py-2.5 rounded-[3px] text-[14px] font-semibold hover:bg-[#0073aa]"
+                >
+                  Save for this Post
+                </button>
+              </div>
           </div>
         </div>
       )}

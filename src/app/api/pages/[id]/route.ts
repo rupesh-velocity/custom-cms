@@ -36,6 +36,7 @@ export async function PATCH(req: Request, context: any) {
         noIndex: data.noIndex,
         status: data.status,
         hideTitle: data.hideTitle,
+        schemaJson: data.schemaJson,
       },
     });
     return NextResponse.json(page);

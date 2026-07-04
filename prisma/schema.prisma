@@ -19,6 +19,7 @@ model Post {
   redirectType    String?
   noIndex         Boolean  @default(false)
   status          String   @default("Draft")
+  schemaJson      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -37,6 +38,7 @@ model Page {
   noIndex         Boolean  @default(false)
   status          String   @default("Draft")
   hideTitle       Boolean  @default(false)
+  schemaJson      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

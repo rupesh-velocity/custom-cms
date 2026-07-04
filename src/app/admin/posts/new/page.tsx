@@ -15,6 +15,12 @@ export default function NewPost() {
   const [contentHtml, setContentHtml] = useState('<p>Start writing your post here...</p>');
   const [contentText, setContentText] = useState('Start writing your post here...');
   
+  const [seoTitle, setSeoTitle] = useState('');
+  const [redirectUrl, setRedirectUrl] = useState('');
+  const [redirectType, setRedirectType] = useState('301');
+  const [noIndex, setNoIndex] = useState(false);
+  const [schemaJson, setSchemaJson] = useState('');
+  
   const [focusKeyword, setFocusKeyword] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [slug, setSlug] = useState('');
@@ -40,7 +46,11 @@ export default function NewPost() {
           contentText,
           metaDescription,
           focusKeyword,
-          status: 'Published' // Update this if we want to save as draft
+          redirectUrl,
+          redirectType,
+          noIndex,
+          status,
+          schemaJson
         }),
       });
       if (res.ok) {
@@ -77,6 +87,14 @@ export default function NewPost() {
             setTitle={setTitle}
             slug={slug}
             setSlug={setSlug}
+            redirectUrl={redirectUrl}
+            setRedirectUrl={setRedirectUrl}
+            redirectType={redirectType}
+            setRedirectType={setRedirectType}
+            noIndex={noIndex}
+            setNoIndex={setNoIndex}
+            schemaJson={schemaJson}
+            setSchemaJson={setSchemaJson}
             metaDescription={metaDescription}
             setMetaDescription={setMetaDescription}
             content={contentText}

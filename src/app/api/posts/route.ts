@@ -20,6 +20,7 @@ export async function POST(req: Request) {
         metaDescription: data.metaDescription,
         focusKeyword: data.focusKeyword,
         status: data.status || 'Draft',
+        schemaJson: data.schemaJson || null,
       },
     });
     return NextResponse.json(post);

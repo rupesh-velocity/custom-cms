@@ -17,6 +17,11 @@ export default function NewPage() {
   
   const [focusKeyword, setFocusKeyword] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
+  const [seoTitle, setSeoTitle] = useState('');
+  const [redirectUrl, setRedirectUrl] = useState('');
+  const [redirectType, setRedirectType] = useState('301');
+  const [noIndex, setNoIndex] = useState(false);
+  const [schemaJson, setSchemaJson] = useState('');
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
   const [hideTitle, setHideTitle] = useState(false);
@@ -41,8 +46,12 @@ export default function NewPage() {
           contentText,
           metaDescription,
           focusKeyword,
-          status: 'Published',
-          hideTitle
+          redirectUrl,
+          redirectType,
+          noIndex,
+          status,
+          hideTitle,
+          schemaJson
         }),
       });
       if (res.ok) {
@@ -84,6 +93,14 @@ export default function NewPage() {
             content={contentText}
             focusKeyword={focusKeyword}
             setFocusKeyword={setFocusKeyword}
+            redirectUrl={redirectUrl}
+            setRedirectUrl={setRedirectUrl}
+            redirectType={redirectType}
+            setRedirectType={setRedirectType}
+            noIndex={noIndex}
+            setNoIndex={setNoIndex}
+            schemaJson={schemaJson}
+            setSchemaJson={setSchemaJson}
             onScoreChange={setSeoScore}
           />
         </div>

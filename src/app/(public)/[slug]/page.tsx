@@ -62,6 +62,12 @@ export default async function FrontendPage(context: any) {
 
   return (
     <>
+      {data.schemaJson && (
+        <script 
+          type="application/ld+json" 
+          dangerouslySetInnerHTML={{ __html: data.schemaJson }} 
+        />
+      )}
       <main className="w-full">
         {data.title && !data.hideTitle && (
           <div className="max-w-7xl mx-auto px-6 pt-12">

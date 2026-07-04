@@ -21,6 +21,7 @@ export async function POST(req: Request) {
         focusKeyword: data.focusKeyword,
         status: data.status || 'Draft',
         hideTitle: data.hideTitle || false,
+        schemaJson: data.schemaJson || null,
       },
     });
     return NextResponse.json(page);

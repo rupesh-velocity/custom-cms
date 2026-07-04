@@ -28,6 +28,7 @@ export default function EditPage() {
   const [redirectUrl, setRedirectUrl] = useState('');
   const [redirectType, setRedirectType] = useState('301');
   const [noIndex, setNoIndex] = useState(false);
+  const [schemaJson, setSchemaJson] = useState('');
   
   const [seoScore, setSeoScore] = useState(0);
   const [isHomepage, setIsHomepage] = useState(false);
@@ -55,6 +56,7 @@ export default function EditPage() {
         setRedirectUrl(data.redirectUrl || '');
         setRedirectType(data.redirectType || '301');
         setNoIndex(data.noIndex || false);
+        setSchemaJson(data.schemaJson || '');
         
         // Check if this is the homepage
         fetch('/api/settings')
@@ -96,7 +98,8 @@ export default function EditPage() {
           redirectType,
           noIndex,
           status,
-          hideTitle
+          hideTitle,
+          schemaJson
         }),
       });
       if (res.ok) {
@@ -158,6 +161,8 @@ export default function EditPage() {
             setRedirectType={setRedirectType}
             noIndex={noIndex}
             setNoIndex={setNoIndex}
+            schemaJson={schemaJson}
+            setSchemaJson={setSchemaJson}
             onScoreChange={setSeoScore}
           />
         </div>
