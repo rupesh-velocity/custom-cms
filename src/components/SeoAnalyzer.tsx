@@ -382,10 +382,11 @@ export default function SeoAnalyzer({
   const keywordInDesc = hasKeyword && safeDesc.includes(safeKeyword);
   const normalizedSlug = safeSlug.replace(/[-_]/g, ' ');
   const keywordInSlug = hasKeyword && normalizedSlug.includes(safeKeyword);
-  const keywordAtStartContent = hasKeyword && safeContent.substring(0, 150).includes(safeKeyword);
-  const keywordInContent = hasKeyword && safeContent.includes(safeKeyword);
+  const plainTextContent = content.replace(/<[^>]*>?/gm, '').toLowerCase();
+  const keywordAtStartContent = hasKeyword && plainTextContent.substring(0, 150).includes(safeKeyword);
+  const keywordInContent = hasKeyword && plainTextContent.includes(safeKeyword);
   
-  const wordCount = content.replace(/<[^>]*>?/gm, '').split(/\s+/).filter(w => w.length > 0).length;
+  const wordCount = plainTextContent.split(/\s+/).filter(w => w.length > 0).length;
   const wordCountGood = wordCount >= 600;
 
   const basicChecks = [
@@ -407,8 +408,18 @@ export default function SeoAnalyzer({
   const densityGood = parseFloat(keywordDensity) > 0.5 && parseFloat(keywordDensity) < 2.5;
   
   const urlLengthGood = slug.length > 0 && slug.length <= 75;
-  const hasOutboundLinks = /href="http(s)?:\/\/(?!localhost)/i.test(content);
-  const hasInternalLinks = /href="(\/|http(s)?:\/\/localhost)/i.test(content);
+  const hrefMatches = content.match(/href="([^"]+)"/ig) || [];
+  let hasInternalLinks = false;
+  let hasOutboundLinks = false;
+  
+  hrefMatches.forEach(match => {
+    const url = match.replace(/href="|"/ig, '');
+    if (url.startsWith('/') || url.startsWith(origin || 'http://localhost')) {
+      hasInternalLinks = true;
+    } else if (url.startsWith('http')) {
+      hasOutboundLinks = true;
+    }
+  });
 
   const additionalChecks = [
     { pass: keywordInH2, text: 'Use Focus Keyword in subheading(s) like H2, H3, H4, etc..', passedText: 'Focus Keyword found in subheading(s).' },
@@ -608,8 +619,12 @@ export default function SeoAnalyzer({
           <hr className="border-[#e2e4e7]" />
           <div className="grid grid-cols-12 gap-4 items-start">
              <div className="col-span-4 text-[13px] font-semibold text-[#1d2327] mt-1">Redirect</div>
-             <div className="col-span-8 space-y-4">
-                <div onClick={() => setIsRedirect(!isRedirect)} className={`w-9 h-5 rounded-full relative cursor-pointer shadow-inner transition-colors ${isRedirect ? 'bg-[#0085ba]' : 'bg-gray-300'}`}>
+              <div className="col-span-8 space-y-4">
+                <div onClick={() => {
+                  const newIsRedirect = !isRedirect;
+                  setIsRedirect(newIsRedirect);
+                  if (!newIsRedirect && setRedirectUrl) setRedirectUrl('');
+                }} className={`w-9 h-5 rounded-full relative cursor-pointer shadow-inner transition-colors ${isRedirect ? 'bg-[#0085ba]' : 'bg-gray-300'}`}>
                    <div className={`w-4 h-4 bg-white rounded-full absolute top-0.5 shadow-sm transition-all ${isRedirect ? 'left-4' : 'left-0.5'}`}></div>
                 </div>
                 {isRedirect && (
