@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { v2 as cloudinary } from 'cloudinary';
 import { prisma } from '@/lib/prisma';
+
+// Cloudinary config is automatically picked up from CLOUDINARY_URL env var
+// You can also explicitly configure it if needed, but CLOUDINARY_URL is standard.
 
 export async function POST(req: Request) {
   try {
@@ -15,25 +17,25 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    // Create safe filename
-    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const url = `/uploads/${filename}`;
+    // Upload directly to Cloudinary using a stream
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'custom-cms' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(buffer);
+    });
+
+    const result = uploadResult as any;
     
-    // Ensure uploads directory exists
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e) {
-      // Ignore if exists
-    }
-    
-    const path = join(uploadDir, filename);
-    await writeFile(path, buffer);
-    
+    // Create Media record in the database using the secure Cloudinary URL
     const media = await prisma.media.create({
       data: {
         filename: file.name,
-        url: url,
+        url: result.secure_url,
         mimeType: file.type || 'application/octet-stream',
         size: buffer.length,
       }
@@ -41,7 +43,7 @@ export async function POST(req: Request) {
     
     return NextResponse.json(media);
   } catch (error) {
-    console.error('Error uploading file:', error);
+    console.error('Error uploading file to Cloudinary:', error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
   }
 }
