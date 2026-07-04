@@ -274,7 +274,8 @@ export default function MediaLibrary() {
                   <button 
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(window.location.origin + selectedMedia.url);
+                      const fullUrl = new URL(selectedMedia.url, window.location.origin).toString();
+                      navigator.clipboard.writeText(fullUrl);
                       toast.success('URL copied to clipboard');
                     }}
                     className="mt-2 text-[#2271b1] hover:underline"
