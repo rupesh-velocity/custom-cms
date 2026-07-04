@@ -379,7 +379,8 @@ export default function SeoAnalyzer({
   
   const keywordInTitle = hasKeyword && safeTitle.includes(safeKeyword);
   const keywordInDesc = hasKeyword && safeDesc.includes(safeKeyword);
-  const keywordInSlug = hasKeyword && safeSlug.includes(safeKeyword);
+  const normalizedSlug = safeSlug.replace(/[-_]/g, ' ');
+  const keywordInSlug = hasKeyword && normalizedSlug.includes(safeKeyword);
   const keywordAtStartContent = hasKeyword && safeContent.substring(0, 150).includes(safeKeyword);
   const keywordInContent = hasKeyword && safeContent.includes(safeKeyword);
   
@@ -446,7 +447,8 @@ export default function SeoAnalyzer({
 
   const totalChecks = basicChecks.length + additionalChecks.length + titleChecks.length + contentChecks.length;
   const passedChecks = [...basicChecks, ...additionalChecks, ...titleChecks, ...contentChecks].filter(c => c.pass).length;
-  const score = Math.round((passedChecks / totalChecks) * 100) || 0;
+  // If no focus keyword is set, default the score to 0 to mimic Rank Math
+  const score = hasKeyword ? Math.round((passedChecks / totalChecks) * 100) || 0 : 0;
   
   useEffect(() => {
     if (onScoreChange) onScoreChange(score);
