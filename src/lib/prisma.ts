@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 const globalForPrisma = global as unknown as { prismaClientV3: PrismaClient }
 
 export const prisma = globalForPrisma.prismaClientV3 || (() => {
-  const url = process.env.DATABASE_URL || process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.POSTGRES_URL;
+  const url = process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL;
   return new PrismaClient({
     datasourceUrl: url,
   })
