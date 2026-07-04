@@ -132,7 +132,7 @@ export default function EditPost() {
             setSlug={setSlug}
             metaDescription={metaDescription}
             setMetaDescription={setMetaDescription}
-            content={contentText}
+            content={contentHtml}
             focusKeyword={focusKeyword}
             setFocusKeyword={setFocusKeyword}
             seoTitle={seoTitle}

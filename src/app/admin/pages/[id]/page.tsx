@@ -147,7 +147,7 @@ export default function EditPage() {
             setSlug={setSlug}
             metaDescription={metaDescription}
             setMetaDescription={setMetaDescription}
-            content={contentText}
+            content={contentHtml}
             focusKeyword={focusKeyword}
             setFocusKeyword={setFocusKeyword}
             seoTitle={seoTitle}

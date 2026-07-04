@@ -371,7 +371,7 @@ export default function SeoAnalyzer({
 
   // SEO Score Logic
   const safeKeyword = primaryKeyword.toLowerCase();
-  const safeTitle = title.toLowerCase();
+  const safeTitle = (seoTitle || title).toLowerCase();
   const safeDesc = metaDescription.toLowerCase();
   const safeContent = content.toLowerCase();
   const safeSlug = slug.toLowerCase();
@@ -527,7 +527,7 @@ export default function SeoAnalyzer({
               <div className="mt-4 p-4 bg-[#f9f9f9] border border-[#e2e4e7] rounded-sm space-y-4">
                 <div>
                   <label className="block text-[13px] font-semibold text-[#1d2327] mb-1">Title</label>
-                  <input type="text" value={seoTitle || title} onChange={(e) => setSeoTitle && setSeoTitle(e.target.value)} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
+                  <input type="text" placeholder={title || 'Sample Page - Test'} value={seoTitle !== undefined ? seoTitle : ''} onChange={(e) => setSeoTitle && setSeoTitle(e.target.value)} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
                   <div className={`h-1 mt-1 rounded-full ${(seoTitle || title).length > 40 && (seoTitle || title).length < 60 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${Math.min(100, ((seoTitle || title).length / 60) * 100)}%` }} />
                 </div>
                 <div>
