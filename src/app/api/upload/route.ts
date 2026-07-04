@@ -13,14 +13,32 @@ export async function POST(req: Request) {
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
-    
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    // Generate a short random string to prevent overwriting files with the same name
-    const randomSuffix = Math.random().toString(36).substring(2, 8);
-    // Remove the file extension (e.g., .png or .jpg) to get just the base name
+    
+    // Remove the file extension to get just the base name, and sanitize it
     const baseName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "-");
-    const publicId = `${baseName}_${randomSuffix}`;
+    const extension = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '';
+    
+    let finalFileName = file.name;
+    let publicId = baseName;
+    let counter = 1;
+
+    // Check if a file with this name already exists in the database
+    while (true) {
+      const existingMedia = await prisma.media.findFirst({
+        where: { filename: finalFileName }
+      });
+      
+      if (!existingMedia) {
+        break; // Name is available!
+      }
+      
+      // If it exists, append a number (e.g., banner-1.jpg)
+      finalFileName = `${baseName}-${counter}${extension}`;
+      publicId = `${baseName}-${counter}`;
+      counter++;
+    }
 
     // Upload directly to Cloudinary using a stream
     const uploadResult = await new Promise((resolve, reject) => {
@@ -42,7 +60,7 @@ export async function POST(req: Request) {
     // Create Media record in the database using the secure Cloudinary URL
     const media = await prisma.media.create({
       data: {
-        filename: file.name,
+        filename: finalFileName,
         url: result.secure_url,
         mimeType: file.type || 'application/octet-stream',
         size: buffer.length,
