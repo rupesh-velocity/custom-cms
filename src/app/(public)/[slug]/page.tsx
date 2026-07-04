@@ -2,6 +2,8 @@ import { notFound, redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { optimizeHtmlImages } from '@/lib/html-optimizer';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(context: any) {
   const params = await context.params;
   const slug = params.slug;

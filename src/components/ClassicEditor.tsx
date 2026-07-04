@@ -30,12 +30,16 @@ export default function ClassicEditor({
   const [isEditingSlug, setIsEditingSlug] = useState(false);
   const [tempSlug, setTempSlug] = useState(slug);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  const [origin, setOrigin] = useState('');
   
   // Calculate word count
   const wordCount = contentHtml.replace(/<[^>]*>?/gm, '').split(/\s+/).filter(w => w.length > 0).length;
 
   useEffect(() => {
     setTempSlug(slug);
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
   }, [slug]);
 
   const handleSlugSave = () => {
@@ -66,7 +70,7 @@ export default function ClassicEditor({
         <div className="flex items-center gap-1 text-[13px] text-[#50575e] mb-4">
           <span className="font-semibold">Permalink:</span>
           <span className="text-[#0073aa]">
-            http://localhost:3000/
+            {origin ? origin : 'http://localhost:3000'}/
             {!isHomepage && (
               isEditingSlug ? (
                 <input 
