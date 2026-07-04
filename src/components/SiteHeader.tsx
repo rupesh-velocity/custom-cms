@@ -126,9 +126,9 @@ export default async function SiteHeader() {
       <div className="container h-full flex items-center justify-between gap-6">
         <Link href="/">
           {siteLogo ? (
-            <img src={optimizeLogoUrl(siteLogo)} alt={siteTitle} className="logo-img" loading="eager" fetchpriority="high" />
+            <img src={optimizeLogoUrl(siteLogo)} alt={siteTitle} className="logo-img" loading="eager" fetchPriority="high" />
           ) : siteIcon ? (
-            <img src={optimizeLogoUrl(siteIcon)} alt={siteTitle} className="logo-img" loading="eager" fetchpriority="high" />
+            <img src={optimizeLogoUrl(siteIcon)} alt={siteTitle} className="logo-img" loading="eager" fetchPriority="high" />
           ) : (
             <span className="text-xl font-bold">{siteTitle}</span>
           )}
