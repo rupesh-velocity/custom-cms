@@ -287,6 +287,13 @@ export default function SeoAnalyzer({
 
   // Advanced Tab State
   const [isRedirect, setIsRedirect] = useState(!!redirectUrl);
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   const handleIndexToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isChecked = e.target.checked;
