@@ -39,8 +39,10 @@ export default async function Home() {
   // 1. Fetch settings
   const settingsRecords = await prisma.setting.findMany({
     where: {
-      key: { in: ['homepage_displays', 'homepage_page_id', 'blog_pages_at_most', 'feed_include'] },
-      OR: [ { key: { startsWith: 'seo_' } } ]
+      OR: [
+        { key: { in: ['homepage_displays', 'homepage_page_id', 'blog_pages_at_most', 'feed_include'] } },
+        { key: { startsWith: 'seo_' } }
+      ]
     }
   });
   
