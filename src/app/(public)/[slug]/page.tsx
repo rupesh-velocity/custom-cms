@@ -8,6 +8,8 @@ import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 import BlogSidebar from '@/components/BlogSidebar';
 import CopyLinkButton from '@/components/CopyLinkButton';
 import { Link as LinkIcon, User } from 'lucide-react';
+import { generateToc } from '@/lib/toc';
+import TableOfContents from '@/components/TableOfContents';
 
 const TwitterIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -326,7 +328,16 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
             <main className="flex-1 min-w-0 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="p-8 md:p-12 lg:px-16 pt-12 md:pt-16">
                 
-                <div className="prose prose-lg md:prose-xl prose-blue mx-auto text-gray-800" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} />
+                {(() => {
+                  const optimizedHtml = optimizeHtmlImages(data.contentHtml, seoSettings, data.title);
+                  const { processedHtml, headings } = generateToc(optimizedHtml);
+                  return (
+                    <>
+                      <TableOfContents headings={headings} />
+                      <div className="prose prose-lg md:prose-xl prose-blue mx-auto text-gray-800" dangerouslySetInnerHTML={{ __html: processedHtml }} />
+                    </>
+                  );
+                })()}
                 
                 {/* Share Buttons */}
                 <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
