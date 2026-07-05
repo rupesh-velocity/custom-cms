@@ -13,8 +13,9 @@ async function getPageOrPost(slug: string) {
   return data && data.status !== 'Draft' ? data : null;
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const data = await getPageOrPost(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await getPageOrPost(slug);
   
   if (!data) {
     return {
@@ -36,11 +37,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function PublicPage({ params }: { params: { slug: string } }) {
+export default async function PublicPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  
   // 1. Check for global redirection first
   const redirection = await prisma.redirection.findFirst({
     where: {
-      sourceUrl: `/${params.slug}`,
+      sourceUrl: `/${slug}`,
       status: true
     }
   });
@@ -49,7 +52,7 @@ export default async function PublicPage({ params }: { params: { slug: string } 
     redirect(redirection.destinationUrl);
   }
 
-  const data = await getPageOrPost(params.slug);
+  const data = await getPageOrPost(slug);
   
   if (!data) {
     notFound();
