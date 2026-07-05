@@ -212,7 +212,8 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
                         <div className="flex flex-wrap items-center gap-2 text-sm text-[#5e3fde] font-semibold mb-3">
                           {post.categories?.map((cat: any, i: number) => (
                             <span key={cat.id}>
-                              {cat.name}{i < post.categories.length - 1 ? ' • ' : ''}
+                              <Link href={`/category/${cat.slug}`} className="hover:underline">{cat.name}</Link>
+                              {i < post.categories.length - 1 ? ' • ' : ''}
                             </span>
                           ))}
                         </div>
@@ -288,11 +289,12 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
                   <div className="flex justify-center flex-wrap items-center gap-2 text-sm text-[#5e3fde] font-bold mb-4 tracking-wide uppercase">
                     {data.categories?.map((cat: any, i: number) => (
                       <span key={cat.id}>
-                        {cat.name}{i < data.categories.length - 1 ? ' • ' : ''}
+                        <Link href={`/category/${cat.slug}`} className="hover:underline">{cat.name}</Link>
+                        {i < data.categories.length - 1 ? ' • ' : ''}
                       </span>
                     ))}
                   </div>
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight font-outfit leading-tight mb-6">{data.title}</h1>
+                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight font-outfit leading-tight mb-6">{data.title}</h1>
                   <div className="flex items-center justify-center gap-3 text-sm text-gray-500 font-medium">
                     {data.author?.firstName && <span>By <strong className="text-gray-900">{data.author.firstName} {data.author.lastName}</strong></span>}
                     {data.author?.firstName && <span>•</span>}

@@ -1,132 +1,54 @@
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { notFound, redirect, permanentRedirect } from 'next/navigation';
-import { optimizeHtmlImages } from '@/lib/html-optimizer';
 import { cookies } from 'next/headers';
-import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 import BlogSidebar from '@/components/BlogSidebar';
+import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata() {
-  const settingsRecords = await prisma.setting.findMany({
-    where: { key: { in: ['homepage_displays', 'homepage_page_id'] } }
-  });
-  const settings = settingsRecords.reduce((acc: any, setting: any) => {
-    acc[setting.key] = setting.value;
-    return acc;
-  }, {});
-
-  if (settings.homepage_displays === 'static_page' && settings.homepage_page_id) {
-    const pageId = parseInt(settings.homepage_page_id);
-    const page = await prisma.page.findUnique({ where: { id: pageId } });
-    if (page) {
-      return {
-        title: page.seoTitle || page.title,
-        description: page.metaDescription || (page.contentText ? page.contentText.substring(0, 160) : ''),
-        robots: {
-          index: !page.noIndex,
-          follow: true,
-        }
-      };
-    }
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const category = await prisma.category.findUnique({ where: { slug } });
+  
+  if (!category) {
+    return {
+      title: 'Category Not Found',
+    };
   }
 
   return {
-    title: 'Velocity CMS',
-    description: 'A powerful headless CMS built with Next.js',
+    title: `${category.name} Archives`,
+    description: `Browse all posts in the ${category.name} category.`,
+    alternates: {
+      canonical: `/category/${category.slug}`,
+    }
   };
 }
 
-export default async function Home(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+export default async function CategoryPage(props: { params: Promise<{ slug: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await props.params;
   const searchParams = await props.searchParams;
-  // 1. Fetch settings
+  const slug = params.slug;
+
+  const category = await prisma.category.findUnique({ where: { slug } });
+
+  if (!category) {
+    notFound();
+  }
+
   const settingsRecords = await prisma.setting.findMany({
     where: {
-      OR: [
-        { key: { in: ['homepage_displays', 'homepage_page_id', 'blog_pages_at_most', 'feed_include'] } },
-        { key: { startsWith: 'seo_' } }
-      ]
+      key: { in: ['blog_pages_at_most', 'feed_include'] }
     }
   });
-  
+
   const settings = settingsRecords.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value;
     return acc;
   }, {});
 
-  const displayMode = settings.homepage_displays || 'latest_posts';
-
-  // 1.5 Global Redirection for Homepage
-  const redirection = await prisma.redirection.findFirst({
-    where: {
-      sourceUrl: `/`,
-      status: true
-    }
-  });
-
-  if (redirection) {
-    redirect(redirection.destinationUrl);
-  }
-
-  // 2. Render Static Page Mode
-  if (displayMode === 'static_page') {
-    const pageId = parseInt(settings.homepage_page_id || '0');
-    if (!pageId) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-8">
-          <div className="text-center space-y-4">
-            <h1 className="text-3xl font-bold text-gray-900">Homepage not configured</h1>
-            <p className="text-gray-500">Please go to Admin &gt; Settings &gt; Reading and select a static page.</p>
-            <Link href="/admin/settings/reading" className="inline-block mt-4 text-blue-600 hover:underline">Go to Settings</Link>
-          </div>
-        </div>
-      );
-    }
-
-    const page = await prisma.page.findFirst({
-      where: { id: pageId, status: 'Published' }
-    });
-
-    if (!page) return notFound();
-
-    if (page.visibility === 'Private') {
-      const cookieStore = await cookies();
-      if (!cookieStore.get('cms_session')) {
-        return notFound();
-      }
-    }
-
-    if (page.redirectUrl) {
-      if (page.redirectType === '301') {
-        permanentRedirect(page.redirectUrl);
-      } else {
-        redirect(page.redirectUrl);
-      }
-    }
-
-    return (
-      <div className="min-h-screen bg-white">
-        {page.schemaJson && (
-          <script 
-            type="application/ld+json" 
-            dangerouslySetInnerHTML={{ __html: page.schemaJson }} 
-          />
-        )}
-        {page.visibility === 'Password Protected' && (!await cookies().then(c => c.get(`post_pass_${page.id}`)?.value === page.password)) ? (
-          <PasswordProtectedForm id={page.id} type="page" title={page.title} />
-        ) : (
-          <main className="w-full">
-            <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml, settings, page.title) }} />
-          </main>
-        )}
-      </div>
-    );
-  }
-
-  // 3. Render Latest Posts Mode
   const limit = parseInt(settings.blog_pages_at_most || '10');
-  const feedInclude = settings.feed_include || 'full_text';
   const currentPage = parseInt((searchParams?.page as string) || '1') || 1;
   const skip = (currentPage - 1) * limit;
 
@@ -138,7 +60,12 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
   const posts = await prisma.post.findMany({
     where: { 
       status: 'Published',
-      ...visibilityFilter
+      ...visibilityFilter,
+      categories: {
+        some: {
+          slug: category.slug
+        }
+      }
     },
     orderBy: { publishedAt: 'desc' },
     include: { author: true, categories: true },
@@ -149,7 +76,12 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
   const totalPosts = await prisma.post.count({
     where: { 
       status: 'Published',
-      ...visibilityFilter
+      ...visibilityFilter,
+      categories: {
+        some: {
+          slug: category.slug
+        }
+      }
     }
   });
   const totalPages = Math.ceil(totalPosts / limit);
@@ -159,12 +91,13 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
       <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12">
         <div className="flex-1 min-w-0">
           <header className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight font-outfit">Latest Updates</h1>
+            <div className="text-[#5e3fde] font-bold tracking-wide uppercase mb-2 text-sm">Category</div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight font-outfit">{category.name}</h1>
           </header>
 
           {posts.length === 0 ? (
             <div className="bg-white p-12 rounded-2xl shadow-sm text-center border border-gray-100">
-              <p className="text-gray-500 text-lg">No posts published yet.</p>
+              <p className="text-gray-500 text-lg">No posts published in this category yet.</p>
             </div>
           ) : (
             <div className="space-y-10">
@@ -223,7 +156,7 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
                   {Array.from({ length: totalPages }).map((_, i) => (
                     <Link
                       key={i}
-                      href={`/?page=${i + 1}`}
+                      href={`/category/${slug}?page=${i + 1}`}
                       className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${
                         currentPage === i + 1 
                           ? 'bg-[#5e3fde] text-white' 
