@@ -24,9 +24,11 @@ model Post {
   schemaJson      String?
   seoScore        Int      @default(0)
   authorId        Int?
-  author          User?    @relation(fields: [authorId], references: [id])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  author          User?      @relation(fields: [authorId], references: [id])
+  categories      Category[]
+  featuredImage   String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
   publishedAt     DateTime?
 }
 
@@ -50,6 +52,7 @@ model Page {
   seoScore        Int      @default(0)
   authorId        Int?
   author          User?    @relation(fields: [authorId], references: [id])
+  featuredImage   String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   publishedAt     DateTime?
@@ -118,4 +121,13 @@ model Redirection {
   status         Boolean  @default(true)  // Active (true) or Deactivated (false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  slug      String   @unique
+  posts     Post[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

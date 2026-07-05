@@ -30,6 +30,8 @@ export default function NewPage() {
   const [hideTitle, setHideTitle] = useState(false);
   
   const [seoScore, setSeoScore] = useState(0);
+  
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
 
   const handlePublish = async (overrideStatus?: string) => {
     if (!title) {
@@ -59,7 +61,8 @@ export default function NewPage() {
           publishedAt: publishDate ? publishDate : undefined,
           hideTitle,
           schemaJson,
-          seoScore
+          seoScore,
+          featuredImage
         }),
       });
       if (res.ok) {
@@ -130,6 +133,9 @@ export default function NewPage() {
           score={seoScore}
           hideTitle={hideTitle}
           setHideTitle={setHideTitle}
+          featuredImage={featuredImage}
+          setFeaturedImage={setFeaturedImage}
+          isPost={false}
         />
       </div>
     </div>

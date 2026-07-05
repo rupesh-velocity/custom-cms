@@ -50,6 +50,7 @@ export async function POST(req: Request) {
         schemaJson: data.schemaJson || null,
         seoScore: data.seoScore || 0,
         authorId: authorId,
+        featuredImage: data.featuredImage || null,
       },
     });
     return NextResponse.json(page);

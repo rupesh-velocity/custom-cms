@@ -12,6 +12,7 @@ export default function ReadingSettings() {
     blog_pages_at_most: '10',
     syndication_feeds_at_most: '10',
     feed_include: 'full_text',
+    show_author_box: 'true',
   });
   const [pages, setPages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +30,7 @@ export default function ReadingSettings() {
         blog_pages_at_most: settingsData.blog_pages_at_most || '10',
         syndication_feeds_at_most: settingsData.syndication_feeds_at_most || '10',
         feed_include: settingsData.feed_include || 'full_text',
+        show_author_box: settingsData.show_author_box !== undefined ? String(settingsData.show_author_box) : 'true',
       });
       setPages(Array.isArray(pagesData) ? pagesData : []);
       setIsLoading(false);
@@ -180,6 +182,22 @@ export default function ReadingSettings() {
               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
             />
             <span className="text-gray-700">Excerpt</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-[200px_1fr] gap-6 items-center">
+        <label className="text-sm font-medium text-gray-900">Author Box</label>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="show_author_box"
+              checked={settings.show_author_box === 'true'}
+              onChange={(e) => setSettings(prev => ({ ...prev, show_author_box: e.target.checked ? 'true' : 'false' }))}
+              className="w-4 h-4 border-[#8c8f94] rounded-[2px] text-[#5e3fde] focus:ring-[#5e3fde]"
+            />
+            <span className="text-sm text-gray-700">Show Author Box on Single Posts</span>
           </label>
         </div>
       </div>

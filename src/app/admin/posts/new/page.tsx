@@ -30,6 +30,9 @@ export default function NewPost() {
   const [publishDate, setPublishDate] = useState('');
   
   const [seoScore, setSeoScore] = useState(0);
+  
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
+  const [categoryIds, setCategoryIds] = useState<number[]>([]);
 
   const handlePublish = async (overrideStatus?: string) => {
     if (!title) {
@@ -58,7 +61,9 @@ export default function NewPost() {
           password,
           publishedAt: publishDate ? publishDate : undefined,
           schemaJson,
-          seoScore
+          seoScore,
+          featuredImage,
+          categoryIds
         }),
       });
       if (res.ok) {
@@ -127,6 +132,11 @@ export default function NewPost() {
           onPublish={handlePublish}
           isSaving={isSaving}
           score={seoScore}
+          featuredImage={featuredImage}
+          setFeaturedImage={setFeaturedImage}
+          categoryIds={categoryIds}
+          setCategoryIds={setCategoryIds}
+          isPost={true}
         />
       </div>
     </div>

@@ -19,11 +19,22 @@ interface ClassicSidebarProps {
   publishDate?: string;
   setPublishDate?: (val: string) => void;
   isNew?: boolean;
+  featuredImage?: string | null;
+  setFeaturedImage?: (val: string | null) => void;
+  categoryIds?: number[];
+  setCategoryIds?: (val: number[]) => void;
+  isPost?: boolean;
 }
 
-export default function ClassicSidebar({ status, setStatus, onPublish, isSaving, score, hideTitle, setHideTitle, visibility = 'Public', setVisibility, password, setPassword, publishDate, setPublishDate, isNew = false }: ClassicSidebarProps) {
+export default function ClassicSidebar({ 
+  status, setStatus, onPublish, isSaving, score, hideTitle, setHideTitle, 
+  visibility = 'Public', setVisibility, password, setPassword, 
+  publishDate, setPublishDate, isNew = false,
+  featuredImage, setFeaturedImage, categoryIds = [], setCategoryIds, isPost = false
+}: ClassicSidebarProps) {
   const [expanded, setExpanded] = useState({
     publish: true,
+    categories: true,
     contentAI: false,
     pageAttributes: false,
     linkSuggestions: false,
@@ -36,7 +47,53 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
   const [editingDate, setEditingDate] = useState(false);
   
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
-  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
+  
+  const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+
+  import { useEffect } from 'react';
+  useEffect(() => {
+    if (isPost) {
+      fetch('/api/categories').then(res => res.json()).then(data => {
+        if (Array.isArray(data)) setCategories(data);
+      });
+    }
+  }, [isPost]);
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    setIsCreatingCategory(true);
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCategoryName })
+      });
+      if (res.ok) {
+        const newCat = await res.json();
+        setCategories(prev => [...prev.filter(c => c.id !== newCat.id), newCat].sort((a, b) => a.name.localeCompare(b.name)));
+        if (setCategoryIds) {
+          setCategoryIds([...categoryIds, newCat.id]);
+        }
+        setNewCategoryName('');
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsCreatingCategory(false);
+    }
+  };
+
+  const toggleCategory = (id: number) => {
+    if (!setCategoryIds) return;
+    if (categoryIds.includes(id)) {
+      setCategoryIds(categoryIds.filter(cId => cId !== id));
+    } else {
+      setCategoryIds([...categoryIds, id]);
+    }
+  };
 
   const toggleAccordion = (section: keyof typeof expanded) => {
     setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
@@ -159,17 +216,62 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
         </div>
       </Accordion>
 
-      <Accordion id="pageAttributes" title="Page Attributes" expanded={expanded.pageAttributes} toggleAccordion={() => toggleAccordion('pageAttributes')}>
-        <div className="text-[13px] text-[#1d2327]">
-           <label className="block font-semibold mb-1">Parent</label>
-           <select className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none mb-3">
-             <option>(no parent)</option>
-           </select>
-           
-           <label className="block font-semibold mb-1">Order</label>
-           <input type="number" defaultValue="0" className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none" />
-        </div>
-      </Accordion>
+      {isPost && (
+        <Accordion id="categories" title="Categories" expanded={expanded.categories} toggleAccordion={() => toggleAccordion('categories')}>
+          <div className="max-h-48 overflow-y-auto mb-2 border border-[#ddd] p-2 bg-white">
+            {categories.map(cat => (
+              <label key={cat.id} className="flex items-center gap-2 mb-1 text-[13px] text-[#1d2327]">
+                <input 
+                  type="checkbox" 
+                  checked={categoryIds.includes(cat.id)}
+                  onChange={() => toggleCategory(cat.id)}
+                  className="w-4 h-4 border-[#8c8f94] rounded-[2px]"
+                />
+                {cat.name}
+              </label>
+            ))}
+            {categories.length === 0 && <p className="text-xs text-gray-500">No categories found.</p>}
+          </div>
+          
+          {showAddCategory ? (
+            <div className="mt-2">
+              <input 
+                type="text" 
+                value={newCategoryName}
+                onChange={e => setNewCategoryName(e.target.value)}
+                placeholder="New Category Name"
+                className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1 text-[13px] outline-none mb-2"
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
+              />
+              <button 
+                onClick={handleCreateCategory}
+                disabled={isCreatingCategory || !newCategoryName.trim()}
+                className="border border-[#0071a1] text-[#0071a1] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f1f1f1] disabled:opacity-50"
+              >
+                {isCreatingCategory ? 'Adding...' : 'Add New Category'}
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => setShowAddCategory(true)} className="text-[#0071a1] text-[13px] hover:underline underline-offset-2">
+              + Add New Category
+            </button>
+          )}
+        </Accordion>
+      )}
+
+      {!isPost && (
+        <Accordion id="pageAttributes" title="Page Attributes" expanded={expanded.pageAttributes} toggleAccordion={() => toggleAccordion('pageAttributes')}>
+          <div className="text-[13px] text-[#1d2327]">
+             <label className="block font-semibold mb-1">Parent</label>
+             <select className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none mb-3">
+               <option>(no parent)</option>
+             </select>
+             
+             <label className="block font-semibold mb-1">Order</label>
+             <input type="number" defaultValue="0" className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none" />
+          </div>
+        </Accordion>
+      )}
 
       <Accordion id="featuredImage" title="Featured image" expanded={expanded.featuredImage} toggleAccordion={() => toggleAccordion('featuredImage')}>
         {featuredImage ? (
@@ -177,7 +279,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
             <img src={featuredImage} alt="Featured" className="w-full h-auto mb-2 rounded border border-gray-200" />
             <div className="flex gap-2 justify-center">
                <button onClick={() => setIsMediaModalOpen(true)} className="text-[#0071a1] text-[13px] hover:underline">Replace</button>
-               <button onClick={() => setFeaturedImage(null)} className="text-[#b32d2e] text-[13px] hover:underline">Remove</button>
+               {setFeaturedImage && <button onClick={() => setFeaturedImage(null)} className="text-[#b32d2e] text-[13px] hover:underline">Remove</button>}
             </div>
           </div>
         ) : (
@@ -186,7 +288,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
         <MediaModal 
           isOpen={isMediaModalOpen}
           onClose={() => setIsMediaModalOpen(false)}
-          onInsert={(url) => setFeaturedImage(url)}
+          onInsert={(url) => setFeaturedImage && setFeaturedImage(url)}
         />
       </Accordion>
 

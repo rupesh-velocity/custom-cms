@@ -34,6 +34,9 @@ export default function EditPost() {
   
   const [seoScore, setSeoScore] = useState(0);
 
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
+  const [categoryIds, setCategoryIds] = useState<number[]>([]);
+
   useEffect(() => {
     if (!params?.id) return;
     
@@ -61,6 +64,10 @@ export default function EditPost() {
         setNoIndex(data.noIndex || false);
         setSchemaJson(data.schemaJson || '');
         setSeoScore(data.seoScore || 0);
+        setFeaturedImage(data.featuredImage || null);
+        if (data.categories && Array.isArray(data.categories)) {
+          setCategoryIds(data.categories.map((c: any) => c.id));
+        }
         setIsLoading(false);
       })
       .catch(err => {
@@ -97,7 +104,9 @@ export default function EditPost() {
           password,
           publishedAt: publishDate,
           schemaJson,
-          seoScore
+          seoScore,
+          featuredImage,
+          categoryIds
         }),
       });
       if (res.ok) {
@@ -178,6 +187,11 @@ export default function EditPost() {
           onPublish={handleUpdate}
           isSaving={isSaving}
           score={seoScore}
+          featuredImage={featuredImage}
+          setFeaturedImage={setFeaturedImage}
+          categoryIds={categoryIds}
+          setCategoryIds={setCategoryIds}
+          isPost={true}
         />
       </div>
     </div>

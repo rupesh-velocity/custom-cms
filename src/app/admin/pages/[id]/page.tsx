@@ -35,6 +35,7 @@ export default function EditPage() {
   
   const [seoScore, setSeoScore] = useState(0);
   const [isHomepage, setIsHomepage] = useState(false);
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -64,6 +65,7 @@ export default function EditPage() {
         setNoIndex(data.noIndex || false);
         setSchemaJson(data.schemaJson || '');
         setSeoScore(data.seoScore || 0);
+        setFeaturedImage(data.featuredImage || null);
         
         // Check if this is the homepage
         fetch('/api/settings')
@@ -111,7 +113,8 @@ export default function EditPage() {
           publishedAt: publishDate,
           hideTitle,
           schemaJson,
-          seoScore
+          seoScore,
+          featuredImage
         }),
       });
       if (res.ok) {
@@ -195,6 +198,9 @@ export default function EditPage() {
           score={seoScore}
           hideTitle={hideTitle}
           setHideTitle={setHideTitle}
+          featuredImage={featuredImage}
+          setFeaturedImage={setFeaturedImage}
+          isPost={false}
         />
       </div>
     </div>

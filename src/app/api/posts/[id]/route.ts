@@ -6,6 +6,7 @@ export async function GET(req: Request, context: any) {
     const params = await context.params;
     const post = await prisma.post.findUnique({
       where: { id: parseInt(params.id) },
+      include: { categories: true },
     });
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
@@ -40,6 +41,12 @@ export async function PATCH(req: Request, context: any) {
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         schemaJson: data.schemaJson || null,
         seoScore: data.seoScore !== undefined ? data.seoScore : undefined,
+        featuredImage: data.featuredImage,
+        ...(data.categoryIds !== undefined && {
+          categories: {
+            set: data.categoryIds.map((id: number) => ({ id }))
+          }
+        })
       },
     });
     return NextResponse.json(post);
