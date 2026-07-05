@@ -124,10 +124,14 @@ model Redirection {
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  name      String
-  slug      String   @unique
-  posts     Post[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int        @id @default(autoincrement())
+  name        String
+  slug        String     @unique
+  description String?    @db.Text
+  parentId    Int?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Category[] @relation("CategoryHierarchy")
+  posts       Post[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }

@@ -25,9 +25,38 @@ export default function Sidebar() {
         <Link href="/admin" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname === '/admin' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <LayoutDashboard size={20} /> Dashboard
         </Link>
-        <Link href="/admin/posts" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/posts') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
-          <FileText size={20} /> Posts
-        </Link>
+        <div className="space-y-1">
+          <Link 
+            href="/admin/posts" 
+            className={clsx(
+              "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
+              pathname.startsWith('/admin/posts') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <FileText size={20} /> Posts
+            </div>
+            {pathname.startsWith('/admin/posts') ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          </Link>
+
+          {/* Sub-options for Posts */}
+          <div className={clsx(
+            "overflow-hidden transition-all duration-300 ease-in-out",
+            pathname.startsWith('/admin/posts') ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+          )}>
+            <div className="pl-3 py-1 space-y-1 border-l-2 border-gray-100 ml-8 mt-1">
+              <Link href="/admin/posts" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/posts' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                All Posts
+              </Link>
+              <Link href="/admin/posts/new" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/posts/new' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Add New
+              </Link>
+              <Link href="/admin/categories" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/categories') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Categories
+              </Link>
+            </div>
+          </div>
+        </div>
         <Link href="/admin/pages" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/pages') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <Files size={20} /> Pages
         </Link>

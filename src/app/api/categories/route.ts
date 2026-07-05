@@ -6,6 +6,11 @@ export async function GET() {
   try {
     const categories = await prisma.category.findMany({
       orderBy: { name: 'asc' },
+      include: {
+        _count: {
+          select: { posts: true }
+        }
+      }
     });
     return NextResponse.json(categories);
   } catch (error) {
@@ -32,6 +37,8 @@ export async function POST(req: Request) {
       data: {
         name: data.name,
         slug,
+        description: data.description || null,
+        parentId: data.parentId ? parseInt(data.parentId, 10) : null
       },
     });
     return NextResponse.json(category);
