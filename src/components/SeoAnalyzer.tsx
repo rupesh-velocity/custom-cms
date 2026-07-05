@@ -266,10 +266,37 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
     { label: 'DESCRIPTION', type: 'textarea', placeholder: '%seo_description%' },
     { label: 'SHORTCODE', type: 'info', info: shortcodeOnlyInfo },
     { label: 'EMBED URL', type: 'text' },
-    { label: 'CONTENT URL', type: 'text' },
+{ label: 'CONTENT URL', type: 'text' },
     { label: 'DURATION', type: 'text' }
   ]
 };
+
+const CheckItem = ({ check }: { check: any }) => (
+  <div className="flex items-start gap-3 py-2 text-[13px]">
+    <div className="mt-0.5 shrink-0">
+      {check.pass ? <CheckCircle2 className="w-[18px] h-[18px] text-[#22c55e] fill-[#22c55e]/20" /> : <XCircle className="w-[18px] h-[18px] text-[#ef4444] fill-[#ef4444]/20" />}
+    </div>
+    <div className="flex-1 text-[#333]">{check.pass ? check.passedText : check.text}</div>
+    <div className="shrink-0 text-gray-400 hover:text-gray-600 cursor-pointer"><HelpCircle className="w-4 h-4" /></div>
+  </div>
+);
+
+const Accordion = ({ title, errors, expanded, onToggle, checks }: any) => (
+  <div className="border-t border-[#e2e4e7]">
+    <button type="button" onClick={onToggle} className="w-full flex items-center justify-between p-4 bg-[#f9f9f9] hover:bg-gray-50 transition-colors">
+      <div className="flex items-center gap-3">
+        <span className="font-semibold text-[#1d2327]">{title}</span>
+        {errors > 0 ? (
+          <span className="bg-[#ffaba8] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">× {errors} Errors</span>
+        ) : (
+          <span className="bg-[#22c55e] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">✓ Good</span>
+        )}
+      </div>
+      {expanded ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
+    </button>
+    {expanded && <div className="p-4 bg-white space-y-1">{checks.map((c: any, i: number) => <CheckItem key={i} check={c} />)}</div>}
+  </div>
+);
 
 export default function SeoAnalyzer({
   title, setTitle, slug, setSlug, metaDescription, setMetaDescription, content, focusKeyword, setFocusKeyword,
@@ -476,33 +503,6 @@ export default function SeoAnalyzer({
   let scoreColor = 'bg-red-100 text-red-600 border-red-200';
   if (score > 50) scoreColor = 'bg-yellow-100 text-yellow-700 border-yellow-200';
   if (score >= 80) scoreColor = 'bg-green-100 text-green-700 border-green-200';
-
-  const CheckItem = ({ check }: { check: any }) => (
-    <div className="flex items-start gap-3 py-2 text-[13px]">
-      <div className="mt-0.5 shrink-0">
-        {check.pass ? <CheckCircle2 className="w-[18px] h-[18px] text-[#22c55e] fill-[#22c55e]/20" /> : <XCircle className="w-[18px] h-[18px] text-[#ef4444] fill-[#ef4444]/20" />}
-      </div>
-      <div className="flex-1 text-[#333]">{check.pass ? check.passedText : check.text}</div>
-      <div className="shrink-0 text-gray-400 hover:text-gray-600 cursor-pointer"><HelpCircle className="w-4 h-4" /></div>
-    </div>
-  );
-
-  const Accordion = ({ title, errors, expanded, onToggle, checks }: any) => (
-    <div className="border-t border-[#e2e4e7]">
-      <button type="button" onClick={onToggle} className="w-full flex items-center justify-between p-4 bg-[#f9f9f9] hover:bg-gray-50 transition-colors">
-        <div className="flex items-center gap-3">
-          <span className="font-semibold text-[#1d2327]">{title}</span>
-          {errors > 0 ? (
-            <span className="bg-[#ffaba8] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">× {errors} Errors</span>
-          ) : (
-            <span className="bg-[#22c55e] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">✓ Good</span>
-          )}
-        </div>
-        {expanded ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
-      </button>
-      {expanded && <div className="p-4 bg-white space-y-1">{checks.map((c: any, i: number) => <CheckItem key={i} check={c} />)}</div>}
-    </div>
-  );
 
   return (
     <div className="w-full bg-white border border-[#c3c4c7] shadow-sm font-sans mb-8">
