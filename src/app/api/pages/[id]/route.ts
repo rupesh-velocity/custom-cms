@@ -35,6 +35,8 @@ export async function PATCH(req: Request, context: any) {
         redirectType: data.redirectType,
         noIndex: data.noIndex,
         status: data.status,
+        visibility: data.visibility,
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         hideTitle: data.hideTitle,
         schemaJson: data.schemaJson,
       },

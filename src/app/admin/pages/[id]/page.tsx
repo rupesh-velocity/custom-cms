@@ -22,6 +22,8 @@ export default function EditPage() {
   const [metaDescription, setMetaDescription] = useState('');
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
+  const [visibility, setVisibility] = useState('Public');
+  const [publishDate, setPublishDate] = useState('');
   const [hideTitle, setHideTitle] = useState(false);
   
   const [seoTitle, setSeoTitle] = useState('');
@@ -51,6 +53,8 @@ export default function EditPage() {
         setMetaDescription(data.metaDescription || '');
         setFocusKeyword(data.focusKeyword || '');
         setStatus(data.status || 'Draft');
+        setVisibility(data.visibility || 'Public');
+        setPublishDate(data.publishedAt || data.createdAt || '');
         setHideTitle(data.hideTitle || false);
         setSeoTitle(data.seoTitle || '');
         setRedirectUrl(data.redirectUrl || '');
@@ -98,6 +102,8 @@ export default function EditPage() {
           redirectType,
           noIndex,
           status,
+          visibility,
+          publishedAt: publishDate,
           hideTitle,
           schemaJson
         }),
@@ -172,6 +178,10 @@ export default function EditPage() {
         <ClassicSidebar 
           status={status}
           setStatus={setStatus}
+          visibility={visibility}
+          setVisibility={setVisibility}
+          publishDate={publishDate}
+          setPublishDate={setPublishDate}
           onPublish={handleUpdate}
           isSaving={isSaving}
           score={seoScore}

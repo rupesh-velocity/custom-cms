@@ -24,6 +24,8 @@ export default function NewPage() {
   const [schemaJson, setSchemaJson] = useState('');
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
+  const [visibility, setVisibility] = useState('Public');
+  const [publishDate, setPublishDate] = useState('');
   const [hideTitle, setHideTitle] = useState(false);
   
   const [seoScore, setSeoScore] = useState(0);
@@ -50,6 +52,8 @@ export default function NewPage() {
           redirectType,
           noIndex,
           status,
+          visibility,
+          publishedAt: publishDate ? publishDate : undefined,
           hideTitle,
           schemaJson
         }),
@@ -110,6 +114,11 @@ export default function NewPage() {
         <ClassicSidebar 
           status={status}
           setStatus={setStatus}
+          visibility={visibility}
+          setVisibility={setVisibility}
+          publishDate={publishDate}
+          setPublishDate={setPublishDate}
+          isNew={true}
           onPublish={handlePublish}
           isSaving={isSaving}
           score={seoScore}

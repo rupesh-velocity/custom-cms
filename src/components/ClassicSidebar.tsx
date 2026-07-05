@@ -12,9 +12,14 @@ interface ClassicSidebarProps {
   score: number;
   hideTitle?: boolean;
   setHideTitle?: (val: boolean) => void;
+  visibility?: string;
+  setVisibility?: (val: string) => void;
+  publishDate?: string;
+  setPublishDate?: (val: string) => void;
+  isNew?: boolean;
 }
 
-export default function ClassicSidebar({ status, setStatus, onPublish, isSaving, score, hideTitle, setHideTitle }: ClassicSidebarProps) {
+export default function ClassicSidebar({ status, setStatus, onPublish, isSaving, score, hideTitle, setHideTitle, visibility = 'Public', setVisibility, publishDate, setPublishDate, isNew = false }: ClassicSidebarProps) {
   const [expanded, setExpanded] = useState({
     publish: true,
     contentAI: false,
@@ -23,6 +28,10 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
     featuredImage: false,
     pageSettings: false
   });
+  
+  const [editingStatus, setEditingStatus] = useState(false);
+  const [editingVisibility, setEditingVisibility] = useState(false);
+  const [editingDate, setEditingDate] = useState(false);
   
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
@@ -65,25 +74,76 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
           </div>
           
           <div className="space-y-3 text-[13px] text-[#50575e] mb-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-gray-400" /> 
-              <span>Status: <span className="font-semibold text-[#1d2327]">{status}</span></span>
-              <button className="text-[#0071a1] hover:underline ml-1">Edit</button>
+            {/* Status */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-gray-400" /> 
+                <span>Status: <span className="font-semibold text-[#1d2327]">{status}</span></span>
+                {!editingStatus && <button onClick={() => setEditingStatus(true)} className="text-[#0071a1] hover:underline ml-1">Edit</button>}
+              </div>
+              {editingStatus && (
+                <div className="flex items-center gap-2 mt-1">
+                  <select 
+                    value={status} 
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none text-[13px]"
+                  >
+                    <option value="Published">Published</option>
+                    <option value="Pending Review">Pending Review</option>
+                    <option value="Draft">Draft</option>
+                  </select>
+                  <button onClick={() => setEditingStatus(false)} className="bg-[#f3f5f6] border border-[#8c8f94] px-2 py-1 rounded-[3px]">OK</button>
+                  <button onClick={() => setEditingStatus(false)} className="text-[#0071a1] hover:underline">Cancel</button>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-gray-400" /> 
-              <span>Visibility: <span className="font-semibold text-[#1d2327]">Public</span></span>
-              <button className="text-[#0071a1] hover:underline ml-1">Edit</button>
+
+            {/* Visibility */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4 text-gray-400" /> 
+                <span>Visibility: <span className="font-semibold text-[#1d2327]">{visibility}</span></span>
+                {!editingVisibility && setVisibility && <button onClick={() => setEditingVisibility(true)} className="text-[#0071a1] hover:underline ml-1">Edit</button>}
+              </div>
+              {editingVisibility && setVisibility && (
+                <div className="flex flex-col gap-1 mt-1">
+                  <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Public'} onChange={() => setVisibility('Public')} /> Public</label>
+                  <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Password Protected'} onChange={() => setVisibility('Password Protected')} /> Password Protected</label>
+                  <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Private'} onChange={() => setVisibility('Private')} /> Private</label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <button onClick={() => setEditingVisibility(false)} className="bg-[#f3f5f6] border border-[#8c8f94] px-2 py-1 rounded-[3px]">OK</button>
+                    <button onClick={() => setEditingVisibility(false)} className="text-[#0071a1] hover:underline">Cancel</button>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-gray-400" /> 
-              <span>Published on: <span className="font-semibold text-[#1d2327]">{new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></span>
-              <button className="text-[#0071a1] hover:underline ml-1">Edit</button>
+
+            {/* Publish Date */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-400" /> 
+                <span>Published on: <span className="font-semibold text-[#1d2327]">{publishDate ? new Date(publishDate).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Immediately'}</span></span>
+                {!editingDate && setPublishDate && <button onClick={() => setEditingDate(true)} className="text-[#0071a1] hover:underline ml-1">Edit</button>}
+              </div>
+              {editingDate && setPublishDate && (
+                <div className="flex flex-col gap-2 mt-1">
+                  <input 
+                    type="datetime-local" 
+                    value={publishDate ? new Date(new Date(publishDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''} 
+                    onChange={(e) => setPublishDate(new Date(e.target.value).toISOString())}
+                    className="border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none text-[13px] w-full"
+                  />
+                  <div className="flex items-center gap-2 mt-1">
+                    <button onClick={() => setEditingDate(false)} className="bg-[#f3f5f6] border border-[#8c8f94] px-2 py-1 rounded-[3px]">OK</button>
+                    <button onClick={() => {
+                       setPublishDate(''); // Reset to immediately
+                       setEditingDate(false);
+                    }} className="text-[#0071a1] hover:underline">Cancel</button>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-2 mt-2">
-               <div className="w-8 h-4 bg-gray-700 rounded-full relative cursor-pointer"><div className="w-3 h-3 bg-white rounded-full absolute top-0.5 left-0.5"></div></div>
-               <span>Lock Modified Date</span>
-            </div>
+            
           </div>
         </div>
 
@@ -98,7 +158,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
              disabled={isSaving}
              className="bg-[#2271b1] text-white px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#135e96] disabled:opacity-50"
            >
-             {isSaving ? 'Updating...' : (status === 'Draft' ? 'Publish' : 'Update')}
+             {isSaving ? 'Updating...' : (isNew ? 'Publish' : 'Update')}
            </button>
         </div>
       </Accordion>

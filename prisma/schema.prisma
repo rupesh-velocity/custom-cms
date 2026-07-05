@@ -19,9 +19,11 @@ model Post {
   redirectType    String?
   noIndex         Boolean  @default(false)
   status          String   @default("Draft")
+  visibility      String   @default("Public")
   schemaJson      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
 }
 
 model Page {
@@ -37,10 +39,12 @@ model Page {
   redirectType    String?
   noIndex         Boolean  @default(false)
   status          String   @default("Draft")
+  visibility      String   @default("Public")
   hideTitle       Boolean  @default(false)
   schemaJson      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  publishedAt     DateTime?
 }
 
 model User {

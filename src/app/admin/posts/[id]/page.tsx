@@ -22,6 +22,8 @@ export default function EditPost() {
   const [metaDescription, setMetaDescription] = useState('');
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
+  const [visibility, setVisibility] = useState('Public');
+  const [publishDate, setPublishDate] = useState('');
   
   const [seoTitle, setSeoTitle] = useState('');
   const [redirectUrl, setRedirectUrl] = useState('');
@@ -49,6 +51,8 @@ export default function EditPost() {
         setMetaDescription(data.metaDescription || '');
         setFocusKeyword(data.focusKeyword || '');
         setStatus(data.status || 'Draft');
+        setVisibility(data.visibility || 'Public');
+        setPublishDate(data.publishedAt || data.createdAt || '');
         setSeoTitle(data.seoTitle || '');
         setRedirectUrl(data.redirectUrl || '');
         setRedirectType(data.redirectType || '301');
@@ -86,6 +90,8 @@ export default function EditPost() {
           redirectType,
           noIndex,
           status,
+          visibility,
+          publishedAt: publishDate,
           schemaJson
         }),
       });
@@ -158,6 +164,10 @@ export default function EditPost() {
         <ClassicSidebar 
           status={status}
           setStatus={setStatus}
+          visibility={visibility}
+          setVisibility={setVisibility}
+          publishDate={publishDate}
+          setPublishDate={setPublishDate}
           onPublish={handleUpdate}
           isSaving={isSaving}
           score={seoScore}

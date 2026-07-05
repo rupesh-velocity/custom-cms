@@ -25,6 +25,8 @@ export default function NewPost() {
   const [metaDescription, setMetaDescription] = useState('');
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
+  const [visibility, setVisibility] = useState('Public');
+  const [publishDate, setPublishDate] = useState('');
   
   const [seoScore, setSeoScore] = useState(0);
 
@@ -50,6 +52,8 @@ export default function NewPost() {
           redirectType,
           noIndex,
           status,
+          visibility,
+          publishedAt: publishDate ? publishDate : undefined,
           schemaJson
         }),
       });
@@ -109,6 +113,11 @@ export default function NewPost() {
         <ClassicSidebar 
           status={status}
           setStatus={setStatus}
+          visibility={visibility}
+          setVisibility={setVisibility}
+          publishDate={publishDate}
+          setPublishDate={setPublishDate}
+          isNew={true}
           onPublish={handlePublish}
           isSaving={isSaving}
           score={seoScore}
