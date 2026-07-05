@@ -21,23 +21,23 @@ export default function Sidebar() {
       </div>
       
       {/* Navigation */}
-      <nav className="flex-1 px-4 space-y-2 overflow-y-auto mt-2">
-        <Link href="/admin" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname === '/admin' ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+      <nav className="flex-1 px-4 space-y-2 overflow-y-auto mt-2 scrollbar-hide">
+        <Link href="/admin" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname === '/admin' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <LayoutDashboard size={20} /> Dashboard
         </Link>
-        <Link href="/admin/posts" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/posts') ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+        <Link href="/admin/posts" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/posts') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <FileText size={20} /> Posts
         </Link>
-        <Link href="/admin/pages" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/pages') ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+        <Link href="/admin/pages" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/pages') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <Files size={20} /> Pages
         </Link>
-        <Link href="/admin/media" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/media') ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+        <Link href="/admin/media" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/media') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <ImageIcon size={20} /> Media
         </Link>
-        <Link href="/admin/users" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/users') ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+        <Link href="/admin/users" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/users') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <Users size={20} /> Users
         </Link>
-        <Link href="/admin/menus" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/menus') ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+        <Link href="/admin/menus" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/menus') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <MenuIcon size={20} /> Menus
         </Link>
         
@@ -46,7 +46,7 @@ export default function Sidebar() {
             href="/admin/seo" 
             className={clsx(
               "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
-              isSeoActive ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 hover:text-gray-900"
+              isSeoActive ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
             )}
           >
             <div className="flex items-center gap-3">
@@ -61,13 +61,13 @@ export default function Sidebar() {
             isSeoActive ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
           )}>
             <div className="pl-11 pr-4 py-2 space-y-2 border-l-2 border-gray-100 ml-6">
-              <Link href="/admin/seo/general" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/general') ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/seo/general" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/general') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 General Settings
               </Link>
-              <Link href="/admin/seo/redirections" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/redirections') ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/seo/redirections" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/redirections') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Redirections
               </Link>
-              <Link href="/admin/seo/sitemap" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/sitemap') ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/seo/sitemap" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/sitemap') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Sitemap Settings
               </Link>
             </div>
@@ -79,7 +79,7 @@ export default function Sidebar() {
             href="/admin/settings" 
             className={clsx(
               "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
-              isSettingsActive ? "bg-blue-50 text-blue-700 font-medium" : "hover:bg-gray-50 hover:text-gray-900"
+              isSettingsActive ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
             )}
           >
             <div className="flex items-center gap-3">
@@ -94,13 +94,13 @@ export default function Sidebar() {
             isSettingsActive ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
           )}>
             <div className="pl-11 pr-4 py-2 space-y-2 border-l-2 border-gray-100 ml-6">
-              <Link href="/admin/settings/general" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/general' ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/settings/general" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/general' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 General
               </Link>
-              <Link href="/admin/settings/reading" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/reading' ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/settings/reading" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/reading' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Reading
               </Link>
-              <Link href="/admin/settings/advanced" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/advanced' ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/settings/advanced" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/advanced' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Advanced
               </Link>
             </div>

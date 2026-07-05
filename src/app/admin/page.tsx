@@ -26,7 +26,7 @@ export default async function AdminDashboard() {
           <p className="text-gray-500 mt-2 text-lg">Your dashboard is looking great today. Here's what's happening.</p>
         </div>
         <div className="relative z-10">
-          <a href="/admin/pages/new" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-medium rounded-xl text-white bg-[#5e3fde] hover:bg-[#4b32b2] shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5e3fde]">
+          <a href="/admin/pages/new" className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-medium rounded-xl !text-white bg-[#5e3fde] hover:bg-[#4b32b2] shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5e3fde]">
             + Create New Page
           </a>
         </div>
