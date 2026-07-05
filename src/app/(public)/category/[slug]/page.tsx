@@ -88,10 +88,10 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] w-full font-sans">
-      <div className="bg-white border-b border-gray-200 py-16 px-4 mb-12">
+      <div className="bg-[#f5f3ff] border-b border-[#e2d9ff] py-8 px-4 mb-10">
         <div className="max-w-[1200px] mx-auto text-center lg:text-left">
-          <div className="text-[#5e3fde] font-bold tracking-wide uppercase mb-2 text-sm">Category</div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight font-outfit">{category.name}</h1>
+          <div className="text-[#4338ca] font-bold tracking-wide uppercase mb-2 text-sm">Category</div>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#1e1b4b] tracking-tight font-outfit">{category.name}</h1>
         </div>
       </div>
 

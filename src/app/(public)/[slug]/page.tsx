@@ -189,10 +189,10 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
         <PasswordProtectedForm id={data.id} type={data.__type} title={data.title} />
       ) : isPostsPage ? (
         <div className="min-h-screen bg-[#f8f9fa] w-full font-sans">
-          <div className="bg-white border-b border-gray-200 py-16 px-4 mb-12">
+          <div className="bg-[#f5f3ff] border-b border-[#e2d9ff] py-8 px-4 mb-10">
             <div className="max-w-[1200px] mx-auto text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight font-outfit">{data.title || 'Blog'}</h1>
-              <p className="mt-4 text-xl text-gray-600 font-medium max-w-2xl mx-auto lg:mx-0">Discover our latest news, articles, and insights.</p>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#1e1b4b] tracking-tight font-outfit">{data.title || 'Blog'}</h1>
+              <p className="mt-2 text-lg text-[#4338ca] font-medium max-w-2xl mx-auto lg:mx-0">Discover our latest news, articles, and insights.</p>
             </div>
           </div>
 
