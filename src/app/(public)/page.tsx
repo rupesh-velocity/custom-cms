@@ -205,8 +205,6 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
                           Enter Password &rarr;
                         </Link>
                       </div>
-                    ) : feedInclude === 'full_text' ? (
-                      <div className="prose prose-lg prose-blue max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(post.contentHtml, settings, post.title) }} />
                     ) : (
                       <div className="prose prose-lg prose-blue max-w-none text-gray-700">
                         <p>{(post.contentText || '').substring(0, 250)}...</p>

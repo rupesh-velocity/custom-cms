@@ -107,11 +107,11 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
   const postsPageSetting = await prisma.setting.findUnique({ where: { key: 'posts_page_id' } });
   
   // If this page is currently set as the static homepage, redirect to root
-  if (displayModeSetting?.value === 'static_page' && homepageSetting?.value === String(data.id)) {
+  if (data.__type === 'page' && displayModeSetting?.value === 'static_page' && homepageSetting?.value === String(data.id)) {
     redirect('/');
   }
 
-  const isPostsPage = displayModeSetting?.value === 'static_page' && postsPageSetting?.value === String(data.id);
+  const isPostsPage = data.__type === 'page' && displayModeSetting?.value === 'static_page' && postsPageSetting?.value === String(data.id);
 
   // Handle page/post level SEO redirect if configured
   if (data.redirectUrl) {
@@ -237,8 +237,6 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
                               Enter Password &rarr;
                             </Link>
                           </div>
-                        ) : feedInclude === 'full_text' ? (
-                          <div className="prose prose-lg prose-blue max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(post.contentHtml, seoSettings, post.title) }} />
                         ) : (
                           <div className="prose prose-lg prose-blue max-w-none text-gray-700">
                             <p>{(post.contentText || '').substring(0, 250)}...</p>
