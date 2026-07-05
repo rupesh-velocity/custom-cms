@@ -2,11 +2,19 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
+import Image from '@tiptap/extension-image';
+import Underline from '@tiptap/extension-underline';
 
 export default function TipTapEditor({ content, onChange }: { content: string, onChange: (html: string, text: string) => void }) {
   const editor = useEditor({
     immediatelyRender: false,
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Link.configure({ openOnClick: false }),
+      Image,
+      Underline
+    ],
     content,
     editorProps: {
       attributes: {
@@ -78,7 +86,19 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
         <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive('italic')}>
           <span className="italic font-serif">i</span>
         </ToolbarButton>
-        <ToolbarButton onClick={() => alert('Link feature not fully implemented')} isActive={false}>
+        <ToolbarButton 
+          onClick={() => {
+            const previousUrl = editor.getAttributes('link').href;
+            const url = window.prompt('URL', previousUrl);
+            if (url === null) return;
+            if (url === '') {
+              editor.chain().focus().extendMarkRange('link').unsetLink().run();
+              return;
+            }
+            editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+          }} 
+          isActive={editor.isActive('link')}
+        >
           link
         </ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().toggleBlockquote().run()} isActive={editor.isActive('blockquote')}>
@@ -87,10 +107,18 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
         <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')}>
           <span className="line-through">del</span>
         </ToolbarButton>
-        <ToolbarButton onClick={() => {}} isActive={false}>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive('underline')}>
           ins
         </ToolbarButton>
-        <ToolbarButton onClick={() => {}} isActive={false}>
+        <ToolbarButton 
+          onClick={() => {
+            const url = window.prompt('Image URL');
+            if (url) {
+              editor.chain().focus().setImage({ src: url }).run();
+            }
+          }} 
+          isActive={editor.isActive('image')}
+        >
           img
         </ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')}>
@@ -99,16 +127,16 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
         <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')}>
           ol
         </ToolbarButton>
-        <ToolbarButton onClick={() => {}} isActive={false}>
+        <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={false}>
           li
         </ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().toggleCode().run()} isActive={editor.isActive('code')}>
           code
         </ToolbarButton>
-        <ToolbarButton onClick={() => {}} isActive={false}>
+        <ToolbarButton onClick={() => editor.chain().focus().setHorizontalRule().run()} isActive={false}>
           more
         </ToolbarButton>
-        <ToolbarButton onClick={() => {}} isActive={false}>
+        <ToolbarButton onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()} isActive={false}>
           close tags
         </ToolbarButton>
       </div>
