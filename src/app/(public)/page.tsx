@@ -172,14 +172,14 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
           ) : (
             <div className="space-y-10">
               {posts.map((post: any) => (
-                <article key={post.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col sm:flex-row">
+                <article key={post.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow flex flex-col sm:flex-row p-4 sm:p-6 gap-6 items-center">
                   {post.featuredImage && (
-                    <Link href={`/${post.slug}`} className="block sm:w-[40%] shrink-0 overflow-hidden border-b sm:border-b-0 sm:border-r border-gray-100">
-                      <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 aspect-[4/3] sm:aspect-auto sm:h-full" />
+                    <Link href={`/${post.slug}`} className="block w-full sm:w-1/3 lg:w-[30%] shrink-0 overflow-hidden rounded-xl">
+                      <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 aspect-video" />
                     </Link>
                   )}
-                  <div className="p-6 sm:p-8 flex-1 flex flex-col justify-center">
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-[#5e3fde] font-semibold mb-3">
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-[#5e3fde] font-semibold mb-2">
                       {post.categories?.map((cat: any, i: number) => (
                         <span key={cat.id}>
                           <Link href={`/category/${cat.slug}`} className="hover:underline">{cat.name}</Link>
@@ -188,11 +188,11 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
                       ))}
                     </div>
                     <Link href={`/${post.slug}`} className="block group">
-                      <h2 className="text-3xl font-bold text-gray-900 group-hover:text-[#5e3fde] transition-colors mb-4 font-outfit leading-tight">
+                      <h2 className="text-2xl font-bold text-gray-900 group-hover:text-[#5e3fde] transition-colors mb-3 font-outfit leading-tight">
                         {post.title}
                       </h2>
                     </Link>
-                    <div className="flex items-center gap-3 text-sm text-gray-500 mb-6 font-medium">
+                    <div className="flex items-center gap-3 text-sm text-gray-500 mb-4 font-medium">
                       {post.author?.firstName && <span>By {post.author.firstName} {post.author.lastName}</span>}
                       {post.author?.firstName && <span>•</span>}
                       <span>
@@ -210,9 +210,9 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
                         </Link>
                       </div>
                     ) : (
-                      <div className="prose prose-lg prose-blue max-w-none text-gray-700">
-                        <p>{(post.contentText || '').substring(0, 250)}...</p>
-                        <Link href={`/${post.slug}`} className="text-[#5e3fde] font-medium hover:underline mt-6 inline-flex items-center gap-1">
+                      <div className="prose prose-blue max-w-none text-gray-700 text-sm md:text-base">
+                        <p>{(post.contentText || '').substring(0, 180)}...</p>
+                        <Link href={`/${post.slug}`} className="text-[#5e3fde] font-medium hover:underline mt-3 inline-flex items-center gap-1">
                           Read more &rarr;
                         </Link>
                       </div>
