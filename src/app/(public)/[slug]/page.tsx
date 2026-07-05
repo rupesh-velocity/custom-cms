@@ -287,35 +287,44 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
           </div>
         </div>
       ) : data.__type === 'post' ? (
-        <div className="min-h-screen bg-[#f8f9fa] py-16 px-4 w-full font-sans">
-          <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12">
-            <main className="flex-1 min-w-0 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="min-h-screen bg-[#f8f9fa] w-full font-sans pt-8 pb-16">
+          <div className="max-w-[1200px] mx-auto px-4 mb-12">
+            <div className="bg-gradient-to-br from-[#5e3fde] to-[#8a72ec] rounded-3xl p-10 md:p-14 lg:p-20 text-center lg:text-left shadow-lg relative overflow-hidden min-h-[350px] md:min-h-[450px] flex flex-col justify-end">
               {data.featuredImage && (
-                <div className="w-full h-[400px] md:h-[500px]">
-                  <img src={data.featuredImage} alt={data.title} className="w-full h-full object-cover" />
-                </div>
+                <>
+                  <div className="absolute inset-0">
+                    <img src={data.featuredImage} alt={data.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                </>
               )}
-              <div className="p-8 md:p-12 lg:px-16">
-                <header className="mb-10 text-center max-w-3xl mx-auto">
-                  <div className="flex justify-center flex-wrap items-center gap-2 text-sm text-[#5e3fde] font-bold mb-4 tracking-wide uppercase">
-                    {data.categories?.map((cat: any, i: number) => (
-                      <span key={cat.id}>
-                        <Link href={`/category/${cat.slug}`} className="hover:underline">{cat.name}</Link>
-                        {i < data.categories.length - 1 ? ' • ' : ''}
-                      </span>
-                    ))}
-                  </div>
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight font-outfit leading-tight mb-6">{data.title}</h1>
-                  <div className="flex items-center justify-center gap-3 text-sm text-gray-500 font-medium">
-                    {data.author?.firstName && <span>By <strong className="text-gray-900">{data.author.firstName} {data.author.lastName}</strong></span>}
-                    {data.author?.firstName && <span>•</span>}
-                    <span>
-                      {new Date(data.publishedAt || data.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'long', day: 'numeric'
-                      })}
+              
+              <div className="relative z-10">
+                <div className="flex justify-center lg:justify-start flex-wrap items-center gap-2 text-sm text-[#a5b4fc] font-bold mb-4 tracking-wide uppercase">
+                  {data.categories?.map((cat: any, i: number) => (
+                    <span key={cat.id}>
+                      <Link href={`/category/${cat.slug}`} className="hover:text-white transition-colors">{cat.name}</Link>
+                      {i < data.categories.length - 1 ? ' • ' : ''}
                     </span>
-                  </div>
-                </header>
+                  ))}
+                </div>
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight font-outfit leading-tight mb-6">{data.title}</h1>
+                <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-white/80 font-medium">
+                  {data.author?.firstName && <span>By <strong className="text-white">{data.author.firstName} {data.author.lastName}</strong></span>}
+                  {data.author?.firstName && <span>•</span>}
+                  <span>
+                    {new Date(data.publishedAt || data.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'long', day: 'numeric'
+                    })}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-[1200px] mx-auto px-4 flex flex-col lg:flex-row gap-12">
+            <main className="flex-1 min-w-0 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="p-8 md:p-12 lg:px-16 pt-12 md:pt-16">
                 
                 <div className="prose prose-lg md:prose-xl prose-blue mx-auto text-gray-800" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} />
                 
