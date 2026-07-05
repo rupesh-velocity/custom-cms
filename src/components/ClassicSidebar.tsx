@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronUp, ChevronDown, MapPin, Eye, Calendar, HelpCircle } from 'lucide-react';
 import MediaModal from './MediaModal';
 
@@ -53,7 +53,7 @@ export default function ClassicSidebar({
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
 
-  import { useEffect } from 'react';
+
   useEffect(() => {
     if (isPost) {
       fetch('/api/categories').then(res => res.json()).then(data => {
