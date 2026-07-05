@@ -26,17 +26,19 @@ export default function NewPost() {
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
   const [visibility, setVisibility] = useState('Public');
+  const [password, setPassword] = useState('');
   const [publishDate, setPublishDate] = useState('');
   
   const [seoScore, setSeoScore] = useState(0);
 
-  const handlePublish = async () => {
+  const handlePublish = async (overrideStatus?: string) => {
     if (!title) {
       toast.error('Please enter a title');
       return;
     }
     
     setIsSaving(true);
+    const finalStatus = overrideStatus || status;
     try {
       const res = await fetch('/api/posts', {
         method: 'POST',
@@ -51,8 +53,9 @@ export default function NewPost() {
           redirectUrl,
           redirectType,
           noIndex,
-          status,
+          status: finalStatus,
           visibility,
+          password,
           publishedAt: publishDate ? publishDate : undefined,
           schemaJson
         }),
@@ -115,6 +118,8 @@ export default function NewPost() {
           setStatus={setStatus}
           visibility={visibility}
           setVisibility={setVisibility}
+          password={password}
+          setPassword={setPassword}
           publishDate={publishDate}
           setPublishDate={setPublishDate}
           isNew={true}

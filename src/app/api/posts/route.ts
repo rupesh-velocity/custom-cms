@@ -25,6 +25,7 @@ export async function POST(req: Request) {
         noIndex: data.noIndex || false,
         status: data.status || 'Draft',
         visibility: data.visibility || 'Public',
+        password: data.password || null,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         schemaJson: data.schemaJson || null,
       },

@@ -36,6 +36,7 @@ export async function PATCH(req: Request, context: any) {
         noIndex: data.noIndex,
         status: data.status,
         visibility: data.visibility,
+        password: data.password,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         schemaJson: data.schemaJson,
       },

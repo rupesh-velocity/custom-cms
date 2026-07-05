@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { notFound, redirect, permanentRedirect } from 'next/navigation';
 import { optimizeHtmlImages } from '@/lib/html-optimizer';
+import { cookies } from 'next/headers';
+import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,6 +88,13 @@ export default async function Home() {
 
     if (!page) return notFound();
 
+    if (page.visibility === 'Private') {
+      const cookieStore = await cookies();
+      if (!cookieStore.get('cms_session')) {
+        return notFound();
+      }
+    }
+
     if (page.redirectUrl) {
       if (page.redirectType === '301') {
         permanentRedirect(page.redirectUrl);
@@ -102,9 +111,13 @@ export default async function Home() {
             dangerouslySetInnerHTML={{ __html: page.schemaJson }} 
           />
         )}
-        <main className="w-full">
-          <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml, settings, page.title) }} />
-        </main>
+        {page.visibility === 'Password Protected' && (!await cookies().then(c => c.get(`post_pass_${page.id}`)?.value === page.password)) ? (
+          <PasswordProtectedForm id={page.id} type="page" title={page.title} />
+        ) : (
+          <main className="w-full">
+            <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml, settings, page.title) }} />
+          </main>
+        )}
       </div>
     );
   }
@@ -113,11 +126,15 @@ export default async function Home() {
   const limit = parseInt(settings.blog_pages_at_most || '10');
   const feedInclude = settings.feed_include || 'full_text';
 
-  const posts = await prisma.post.findMany({
+  const allPosts = await prisma.post.findMany({
     where: { status: 'Published' },
     orderBy: { createdAt: 'desc' },
-    take: limit,
   });
+
+  const cookieStore = await cookies();
+  const isLoggedIn = !!cookieStore.get('cms_session');
+
+  const posts = allPosts.filter(p => p.visibility !== 'Private' || isLoggedIn).slice(0, limit);
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-8">
@@ -143,7 +160,14 @@ export default async function Home() {
                   })}
                 </div>
                 
-                {feedInclude === 'full_text' ? (
+                {post.visibility === 'Password Protected' && cookieStore.get(`post_pass_${post.id}`)?.value !== post.password ? (
+                  <div className="prose prose-blue max-w-none">
+                    <p>This content is password protected.</p>
+                    <Link href={`/${post.slug}`} className="text-blue-600 font-medium hover:underline mt-4 inline-block">
+                      Enter Password &rarr;
+                    </Link>
+                  </div>
+                ) : feedInclude === 'full_text' ? (
                   <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(post.contentHtml, settings, post.title) }} />
                 ) : (
                   <div className="prose prose-blue max-w-none">

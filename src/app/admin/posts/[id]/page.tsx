@@ -23,6 +23,7 @@ export default function EditPost() {
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
   const [visibility, setVisibility] = useState('Public');
+  const [password, setPassword] = useState('');
   const [publishDate, setPublishDate] = useState('');
   
   const [seoTitle, setSeoTitle] = useState('');
@@ -52,6 +53,7 @@ export default function EditPost() {
         setFocusKeyword(data.focusKeyword || '');
         setStatus(data.status || 'Draft');
         setVisibility(data.visibility || 'Public');
+        setPassword(data.password || '');
         setPublishDate(data.publishedAt || data.createdAt || '');
         setSeoTitle(data.seoTitle || '');
         setRedirectUrl(data.redirectUrl || '');
@@ -67,13 +69,14 @@ export default function EditPost() {
       });
   }, [params.id, router]);
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (overrideStatus?: string) => {
     if (!title) {
       toast.error('Please enter a title');
       return;
     }
     
     setIsSaving(true);
+    const finalStatus = overrideStatus || status;
     try {
       const res = await fetch(`/api/posts/${params.id}`, {
         method: 'PATCH',
@@ -89,8 +92,9 @@ export default function EditPost() {
           redirectUrl,
           redirectType,
           noIndex,
-          status,
+          status: finalStatus,
           visibility,
+          password,
           publishedAt: publishDate,
           schemaJson
         }),
@@ -166,6 +170,8 @@ export default function EditPost() {
           setStatus={setStatus}
           visibility={visibility}
           setVisibility={setVisibility}
+          password={password}
+          setPassword={setPassword}
           publishDate={publishDate}
           setPublishDate={setPublishDate}
           onPublish={handleUpdate}

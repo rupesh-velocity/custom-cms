@@ -7,19 +7,21 @@ import MediaModal from './MediaModal';
 interface ClassicSidebarProps {
   status: string;
   setStatus: (val: string) => void;
-  onPublish: () => void;
+  onPublish: (overrideStatus?: string) => void;
   isSaving: boolean;
   score: number;
   hideTitle?: boolean;
   setHideTitle?: (val: boolean) => void;
   visibility?: string;
   setVisibility?: (val: string) => void;
+  password?: string;
+  setPassword?: (val: string) => void;
   publishDate?: string;
   setPublishDate?: (val: string) => void;
   isNew?: boolean;
 }
 
-export default function ClassicSidebar({ status, setStatus, onPublish, isSaving, score, hideTitle, setHideTitle, visibility = 'Public', setVisibility, publishDate, setPublishDate, isNew = false }: ClassicSidebarProps) {
+export default function ClassicSidebar({ status, setStatus, onPublish, isSaving, score, hideTitle, setHideTitle, visibility = 'Public', setVisibility, password, setPassword, publishDate, setPublishDate, isNew = false }: ClassicSidebarProps) {
   const [expanded, setExpanded] = useState({
     publish: true,
     contentAI: false,
@@ -67,9 +69,16 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
     <div className="w-full max-w-[280px] font-sans">
       <Accordion id="publish" title="Publish" noPadding>
         <div className="p-3 bg-white">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-between mb-4">
+            <button 
+              onClick={() => onPublish('Draft')}
+              disabled={isSaving}
+              className="bg-white border border-[#2271b1] text-[#2271b1] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f6f7f7] disabled:opacity-50"
+            >
+              Save Draft
+            </button>
             <button className="bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f1f1f1]">
-              Preview Changes
+              Preview
             </button>
           </div>
           
@@ -109,6 +118,12 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
                 <div className="flex flex-col gap-1 mt-1">
                   <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Public'} onChange={() => setVisibility('Public')} /> Public</label>
                   <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Password Protected'} onChange={() => setVisibility('Password Protected')} /> Password Protected</label>
+                  {visibility === 'Password Protected' && setPassword && (
+                    <div className="pl-6 mt-1 mb-1">
+                      <label className="block text-xs text-gray-500 mb-1">Password:</label>
+                      <input type="text" value={password || ''} onChange={(e) => setPassword(e.target.value)} className="border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none text-[13px] w-full" />
+                    </div>
+                  )}
                   <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Private'} onChange={() => setVisibility('Private')} /> Private</label>
                   <div className="flex items-center gap-2 mt-1">
                     <button onClick={() => setEditingVisibility(false)} className="bg-[#f3f5f6] border border-[#8c8f94] px-2 py-1 rounded-[3px]">OK</button>
@@ -154,11 +169,11 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
         <div className="p-3 bg-[#f6f7f7] flex items-center justify-between rounded-b-[3px]">
            <button className="text-[#b32d2e] text-[13px] hover:underline">Move to Trash</button>
            <button 
-             onClick={onPublish}
+             onClick={() => onPublish('Published')}
              disabled={isSaving}
              className="bg-[#2271b1] text-white px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#135e96] disabled:opacity-50"
            >
-             {isSaving ? 'Updating...' : (isNew ? 'Publish' : 'Update')}
+             {isSaving ? 'Updating...' : (status === 'Published' && !isNew ? 'Update' : 'Publish')}
            </button>
         </div>
       </Accordion>
