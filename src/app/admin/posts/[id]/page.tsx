@@ -60,7 +60,7 @@ export default function EditPost() {
         setRedirectType(data.redirectType || '301');
         setNoIndex(data.noIndex || false);
         setSchemaJson(data.schemaJson || '');
-        
+        setSeoScore(data.seoScore || 0);
         setIsLoading(false);
       })
       .catch(err => {
@@ -96,7 +96,8 @@ export default function EditPost() {
           visibility,
           password,
           publishedAt: publishDate,
-          schemaJson
+          schemaJson,
+          seoScore
         }),
       });
       if (res.ok) {

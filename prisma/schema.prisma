@@ -22,6 +22,9 @@ model Post {
   visibility      String   @default("Public")
   password        String?
   schemaJson      String?
+  seoScore        Int      @default(0)
+  authorId        Int?
+  author          User?    @relation(fields: [authorId], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   publishedAt     DateTime?
@@ -44,6 +47,9 @@ model Page {
   password        String?
   hideTitle       Boolean  @default(false)
   schemaJson      String?
+  seoScore        Int      @default(0)
+  authorId        Int?
+  author          User?    @relation(fields: [authorId], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   publishedAt     DateTime?
@@ -59,6 +65,8 @@ model User {
   role      String   @default("Subscriber")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  posts     Post[]
+  pages     Page[]
 }
 
 model Setting {

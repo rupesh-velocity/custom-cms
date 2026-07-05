@@ -38,8 +38,9 @@ export async function PATCH(req: Request, context: any) {
         visibility: data.visibility,
         password: data.password,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
-        hideTitle: data.hideTitle,
-        schemaJson: data.schemaJson,
+        hideTitle: data.hideTitle || false,
+        schemaJson: data.schemaJson || null,
+        seoScore: data.seoScore !== undefined ? data.seoScore : undefined,
       },
     });
     return NextResponse.json(page);

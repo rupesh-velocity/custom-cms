@@ -1,9 +1,28 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 
 export async function POST(req: Request) {
   try {
     const data = await req.json();
+    
+    let authorId = null;
+    try {
+      const cookieStore = await cookies();
+      const token = cookieStore.get('cms_session')?.value;
+      if (token) {
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_super_secret_key_change_in_production');
+        const { payload } = await jwtVerify(token, secret);
+        authorId = payload.id as number;
+      }
+    } catch (e) {}
+    
+    if (!authorId) {
+      const firstUser = await prisma.user.findFirst();
+      authorId = firstUser?.id || null;
+    }
+
     let finalSlug = data.slug;
     let counter = 1;
     while (await prisma.post.findUnique({ where: { slug: finalSlug } })) {
@@ -28,6 +47,8 @@ export async function POST(req: Request) {
         password: data.password || null,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         schemaJson: data.schemaJson || null,
+        seoScore: data.seoScore || 0,
+        authorId: authorId,
       },
     });
     return NextResponse.json(post);

@@ -58,7 +58,8 @@ export default function NewPage() {
           password,
           publishedAt: publishDate ? publishDate : undefined,
           hideTitle,
-          schemaJson
+          schemaJson,
+          seoScore
         }),
       });
       if (res.ok) {

@@ -110,15 +110,24 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                      <Link href={`/${item.slug}`} className="text-[#2271b1] hover:underline" target="_blank">View</Link>
                   </div>
                 </td>
-                <td className="p-2 text-[#2271b1] align-top">CIIS</td>
-                <td className="p-2 align-top text-[#50575e]">
-                  {item.status === 'Published' ? 'Published' : 'Last Modified'}
-                  <br />
-                  <span className="text-gray-500">{new Date(item.publishedAt || item.updatedAt).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit' }).replace(',', ' at').replace(/\//g, '/')}</span>
+                <td className="p-2 align-top text-[13px]">
+                   <span className="text-[#2271b1] hover:underline cursor-pointer">
+                     {item.author ? (item.author.firstName ? `${item.author.firstName} ${item.author.lastName || ''}`.trim() : item.author.username) : 'CIIS'}
+                   </span>
+                </td>
+                <td className="p-2 align-top text-[13px] text-[#50575e]">
+                   <div>{item.status === 'Published' ? 'Published' : (item.status === 'Draft' ? 'Last Modified' : item.status)}</div>
+                   <div>{new Date(item.updatedAt || item.createdAt).toLocaleString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(',', ' at')}</div>
                 </td>
                 <td className="p-2 align-top text-[#50575e]">
                    <div className="flex gap-2 items-center">
-                     <span className="bg-[#e7e7e7] text-[#50575e] px-2 py-0.5 rounded text-[12px] font-bold">N/A</span>
+                     {item.seoScore > 0 ? (
+                       <span className={`px-2 py-0.5 rounded text-[12px] font-bold text-white ${item.seoScore >= 80 ? 'bg-[#46b450]' : item.seoScore >= 50 ? 'bg-[#f56e28]' : 'bg-[#dc3232]'}`}>
+                         {item.seoScore} / 100
+                       </span>
+                     ) : (
+                       <span className="bg-[#e7e7e7] text-[#50575e] px-2 py-0.5 rounded text-[12px] font-bold">N/A</span>
+                     )}
                    </div>
                    <div className="mt-2 text-[12px]">
                      {item.focusKeyword ? (

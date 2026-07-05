@@ -63,6 +63,7 @@ export default function EditPage() {
         setRedirectType(data.redirectType || '301');
         setNoIndex(data.noIndex || false);
         setSchemaJson(data.schemaJson || '');
+        setSeoScore(data.seoScore || 0);
         
         // Check if this is the homepage
         fetch('/api/settings')
@@ -109,7 +110,8 @@ export default function EditPage() {
           password,
           publishedAt: publishDate,
           hideTitle,
-          schemaJson
+          schemaJson,
+          seoScore
         }),
       });
       if (res.ok) {

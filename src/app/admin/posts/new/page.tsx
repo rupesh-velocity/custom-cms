@@ -57,7 +57,8 @@ export default function NewPost() {
           visibility,
           password,
           publishedAt: publishDate ? publishDate : undefined,
-          schemaJson
+          schemaJson,
+          seoScore
         }),
       });
       if (res.ok) {
