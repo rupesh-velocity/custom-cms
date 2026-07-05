@@ -8,10 +8,10 @@ export default async function PagesPage({ searchParams }: { searchParams: Promis
   const params = await searchParams;
   const statusFilter = params?.status || 'All';
 
-  const whereClause = statusFilter !== 'All' ? { status: statusFilter } : {};
+  const whereClause = statusFilter !== 'All' ? { status: statusFilter } : { status: { not: 'Trash' } };
 
   const [allCount, publishedCount, draftCount, trashCount] = await Promise.all([
-    prisma.page.count(),
+    prisma.page.count({ where: { status: { not: 'Trash' } } }),
     prisma.page.count({ where: { status: 'Published' } }),
     prisma.page.count({ where: { status: 'Draft' } }),
     prisma.page.count({ where: { status: 'Trash' } }),

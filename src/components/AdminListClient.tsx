@@ -101,8 +101,6 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                   <div className="opacity-0 group-hover:opacity-100 flex gap-2 mt-1 text-[13px] font-normal transition-opacity duration-150">
                      <Link href={`/admin/${type}/${item.id}`} className="text-[#2271b1] hover:underline">Edit</Link>
                      <span className="text-[#ddd]">|</span>
-                     <button className="text-[#2271b1] hover:underline">Quick Edit</button>
-                     <span className="text-[#ddd]">|</span>
                      {item.status !== 'Trash' && (
                        <>
                          <button onClick={() => handleTrash(item.id)} className="text-[#b32d2e] hover:underline">Trash</button>
@@ -120,10 +118,14 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                 </td>
                 <td className="p-2 align-top text-[#50575e]">
                    <div className="flex gap-2 items-center">
-                     <span className="bg-[#46b450] text-white px-2 py-0.5 rounded text-[12px] font-bold">83 / 100</span>
+                     <span className="bg-[#e7e7e7] text-[#50575e] px-2 py-0.5 rounded text-[12px] font-bold">N/A</span>
                    </div>
                    <div className="mt-2 text-[12px]">
-                     <div>Keyword: <span className="text-gray-900">{item.focusKeyword || 'N/A'}</span></div>
+                     {item.focusKeyword ? (
+                       <div>Keyword: <span className="text-gray-900">{item.focusKeyword}</span></div>
+                     ) : (
+                       <div>No Index</div>
+                     )}
                      <div>Schema: <span className="text-gray-900">{item.schemaJson ? 'Custom' : 'N/A'}</span></div>
                    </div>
                 </td>

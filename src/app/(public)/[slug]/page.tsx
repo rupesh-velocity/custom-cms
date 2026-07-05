@@ -9,10 +9,16 @@ export const dynamic = 'force-dynamic';
 
 async function getPageOrPost(slug: string) {
   let data: any = await prisma.page.findUnique({ where: { slug } });
-  if (!data) {
-    data = await prisma.post.findUnique({ where: { slug } });
+  if (data) {
+    return data.status !== 'Draft' ? { ...data, __type: 'page' } : null;
   }
-  return data && data.status !== 'Draft' ? data : null;
+  
+  data = await prisma.post.findUnique({ where: { slug } });
+  if (data) {
+    return data.status !== 'Draft' ? { ...data, __type: 'post' } : null;
+  }
+  
+  return null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -107,7 +113,7 @@ export default async function PublicPage({ params }: { params: Promise<{ slug: s
       {/* Webmaster Tools Verification tags are now handled globally in layout.tsx */}
 
       {data.visibility === 'Password Protected' && (!await cookies().then(c => c.get(`post_pass_${data.id}`)?.value === data.password)) ? (
-        <PasswordProtectedForm id={data.id} type={'contentHtml' in data ? (data.slug === slug && data.title ? 'post' : 'page') : 'post'} title={data.title} />
+        <PasswordProtectedForm id={data.id} type={data.__type} title={data.title} />
       ) : (
         <main className="w-full">
           {data.title && !data.hideTitle && (
