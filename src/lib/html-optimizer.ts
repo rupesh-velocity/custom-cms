@@ -76,7 +76,18 @@ export function optimizeHtmlImages(html: string | null, seoSettings?: Record<str
     if (vimeoMatch) {
       const vimeoId = vimeoMatch[1];
       const styleMatch = attribs.match(/style="([^"]+)"/i);
-      const styleAttr = styleMatch ? `style="${styleMatch[1]}"` : 'style="width: 100%; aspect-ratio: 16/9;"';
+      
+      // We must enforce an aspect ratio so the div doesn't collapse to 0 height 
+      // when the absolute iframe replaces the img content.
+      let inlineStyle = styleMatch ? styleMatch[1] : '';
+      if (!inlineStyle.includes('aspect-ratio') && !inlineStyle.includes('height')) {
+        inlineStyle += '; aspect-ratio: 16/9;';
+      }
+      if (!inlineStyle.includes('width')) {
+        inlineStyle += '; width: 100%;';
+      }
+      
+      const styleAttr = `style="${inlineStyle}"`;
       
       return `
         <div class="video-facade vimeo-facade relative overflow-hidden rounded-xl cursor-pointer group my-6 bg-black" data-vimeo-id="${vimeoId}" ${styleAttr}>
