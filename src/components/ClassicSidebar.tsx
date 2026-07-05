@@ -54,7 +54,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
             <button 
               onClick={() => onPublish('Draft')}
               disabled={isSaving}
-              className="bg-white border border-[#2271b1] text-[#2271b1] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f6f7f7] disabled:opacity-50"
+              className="bg-white border border-[#5e3fde] text-[#5e3fde] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f6f7f7] disabled:opacity-50"
             >
               Save Draft
             </button>
@@ -152,7 +152,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
            <button 
              onClick={() => onPublish('Published')}
              disabled={isSaving}
-             className="bg-[#2271b1] text-white px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#135e96] disabled:opacity-50"
+             className="bg-[#5e3fde] text-white px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#4b32b2] disabled:opacity-50"
            >
              {isSaving ? 'Updating...' : (status === 'Published' && !isNew ? 'Update' : 'Publish')}
            </button>

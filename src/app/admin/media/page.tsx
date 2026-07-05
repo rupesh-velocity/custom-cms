@@ -136,7 +136,7 @@ export default function MediaLibrary() {
           />
           <button 
             disabled={isUploading}
-            className="bg-white border border-[#2271b1] text-[#2271b1] px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#f6f7f7] disabled:opacity-50"
+            className="bg-white border border-[#5e3fde] text-[#5e3fde] px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#f6f7f7] disabled:opacity-50"
           >
             {isUploading ? 'Uploading...' : 'Add New'}
           </button>
@@ -144,7 +144,7 @@ export default function MediaLibrary() {
       </div>
 
       <div 
-        className={`w-full border-2 border-dashed rounded-lg p-12 text-center mb-8 transition-colors ${dragActive ? 'border-[#2271b1] bg-[#f0f6fc]' : 'border-[#c3c4c7] bg-white'}`}
+        className={`w-full border-2 border-dashed rounded-lg p-12 text-center mb-8 transition-colors ${dragActive ? 'border-[#5e3fde] bg-[#f0f6fc]' : 'border-[#c3c4c7] bg-white'}`}
         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
         onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
         onDrop={(e) => { 
@@ -165,7 +165,7 @@ export default function MediaLibrary() {
             onChange={(e) => handleUpload(e.target.files)}
             disabled={isUploading}
           />
-          <button className="bg-white border border-[#2271b1] text-[#2271b1] px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#f6f7f7] disabled:opacity-50">
+          <button className="bg-white border border-[#5e3fde] text-[#5e3fde] px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#f6f7f7] disabled:opacity-50">
             Select Files
           </button>
         </div>
@@ -183,7 +183,7 @@ export default function MediaLibrary() {
             <div 
               key={item.id} 
               onClick={() => setSelectedMedia(item)}
-              className="relative group bg-white border border-[#c3c4c7] rounded-[3px] aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#2271b1] transition-colors"
+              className="relative group bg-white border border-[#c3c4c7] rounded-[3px] aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#5e3fde] transition-colors"
             >
               {item.mimeType.startsWith('image/') ? (
                 <img src={item.url} alt={item.filename} className="w-full h-full object-cover" />
@@ -247,7 +247,7 @@ export default function MediaLibrary() {
                   <textarea 
                     value={selectedMedia.altText || ''}
                     onChange={(e) => setSelectedMedia({...selectedMedia, altText: e.target.value})}
-                    className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1.5 focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] outline-none"
+                    className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1.5 focus:border-[#5e3fde] focus:ring-1 focus:ring-[#5e3fde] outline-none"
                     rows={3}
                   />
                   <p className="text-[11px] text-gray-500 mt-1">Describe the purpose of the image. Leave empty if the image is purely decorative.</p>
@@ -259,7 +259,7 @@ export default function MediaLibrary() {
                     type="text" 
                     value={selectedMedia.filename}
                     onChange={(e) => setSelectedMedia({...selectedMedia, filename: e.target.value})}
-                    className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1.5 focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] outline-none"
+                    className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1.5 focus:border-[#5e3fde] focus:ring-1 focus:ring-[#5e3fde] outline-none"
                   />
                 </div>
                 
@@ -278,7 +278,7 @@ export default function MediaLibrary() {
                       navigator.clipboard.writeText(fullUrl);
                       toast.success('URL copied to clipboard');
                     }}
-                    className="mt-2 text-[#2271b1] hover:underline"
+                    className="mt-2 text-[#5e3fde] hover:underline"
                   >
                     Copy URL to clipboard
                   </button>
@@ -288,7 +288,7 @@ export default function MediaLibrary() {
                   <button 
                     type="submit" 
                     disabled={isUpdating}
-                    className="bg-[#2271b1] text-white px-4 py-1.5 rounded-[3px] font-semibold hover:bg-[#135e96] disabled:opacity-50"
+                    className="bg-[#5e3fde] text-white px-4 py-1.5 rounded-[3px] font-semibold hover:bg-[#4b32b2] disabled:opacity-50"
                   >
                     {isUpdating ? 'Saving...' : 'Save Changes'}
                   </button>

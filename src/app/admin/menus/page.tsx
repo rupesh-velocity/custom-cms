@@ -54,7 +54,7 @@ function SortableMenuItem({ item, index, onRemove, onIndent, onOutdent, canInden
           <GripVertical size={18} />
         </div>
         
-        <div className="flex-1 px-4 font-semibold text-[#2271b1] text-[13px]">
+        <div className="flex-1 px-4 font-semibold text-[#5e3fde] text-[13px]">
           {item.label}
         </div>
 
@@ -80,7 +80,7 @@ function SortableMenuItem({ item, index, onRemove, onIndent, onOutdent, canInden
                 type="text" 
                 value={item.url} 
                 onChange={(e) => onUpdateUrl(item.id, e.target.value)}
-                className="w-full sm:w-1/2 text-[13px] border border-gray-300 px-2 py-1 focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.07)]"
+                className="w-full sm:w-1/2 text-[13px] border border-gray-300 px-2 py-1 focus:border-[#5e3fde] focus:ring-1 focus:ring-[#5e3fde] outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.07)]"
               />
             </div>
           )}
@@ -90,16 +90,16 @@ function SortableMenuItem({ item, index, onRemove, onIndent, onOutdent, canInden
               type="text" 
               value={item.label} 
               onChange={(e) => onUpdateLabel(item.id, e.target.value)}
-              className="w-full sm:w-1/2 text-[13px] border border-gray-300 px-2 py-1 focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1] outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.07)]"
+              className="w-full sm:w-1/2 text-[13px] border border-gray-300 px-2 py-1 focus:border-[#5e3fde] focus:ring-1 focus:ring-[#5e3fde] outline-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.07)]"
             />
           </div>
           
           <div className="flex flex-wrap items-center gap-3 text-[13px] pt-2">
             <span className="text-[#646970]">Move</span>
-            <button onClick={moveUp} disabled={isFirst} className="text-[#2271b1] hover:underline disabled:text-gray-300 disabled:no-underline">Up one</button>
-            <button onClick={moveDown} disabled={isLast} className="text-[#2271b1] hover:underline disabled:text-gray-300 disabled:no-underline">Down one</button>
-            <button onClick={onIndent} disabled={!canIndent} className="text-[#2271b1] hover:underline disabled:text-gray-300 disabled:no-underline">Indent</button>
-            <button onClick={onOutdent} disabled={!item.parentId} className="text-[#2271b1] hover:underline disabled:text-gray-300 disabled:no-underline">Outdent</button>
+            <button onClick={moveUp} disabled={isFirst} className="text-[#5e3fde] hover:underline disabled:text-gray-300 disabled:no-underline">Up one</button>
+            <button onClick={moveDown} disabled={isLast} className="text-[#5e3fde] hover:underline disabled:text-gray-300 disabled:no-underline">Down one</button>
+            <button onClick={onIndent} disabled={!canIndent} className="text-[#5e3fde] hover:underline disabled:text-gray-300 disabled:no-underline">Indent</button>
+            <button onClick={onOutdent} disabled={!item.parentId} className="text-[#5e3fde] hover:underline disabled:text-gray-300 disabled:no-underline">Outdent</button>
           </div>
 
           <div className="flex items-center gap-4 text-[13px] pt-4 border-t border-gray-100">
@@ -388,16 +388,16 @@ export default function MenusPage() {
           <select
             value={activeMenuId || ''}
             onChange={(e) => handleSelectMenu(parseInt(e.target.value))}
-            className="border border-[#8c8f94] rounded-[3px] px-2 py-1 text-[13px] outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1]"
+            className="border border-[#8c8f94] rounded-[3px] px-2 py-1 text-[13px] outline-none focus:border-[#5e3fde] focus:ring-1 focus:ring-[#5e3fde]"
           >
             {menus.map(menu => (
               <option key={menu.id} value={menu.id}>{menu.name}</option>
             ))}
           </select>
-          <button className="px-3 py-1 border border-[#c3c4c7] text-[#2271b1] bg-[#f6f7f7] rounded-[3px] text-[13px] hover:bg-[#f0f0f1]">Select</button>
+          <button className="px-3 py-1 border border-[#c3c4c7] text-[#5e3fde] bg-[#f6f7f7] rounded-[3px] text-[13px] hover:bg-[#f0f0f1]">Select</button>
         </div>
         <div className="text-[13px]">
-          or <a href="#" onClick={(e) => { e.preventDefault(); setActiveMenuId(null); }} className="text-[#2271b1] hover:underline">create a new menu</a>.
+          or <a href="#" onClick={(e) => { e.preventDefault(); setActiveMenuId(null); }} className="text-[#5e3fde] hover:underline">create a new menu</a>.
         </div>
       </div>
 
@@ -424,7 +424,7 @@ export default function MenusPage() {
                 ))}
               </div>
               <div className="flex justify-end">
-                <button onClick={handleAddPages} className="px-3 py-1 bg-white border border-[#c3c4c7] text-[#2271b1] rounded-[3px] text-[13px] hover:bg-[#f6f7f7]">Add to Menu</button>
+                <button onClick={handleAddPages} className="px-3 py-1 bg-white border border-[#c3c4c7] text-[#5e3fde] rounded-[3px] text-[13px] hover:bg-[#f6f7f7]">Add to Menu</button>
               </div>
             </AddMenuAccordion>
 
@@ -444,7 +444,7 @@ export default function MenusPage() {
                 ))}
               </div>
               <div className="flex justify-end">
-                <button onClick={handleAddPosts} className="px-3 py-1 bg-white border border-[#c3c4c7] text-[#2271b1] rounded-[3px] text-[13px] hover:bg-[#f6f7f7]">Add to Menu</button>
+                <button onClick={handleAddPosts} className="px-3 py-1 bg-white border border-[#c3c4c7] text-[#5e3fde] rounded-[3px] text-[13px] hover:bg-[#f6f7f7]">Add to Menu</button>
               </div>
             </AddMenuAccordion>
 
@@ -453,15 +453,15 @@ export default function MenusPage() {
               <div className="space-y-3 mb-3">
                 <div>
                   <label className="block text-[13px] text-[#646970] mb-1">URL</label>
-                  <input type="text" value={customUrl} onChange={(e) => setCustomUrl(e.target.value)} placeholder="http://" className="w-full text-[13px] border border-[#8c8f94] px-2 py-1 outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1]" />
+                  <input type="text" value={customUrl} onChange={(e) => setCustomUrl(e.target.value)} placeholder="http://" className="w-full text-[13px] border border-[#8c8f94] px-2 py-1 outline-none focus:border-[#5e3fde] focus:ring-1 focus:ring-[#5e3fde]" />
                 </div>
                 <div>
                   <label className="block text-[13px] text-[#646970] mb-1">Link Text</label>
-                  <input type="text" value={customLabel} onChange={(e) => setCustomLabel(e.target.value)} className="w-full text-[13px] border border-[#8c8f94] px-2 py-1 outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1]" />
+                  <input type="text" value={customLabel} onChange={(e) => setCustomLabel(e.target.value)} className="w-full text-[13px] border border-[#8c8f94] px-2 py-1 outline-none focus:border-[#5e3fde] focus:ring-1 focus:ring-[#5e3fde]" />
                 </div>
               </div>
               <div className="flex justify-end">
-                <button onClick={handleAddCustom} className="px-3 py-1 bg-white border border-[#c3c4c7] text-[#2271b1] rounded-[3px] text-[13px] hover:bg-[#f6f7f7]">Add to Menu</button>
+                <button onClick={handleAddCustom} className="px-3 py-1 bg-white border border-[#c3c4c7] text-[#5e3fde] rounded-[3px] text-[13px] hover:bg-[#f6f7f7]">Add to Menu</button>
               </div>
             </AddMenuAccordion>
           </div>
@@ -493,9 +493,9 @@ export default function MenusPage() {
                     value={newMenuName}
                     onChange={(e) => setNewMenuName(e.target.value)}
                     placeholder="Enter menu name here"
-                    className="border border-[#8c8f94] rounded-[3px] px-2 py-1 text-[13px] w-full sm:w-64 outline-none focus:border-[#2271b1] focus:ring-1 focus:ring-[#2271b1]"
+                    className="border border-[#8c8f94] rounded-[3px] px-2 py-1 text-[13px] w-full sm:w-64 outline-none focus:border-[#5e3fde] focus:ring-1 focus:ring-[#5e3fde]"
                   />
-                  <button onClick={handleCreateMenu} className="px-4 py-1.5 bg-[#2271b1] text-white rounded-[3px] text-[13px] hover:bg-[#135e96] whitespace-nowrap">Create Menu</button>
+                  <button onClick={handleCreateMenu} className="px-4 py-1.5 bg-[#5e3fde] text-white rounded-[3px] text-[13px] hover:bg-[#4b32b2] whitespace-nowrap">Create Menu</button>
                 </div>
               )}
               
@@ -503,7 +503,7 @@ export default function MenusPage() {
                 <button
                   onClick={handleSaveMenu}
                   disabled={isSaving}
-                  className="px-4 py-1.5 bg-[#2271b1] text-white rounded-[3px] text-[13px] hover:bg-[#135e96] disabled:opacity-50 flex items-center gap-2 ml-auto"
+                  className="px-4 py-1.5 bg-[#5e3fde] text-white rounded-[3px] text-[13px] hover:bg-[#4b32b2] disabled:opacity-50 flex items-center gap-2 ml-auto"
                 >
                   {isSaving && <Loader2 size={14} className="animate-spin" />}
                   Save Menu
@@ -570,7 +570,7 @@ export default function MenusPage() {
                 <button
                   onClick={handleSaveMenu}
                   disabled={isSaving}
-                  className="px-4 py-1.5 bg-[#2271b1] text-white rounded-[3px] text-[13px] hover:bg-[#135e96] disabled:opacity-50 flex items-center gap-2"
+                  className="px-4 py-1.5 bg-[#5e3fde] text-white rounded-[3px] text-[13px] hover:bg-[#4b32b2] disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSaving && <Loader2 size={14} className="animate-spin" />}
                   Save Menu

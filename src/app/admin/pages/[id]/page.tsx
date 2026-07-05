@@ -137,7 +137,7 @@ export default function EditPage() {
     <div className="max-w-[1200px] mx-auto pt-4">
       <div className="flex items-center gap-3 mb-4">
         <h1 className="text-[23px] text-[#1d2327]">Edit Page</h1>
-        <Link href="/admin/pages/new" className="border border-[#2271b1] text-[#2271b1] hover:bg-[#f6f7f7] px-2.5 py-0.5 text-[13px] rounded-[3px] font-medium transition-colors">
+        <Link href="/admin/pages/new" className="border border-[#5e3fde] text-[#5e3fde] hover:bg-[#f6f7f7] px-2.5 py-0.5 text-[13px] rounded-[3px] font-medium transition-colors">
           Add Page
         </Link>
       </div>

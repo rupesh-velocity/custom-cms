@@ -313,7 +313,7 @@ export default function GeneralSettings() {
         <button
           type="submit"
           disabled={isSaving}
-          className="flex items-center gap-2 px-8 py-2.5 bg-[#2271b1] text-white rounded font-medium hover:bg-[#135e96] disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 px-8 py-2.5 bg-[#5e3fde] text-white rounded font-medium hover:bg-[#4b32b2] disabled:opacity-50 transition-colors"
         >
           {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
           Save Changes

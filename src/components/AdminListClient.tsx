@@ -44,7 +44,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
           <select className="border border-[#8c8f94] rounded-[3px] px-2 py-0.5 outline-none text-[13px] bg-white text-[#2c3338] h-[30px] leading-relaxed max-w-[150px]">
             <option>Bulk actions</option>
           </select>
-          <button className="border border-[#2271b1] text-[#2271b1] bg-[#f6f7f7] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f0f0f1] h-[30px]">
+          <button className="border border-[#5e3fde] text-[#5e3fde] bg-[#f6f7f7] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f0f0f1] h-[30px]">
             Apply
           </button>
           
@@ -63,7 +63,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
         
         <div className="flex items-center gap-2">
            <input type="text" className="border border-[#8c8f94] rounded-[3px] px-2 py-0.5 outline-none text-[13px] w-[180px] h-[30px]" />
-           <button className="border border-[#2271b1] text-[#2271b1] bg-[#f6f7f7] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f0f0f1] h-[30px]">
+           <button className="border border-[#5e3fde] text-[#5e3fde] bg-[#f6f7f7] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f0f0f1] h-[30px]">
              Search {type === 'pages' ? 'Pages' : 'Posts'}
            </button>
         </div>
@@ -92,14 +92,14 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                 <th className="p-2 w-[40px] text-center font-normal">
                   <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => handleSelect(item)} className="border-[#8c8f94] rounded-[2px]" />
                 </th>
-                <td className="p-2 font-medium text-[#2271b1] align-top">
-                  <Link href={`/admin/${type}/${item.id}`} className="font-bold text-[#2271b1] text-[14px] hover:underline">
+                <td className="p-2 font-medium text-[#5e3fde] align-top">
+                  <Link href={`/admin/${type}/${item.id}`} className="font-bold text-[#5e3fde] text-[14px] hover:underline">
                     {item.title || '(no title)'}
                   </Link>
                   {item.status !== 'Published' && item.status !== 'Trash' && <span className="font-bold text-gray-500 ml-1">— {item.status}</span>}
                   
                   <div className="opacity-0 group-hover:opacity-100 flex gap-2 mt-1 text-[13px] font-normal transition-opacity duration-150">
-                     <Link href={`/admin/${type}/${item.id}`} className="text-[#2271b1] hover:underline">Edit</Link>
+                     <Link href={`/admin/${type}/${item.id}`} className="text-[#5e3fde] hover:underline">Edit</Link>
                      <span className="text-[#ddd]">|</span>
                      {item.status !== 'Trash' && (
                        <>
@@ -107,11 +107,11 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                          <span className="text-[#ddd]">|</span>
                        </>
                      )}
-                     <Link href={`/${item.slug}`} className="text-[#2271b1] hover:underline" target="_blank">View</Link>
+                     <Link href={`/${item.slug}`} className="text-[#5e3fde] hover:underline" target="_blank">View</Link>
                   </div>
                 </td>
                 <td className="p-2 align-top text-[13px]">
-                   <span className="text-[#2271b1] hover:underline cursor-pointer">
+                   <span className="text-[#5e3fde] hover:underline cursor-pointer">
                      {item.author ? (item.author.firstName ? `${item.author.firstName} ${item.author.lastName || ''}`.trim() : item.author.username) : 'CIIS'}
                    </span>
                 </td>

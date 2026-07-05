@@ -104,13 +104,13 @@ export default function MediaModal({ isOpen, onClose, onInsert }: MediaModalProp
         {/* Tabs */}
         <div className="flex px-6 border-b border-gray-200 bg-gray-50">
           <button 
-            className={`py-3 px-4 text-[14px] font-medium border-b-2 transition-colors ${activeTab === 'upload' ? 'border-[#2271b1] text-gray-900' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
+            className={`py-3 px-4 text-[14px] font-medium border-b-2 transition-colors ${activeTab === 'upload' ? 'border-[#5e3fde] text-gray-900' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
             onClick={() => setActiveTab('upload')}
           >
             Upload Files
           </button>
           <button 
-            className={`py-3 px-4 text-[14px] font-medium border-b-2 transition-colors ${activeTab === 'library' ? 'border-[#2271b1] text-gray-900' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
+            className={`py-3 px-4 text-[14px] font-medium border-b-2 transition-colors ${activeTab === 'library' ? 'border-[#5e3fde] text-gray-900' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
             onClick={() => setActiveTab('library')}
           >
             Media Library
@@ -122,7 +122,7 @@ export default function MediaModal({ isOpen, onClose, onInsert }: MediaModalProp
           {activeTab === 'upload' && (
             <div className="absolute inset-0 p-8 flex flex-col items-center justify-center">
               <div 
-                className={`w-full max-w-2xl border-2 border-dashed rounded-lg p-12 text-center transition-colors ${dragActive ? 'border-[#2271b1] bg-[#f0f6fc]' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}
+                className={`w-full max-w-2xl border-2 border-dashed rounded-lg p-12 text-center transition-colors ${dragActive ? 'border-[#5e3fde] bg-[#f0f6fc]' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'}`}
                 onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
                 onDragLeave={(e) => { e.preventDefault(); setDragActive(false); }}
                 onDrop={(e) => { 
@@ -143,7 +143,7 @@ export default function MediaModal({ isOpen, onClose, onInsert }: MediaModalProp
                     onChange={(e) => handleUpload(e.target.files)}
                     disabled={isUploading}
                   />
-                  <button className="bg-[#2271b1] text-white px-5 py-2 rounded-[3px] text-[14px] font-medium hover:bg-[#135e96] disabled:opacity-50 transition-colors">
+                  <button className="bg-[#5e3fde] text-white px-5 py-2 rounded-[3px] text-[14px] font-medium hover:bg-[#4b32b2] disabled:opacity-50 transition-colors">
                     {isUploading ? 'Uploading...' : 'Select Files'}
                   </button>
                 </div>
@@ -166,7 +166,7 @@ export default function MediaModal({ isOpen, onClose, onInsert }: MediaModalProp
                       <div 
                         key={item.id} 
                         onClick={() => setSelectedMedia(item)}
-                        className={`relative aspect-square border-4 cursor-pointer overflow-hidden bg-gray-100 ${selectedMedia?.id === item.id ? 'border-[#2271b1]' : 'border-transparent hover:border-gray-300'}`}
+                        className={`relative aspect-square border-4 cursor-pointer overflow-hidden bg-gray-100 ${selectedMedia?.id === item.id ? 'border-[#5e3fde]' : 'border-transparent hover:border-gray-300'}`}
                       >
                         {item.mimeType.startsWith('image/') ? (
                           <img src={item.url} alt={item.filename} className="w-full h-full object-cover" />
@@ -177,7 +177,7 @@ export default function MediaModal({ isOpen, onClose, onInsert }: MediaModalProp
                           </div>
                         )}
                         {selectedMedia?.id === item.id && (
-                          <div className="absolute top-0 right-0 bg-[#2271b1] text-white p-1">
+                          <div className="absolute top-0 right-0 bg-[#5e3fde] text-white p-1">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
                           </div>
                         )}
@@ -202,7 +202,7 @@ export default function MediaModal({ isOpen, onClose, onInsert }: MediaModalProp
                     </div>
                     <div className="pt-4 border-t border-gray-200">
                       <label className="block text-gray-600 mb-1">URL</label>
-                      <input type="text" readOnly value={selectedMedia.url} className="w-full border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:border-[#2271b1]" />
+                      <input type="text" readOnly value={selectedMedia.url} className="w-full border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:border-[#5e3fde]" />
                     </div>
                   </div>
                 ) : (
@@ -217,7 +217,7 @@ export default function MediaModal({ isOpen, onClose, onInsert }: MediaModalProp
         <div className="flex items-center justify-end px-6 py-4 border-t border-gray-200 bg-gray-50 gap-3">
           <button 
             onClick={onClose}
-            className="px-4 py-2 text-[#2271b1] border border-[#2271b1] rounded hover:bg-gray-100 transition-colors text-[14px]"
+            className="px-4 py-2 text-[#5e3fde] border border-[#5e3fde] rounded hover:bg-gray-100 transition-colors text-[14px]"
           >
             Cancel
           </button>
@@ -229,7 +229,7 @@ export default function MediaModal({ isOpen, onClose, onInsert }: MediaModalProp
               }
             }}
             disabled={!selectedMedia}
-            className="px-5 py-2 bg-[#2271b1] text-white rounded font-medium hover:bg-[#135e96] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-[14px]"
+            className="px-5 py-2 bg-[#5e3fde] text-white rounded font-medium hover:bg-[#4b32b2] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-[14px]"
           >
             Insert into page
           </button>
