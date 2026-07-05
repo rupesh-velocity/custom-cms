@@ -25,7 +25,8 @@ export async function GET(request: Request) {
       },
       select: {
         slug: true,
-        updatedAt: true
+        updatedAt: true,
+        contentHtml: true
       },
       // You can add pagination using seo_sitemap_links_per_page here
       take: 1000
@@ -33,12 +34,26 @@ export async function GET(request: Request) {
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<?xml-stylesheet type="text/xsl" href="/main-sitemap.xsl"?>\n`;
-    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+    xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`;
 
     posts.forEach(post => {
       xml += `  <url>\n`;
       xml += `    <loc>${appUrl}/${post.slug}</loc>\n`;
       xml += `    <lastmod>${post.updatedAt.toISOString()}</lastmod>\n`;
+      
+      // Extract images
+      if (post.contentHtml) {
+        const imgRegex = /<img[^>]+src="([^">]+)"/g;
+        let match;
+        while ((match = imgRegex.exec(post.contentHtml)) !== null) {
+          const imgSrc = match[1];
+          const absoluteImgSrc = imgSrc.startsWith('/') ? `${appUrl}${imgSrc}` : imgSrc;
+          xml += `    <image:image>\n`;
+          xml += `      <image:loc>${absoluteImgSrc}</image:loc>\n`;
+          xml += `    </image:image>\n`;
+        }
+      }
+      
       xml += `  </url>\n`;
     });
 

@@ -137,6 +137,7 @@ export async function GET() {
               <thead>
                 <tr>
                   <th>URL</th>
+                  <th>Images</th>
                   <th>Last Mod.</th>
                 </tr>
               </thead>
@@ -150,7 +151,10 @@ export async function GET() {
                       <a href="{$itemURL}"><xsl:value-of select="sitemap:loc"/></a>
                     </td>
                     <td>
-                      <xsl:value-of select="sitemap:lastmod"/>
+                      <xsl:value-of select="count(image:image)"/>
+                    </td>
+                    <td>
+                      <xsl:value-of select="concat(substring(sitemap:lastmod, 1, 10), ' ', substring(sitemap:lastmod, 12, 5), ' +00:00')"/>
                     </td>
                   </tr>
                 </xsl:for-each>
