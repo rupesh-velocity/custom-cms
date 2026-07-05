@@ -37,8 +37,8 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
   );
 
   return (
-    <div className="flex flex-col bg-white h-full">
-      <div className="bg-[#f1f1f1] border-b border-[#c3c4c7] p-1.5 flex gap-1 flex-wrap items-center">
+    <div className="flex flex-col bg-white h-full relative">
+      <div className="bg-[#f1f1f1] border-b border-[#c3c4c7] p-1.5 flex gap-1 flex-wrap items-center sticky top-0 z-10">
         <select
           className="px-2 py-[3px] text-[13px] border border-[#c3c4c7] rounded-[2px] bg-white text-[#32373c] outline-none hover:border-[#8c8f94] cursor-pointer mr-1"
           value={
