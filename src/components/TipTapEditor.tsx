@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -7,6 +8,10 @@ import Image from '@tiptap/extension-image';
 import Underline from '@tiptap/extension-underline';
 
 export default function TipTapEditor({ content, onChange }: { content: string, onChange: (html: string, text: string) => void }) {
+  const [showLinkPrompt, setShowLinkPrompt] = useState(false);
+  const [showImagePrompt, setShowImagePrompt] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -89,13 +94,9 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
         <ToolbarButton 
           onClick={() => {
             const previousUrl = editor.getAttributes('link').href;
-            const url = window.prompt('URL', previousUrl);
-            if (url === null) return;
-            if (url === '') {
-              editor.chain().focus().extendMarkRange('link').unsetLink().run();
-              return;
-            }
-            editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+            setUrlInput(previousUrl || '');
+            setShowLinkPrompt(true);
+            setShowImagePrompt(false);
           }} 
           isActive={editor.isActive('link')}
         >
@@ -112,10 +113,9 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
         </ToolbarButton>
         <ToolbarButton 
           onClick={() => {
-            const url = window.prompt('Image URL');
-            if (url) {
-              editor.chain().focus().setImage({ src: url }).run();
-            }
+            setUrlInput('');
+            setShowImagePrompt(true);
+            setShowLinkPrompt(false);
           }} 
           isActive={editor.isActive('image')}
         >
@@ -140,6 +140,68 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
           close tags
         </ToolbarButton>
       </div>
+      
+      {showLinkPrompt && (
+        <div className="absolute top-12 left-4 z-20 bg-white border border-[#c3c4c7] shadow-lg p-2 rounded flex gap-2 items-center">
+          <input 
+            type="text" 
+            value={urlInput} 
+            onChange={(e) => setUrlInput(e.target.value)} 
+            placeholder="Enter link URL..."
+            className="border border-[#8c8f94] px-2 py-1 text-[13px] outline-none min-w-[250px]"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (urlInput) editor.chain().focus().extendMarkRange('link').setLink({ href: urlInput }).run();
+                else editor.chain().focus().extendMarkRange('link').unsetLink().run();
+                setShowLinkPrompt(false);
+              }
+            }}
+          />
+          <button 
+            onClick={() => {
+              if (urlInput) {
+                editor.chain().focus().extendMarkRange('link').setLink({ href: urlInput }).run();
+              } else {
+                editor.chain().focus().extendMarkRange('link').unsetLink().run();
+              }
+              setShowLinkPrompt(false);
+            }}
+            className="bg-[#0071a1] text-white px-3 py-1 text-[13px] rounded hover:bg-[#005a80]"
+          >Apply</button>
+          <button onClick={() => setShowLinkPrompt(false)} className="text-[#b32d2e] px-2 text-[13px] hover:underline">Cancel</button>
+        </div>
+      )}
+
+      {showImagePrompt && (
+        <div className="absolute top-12 left-4 z-20 bg-white border border-[#c3c4c7] shadow-lg p-2 rounded flex gap-2 items-center">
+          <input 
+            type="text" 
+            value={urlInput} 
+            onChange={(e) => setUrlInput(e.target.value)} 
+            placeholder="Enter image URL..."
+            className="border border-[#8c8f94] px-2 py-1 text-[13px] outline-none min-w-[250px]"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && urlInput) {
+                editor.chain().focus().setImage({ src: urlInput }).run();
+                setShowImagePrompt(false);
+              }
+            }}
+          />
+          <button 
+            onClick={() => {
+              if (urlInput) {
+                editor.chain().focus().setImage({ src: urlInput }).run();
+              }
+              setShowImagePrompt(false);
+            }}
+            className="bg-[#0071a1] text-white px-3 py-1 text-[13px] rounded hover:bg-[#005a80]"
+          >Insert</button>
+          <button onClick={() => setShowImagePrompt(false)} className="text-[#b32d2e] px-2 text-[13px] hover:underline">Cancel</button>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto">
         <EditorContent editor={editor} />
       </div>
