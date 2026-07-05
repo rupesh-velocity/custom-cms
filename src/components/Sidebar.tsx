@@ -60,14 +60,14 @@ export default function Sidebar() {
             "overflow-hidden transition-all duration-300 ease-in-out",
             isSeoActive ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
           )}>
-            <div className="pl-11 pr-4 py-2 space-y-2 border-l-2 border-gray-100 ml-6">
-              <Link href="/admin/seo/general" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/general') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+            <div className="pl-3 py-1 space-y-1 border-l-2 border-gray-100 ml-8 mt-1">
+              <Link href="/admin/seo/general" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/general') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 General Settings
               </Link>
-              <Link href="/admin/seo/redirections" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/redirections') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/seo/redirections" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/redirections') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Redirections
               </Link>
-              <Link href="/admin/seo/sitemap" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/sitemap') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/seo/sitemap" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/sitemap') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Sitemap Settings
               </Link>
             </div>
@@ -93,14 +93,14 @@ export default function Sidebar() {
             "overflow-hidden transition-all duration-300 ease-in-out",
             isSettingsActive ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
           )}>
-            <div className="pl-11 pr-4 py-2 space-y-2 border-l-2 border-gray-100 ml-6">
-              <Link href="/admin/settings/general" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/general' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+            <div className="pl-3 py-1 space-y-1 border-l-2 border-gray-100 ml-8 mt-1">
+              <Link href="/admin/settings/general" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/general' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 General
               </Link>
-              <Link href="/admin/settings/reading" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/reading' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/settings/reading" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/reading' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Reading
               </Link>
-              <Link href="/admin/settings/advanced" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname === '/admin/settings/advanced' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/settings/advanced" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/advanced' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Advanced
               </Link>
             </div>
