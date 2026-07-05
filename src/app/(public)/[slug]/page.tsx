@@ -103,7 +103,7 @@ export default async function PublicPage({ params }: { params: Promise<{ slug: s
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight">{data.title}</h1>
           </div>
         )}
-        <div className="mt-8" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings) }} />
+        <div className="mt-8" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} />
       </main>
     </>
   );

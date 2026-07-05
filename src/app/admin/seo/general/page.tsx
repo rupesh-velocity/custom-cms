@@ -15,6 +15,8 @@ export default function SeoGeneralSettings() {
     seo_open_external_new_tab: 'false',
     seo_add_missing_alt: 'false',
     seo_add_missing_title: 'false',
+    seo_image_alt_format: '%title% %count(title)%',
+    seo_image_title_format: '%title% %count(title)%',
     seo_google_verify: '',
     seo_bing_verify: '',
     seo_baidu_verify: '',
@@ -211,6 +213,24 @@ export default function SeoGeneralSettings() {
                 </button>
               </div>
 
+              {settings.seo_add_missing_alt === 'true' && (
+                <div className="pl-6 border-l-2 border-gray-200 ml-2 space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900">Alt attribute format</label>
+                  <input
+                    type="text"
+                    value={settings.seo_image_alt_format}
+                    onChange={(e) => handleChange('seo_image_alt_format', e.target.value)}
+                    placeholder="%title% %count(title)%"
+                    className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  <p className="text-sm text-gray-500">
+                    Format used for the new <code className="bg-gray-100 px-1 py-0.5 rounded">alt</code> attribute values.
+                    Available variables: <code className="bg-gray-100 px-1 py-0.5 rounded">%title%</code>, <code className="bg-gray-100 px-1 py-0.5 rounded">%count(title)%</code>
+                  </p>
+                </div>
+              )}
+
+
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Add missing TITLE attributes</h3>
@@ -231,6 +251,23 @@ export default function SeoGeneralSettings() {
                   } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
                 </button>
               </div>
+
+              {settings.seo_add_missing_title === 'true' && (
+                <div className="pl-6 border-l-2 border-gray-200 ml-2 space-y-2">
+                  <label className="block text-sm font-semibold text-gray-900">Title attribute format</label>
+                  <input
+                    type="text"
+                    value={settings.seo_image_title_format}
+                    onChange={(e) => handleChange('seo_image_title_format', e.target.value)}
+                    placeholder="%title% %count(title)%"
+                    className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  />
+                  <p className="text-sm text-gray-500">
+                    Format used for the new <code className="bg-gray-100 px-1 py-0.5 rounded">title</code> attribute values.
+                    Available variables: <code className="bg-gray-100 px-1 py-0.5 rounded">%title%</code>, <code className="bg-gray-100 px-1 py-0.5 rounded">%count(title)%</code>
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

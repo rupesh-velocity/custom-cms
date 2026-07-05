@@ -1,7 +1,8 @@
-export function optimizeHtmlImages(html: string | null, seoSettings?: Record<string, string>): string {
+export function optimizeHtmlImages(html: string | null, seoSettings?: Record<string, string>, contextTitle: string = ''): string {
   if (!html) return '';
   
   let isFirstImage = true;
+  let imageCount = 1;
   
   let htmlWithOptimizedImages = html.replace(/<img([^>]*)>/gi, (match, attribs) => {
     let newAttribs = attribs;
@@ -25,14 +26,19 @@ export function optimizeHtmlImages(html: string | null, seoSettings?: Record<str
 
     // SEO: Add missing ALT
     if (seoSettings?.seo_add_missing_alt === 'true' && !/alt=/i.test(newAttribs)) {
-      newAttribs += ' alt="Image"'; // Generic fallback if missing
+      let altFormat = seoSettings?.seo_image_alt_format || '%title% %count(title)%';
+      altFormat = altFormat.replace(/%title%/gi, contextTitle).replace(/%count\([^)]*\)%/gi, imageCount.toString()).trim() || 'Image';
+      newAttribs += ` alt="${altFormat.replace(/"/g, '&quot;')}"`;
     }
 
     // SEO: Add missing TITLE
     if (seoSettings?.seo_add_missing_title === 'true' && !/title=/i.test(newAttribs)) {
-      newAttribs += ' title="Image"';
+      let titleFormat = seoSettings?.seo_image_title_format || '%title% %count(title)%';
+      titleFormat = titleFormat.replace(/%title%/gi, contextTitle).replace(/%count\([^)]*\)%/gi, imageCount.toString()).trim() || 'Image';
+      newAttribs += ` title="${titleFormat.replace(/"/g, '&quot;')}"`;
     }
 
+    imageCount++;
     return `<img ${newAttribs}>`;
   });
 

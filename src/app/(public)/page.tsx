@@ -103,7 +103,7 @@ export default async function Home() {
           />
         )}
         <main className="w-full">
-          <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml, settings) }} />
+          <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml, settings, page.title) }} />
         </main>
       </div>
     );
@@ -144,7 +144,7 @@ export default async function Home() {
                 </div>
                 
                 {feedInclude === 'full_text' ? (
-                  <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(post.contentHtml, settings) }} />
+                  <div className="prose prose-blue max-w-none" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(post.contentHtml, settings, post.title) }} />
                 ) : (
                   <div className="prose prose-blue max-w-none">
                     <p>{(post.contentText || '').substring(0, 300)}...</p>
