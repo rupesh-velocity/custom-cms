@@ -58,7 +58,7 @@ export default function Sidebar() {
           {/* Sub-options for SEO */}
           <div className={clsx(
             "overflow-hidden transition-all duration-300 ease-in-out",
-            isSeoActive ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+            isSeoActive ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
           )}>
             <div className="pl-11 pr-4 py-2 space-y-2 border-l-2 border-gray-100 ml-6">
               <Link href="/admin/seo/general" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/general') ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
@@ -66,6 +66,9 @@ export default function Sidebar() {
               </Link>
               <Link href="/admin/seo/redirections" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/redirections') ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Redirections
+              </Link>
+              <Link href="/admin/seo/sitemap" className={clsx("block px-4 py-2 rounded-lg text-sm transition-colors", pathname.startsWith('/admin/seo/sitemap') ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Sitemap Settings
               </Link>
             </div>
           </div>

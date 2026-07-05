@@ -3,9 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const host = request.headers.get('host') || 'localhost:3000';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const appUrl = `${protocol}://${host}`;
     
     // Check if pages are enabled in sitemap
     const setting = await prisma.setting.findUnique({
@@ -29,6 +31,7 @@ export async function GET() {
     });
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    xml += `<?xml-stylesheet type="text/xsl" href="/main-sitemap.xsl"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
     pages.forEach(page => {

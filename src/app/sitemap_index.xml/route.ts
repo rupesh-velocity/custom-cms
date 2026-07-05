@@ -3,9 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 export const revalidate = 0;
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const host = request.headers.get('host') || 'localhost:3000';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const appUrl = `${protocol}://${host}`;
     
     // Fetch settings to check if sitemaps are enabled
     const settings = await prisma.setting.findMany({
@@ -18,6 +20,7 @@ export async function GET() {
     const includePages = settings.find(s => s.key === 'seo_sitemap_include_pages')?.value !== 'false';
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+    xml += `<?xml-stylesheet type="text/xsl" href="/main-sitemap.xsl"?>\n`;
     xml += `<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
     if (includePosts) {

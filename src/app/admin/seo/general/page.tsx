@@ -77,7 +77,6 @@ export default function SeoGeneralSettings() {
     { id: 'images', label: 'Images' },
     { id: 'webmaster', label: 'Webmaster Tools' },
     { id: 'robots', label: 'Edit robots.txt' },
-    { id: 'sitemap', label: 'Sitemap Settings' },
   ];
 
   if (isLoading) {
@@ -339,92 +338,7 @@ export default function SeoGeneralSettings() {
             </div>
           )}
 
-          {activeTab === 'sitemap' && (
-            <div className="space-y-8">
-              <div className="bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-200">
-                <p className="text-sm font-medium">
-                  Your sitemap index can be found here: <a href="/sitemap_index.xml" target="_blank" className="underline">/sitemap_index.xml</a>
-                </p>
-              </div>
 
-              <div className="space-y-2 border-b border-gray-100 pb-8">
-                <label className="block text-sm font-semibold text-gray-900">Links Per Sitemap</label>
-                <input
-                  type="number"
-                  value={settings.seo_sitemap_links_per_page}
-                  onChange={(e) => handleChange('seo_sitemap_links_per_page', e.target.value)}
-                  className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                />
-                <p className="text-gray-500 text-sm">Max number of links on each sitemap page.</p>
-              </div>
-
-              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-8">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Images in Sitemaps</h3>
-                  <p className="text-gray-500 text-sm mt-1 max-w-xl">
-                    Include reference to images from the post content in sitemaps. This helps search engines index the important images on your pages.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  onClick={() => toggleBoolean('seo_sitemap_images')}
-                  className={`${
-                    settings.seo_sitemap_images === 'true' ? 'bg-blue-600' : 'bg-gray-200'
-                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out`}
-                >
-                  <span className={`${
-                    settings.seo_sitemap_images === 'true' ? 'translate-x-5' : 'translate-x-0'
-                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
-                </button>
-              </div>
-
-              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-8">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Posts</h3>
-                  <p className="text-gray-500 text-sm mt-1 max-w-xl">
-                    <a href="/post-sitemap.xml" target="_blank" className="text-blue-600 hover:underline block mb-2">/post-sitemap.xml</a>
-                    Include Posts in Sitemap
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  onClick={() => toggleBoolean('seo_sitemap_include_posts')}
-                  className={`${
-                    settings.seo_sitemap_include_posts === 'true' ? 'bg-blue-600' : 'bg-gray-200'
-                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out mt-2`}
-                >
-                  <span className={`${
-                    settings.seo_sitemap_include_posts === 'true' ? 'translate-x-5' : 'translate-x-0'
-                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
-                </button>
-              </div>
-
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Pages</h3>
-                  <p className="text-gray-500 text-sm mt-1 max-w-xl">
-                    <a href="/page-sitemap.xml" target="_blank" className="text-blue-600 hover:underline block mb-2">/page-sitemap.xml</a>
-                    Include Pages in Sitemap
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  onClick={() => toggleBoolean('seo_sitemap_include_pages')}
-                  className={`${
-                    settings.seo_sitemap_include_pages === 'true' ? 'bg-blue-600' : 'bg-gray-200'
-                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out mt-2`}
-                >
-                  <span className={`${
-                    settings.seo_sitemap_include_pages === 'true' ? 'translate-x-5' : 'translate-x-0'
-                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
-                </button>
-              </div>
-
-            </div>
-          )}
 
         </div>
       </div>
