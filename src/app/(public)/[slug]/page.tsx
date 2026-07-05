@@ -6,6 +6,7 @@ import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 import BlogSidebar from '@/components/BlogSidebar';
+import CopyLinkButton from '@/components/CopyLinkButton';
 import { Link as LinkIcon, User } from 'lucide-react';
 
 const TwitterIcon = ({ className }: { className?: string }) => (
@@ -318,9 +319,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
                     <a href={`https://www.linkedin.com/shareArticle?mini=true&url=YOUR_DOMAIN/${data.slug}&title=${encodeURIComponent(data.title)}`} target="_blank" rel="noopener noreferrer" className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-50 text-gray-600 hover:bg-[#0077B5] hover:text-white transition-colors">
                       <LinkedinIcon className="w-5 h-5" />
                     </a>
-                    <button onClick={() => navigator.clipboard.writeText(`YOUR_DOMAIN/${data.slug}`)} className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-50 text-gray-600 hover:bg-gray-200 transition-colors">
-                      <LinkIcon className="w-5 h-5" />
-                    </button>
+                    <CopyLinkButton url={`https://YOUR_DOMAIN/${data.slug}`} />
                   </div>
                 </div>
 
