@@ -31,6 +31,7 @@ export default function ClassicEditor({
   const [tempSlug, setTempSlug] = useState(slug);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [origin, setOrigin] = useState('');
+  const tipTapRef = useRef<{ insertImage: (url: string) => void }>(null);
   
   // Calculate word count
   const wordCount = contentHtml.replace(/<[^>]*>?/gm, '').split(/\s+/).filter(w => w.length > 0).length;
@@ -113,8 +114,12 @@ export default function ClassicEditor({
             isOpen={isMediaModalOpen}
             onClose={() => setIsMediaModalOpen(false)}
             onInsert={(url) => {
-              const imgTag = `<img src="${url}" alt="" style="max-width: 100%; height: auto;" />`;
-              setContentHtml(contentHtml + imgTag);
+              if (activeTab === 'visual' && tipTapRef.current) {
+                tipTapRef.current.insertImage(url);
+              } else {
+                const imgTag = `<img src="${url}" alt="" style="max-width: 100%; height: auto;" />`;
+                setContentHtml(contentHtml + imgTag);
+              }
             }}
           />
 
@@ -138,6 +143,7 @@ export default function ClassicEditor({
         <div className="min-h-[400px] flex flex-col">
           {activeTab === 'visual' ? (
             <TipTapEditor 
+              ref={tipTapRef}
               content={contentHtml} 
               onChange={(html, text) => {
                 setContentHtml(html);

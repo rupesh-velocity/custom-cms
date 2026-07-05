@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Underline from '@tiptap/extension-underline';
 
-export default function TipTapEditor({ content, onChange }: { content: string, onChange: (html: string, text: string) => void }) {
+const TipTapEditor = forwardRef<{ insertImage: (url: string) => void }, { content: string, onChange: (html: string, text: string) => void }>(({ content, onChange }, ref) => {
   const [showLinkPrompt, setShowLinkPrompt] = useState(false);
   const [showImagePrompt, setShowImagePrompt] = useState(false);
   const [urlInput, setUrlInput] = useState('');
@@ -30,6 +30,12 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
       onChange(editor.getHTML(), editor.getText());
     },
   });
+
+  useImperativeHandle(ref, () => ({
+    insertImage: (url: string) => {
+      editor?.chain().focus().setImage({ src: url }).run();
+    }
+  }));
 
   if (!editor) {
     return null;
@@ -207,4 +213,6 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
       </div>
     </div>
   );
-}
+});
+
+export default TipTapEditor;
