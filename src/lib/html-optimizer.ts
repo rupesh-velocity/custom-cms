@@ -68,10 +68,31 @@ export function optimizeHtmlImages(html: string | null, seoSettings?: Record<str
     });
   }
 
-  // 3. Lazy load iframes (like Vimeo/YouTube)
-  optimized = optimized.replace(/<iframe([^>]*)>/gi, (match, attribs) => {
+  // 3. Optimize iframes (Video Facades)
+  optimized = optimized.replace(/<iframe([^>]*)>[\s\S]*?<\/iframe>/gi, (match, attribs) => {
+    // Check if it's a Vimeo iframe
+    const vimeoMatch = attribs.match(/src="https:\/\/player\.vimeo\.com\/video\/([0-9]+)[^"]*"/i);
+    
+    if (vimeoMatch) {
+      const vimeoId = vimeoMatch[1];
+      const styleMatch = attribs.match(/style="([^"]+)"/i);
+      const styleAttr = styleMatch ? `style="${styleMatch[1]}"` : 'style="width: 100%; aspect-ratio: 16/9;"';
+      
+      return `
+        <div class="video-facade vimeo-facade relative overflow-hidden rounded-xl cursor-pointer group my-6 bg-black" data-vimeo-id="${vimeoId}" ${styleAttr}>
+          <img src="https://vumbnail.com/${vimeoId}.jpg" alt="Vimeo Video" loading="lazy" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="w-16 h-12 bg-[#00adef] rounded-lg flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M5 3l14 9-14 9V3z" /></svg>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // For other iframes, just add lazy loading
     let newAttribs = attribs.replace(/loading="[^"]*"/i, '');
-    return `<iframe ${newAttribs} loading="lazy">`;
+    return `<iframe ${newAttribs} loading="lazy"></iframe>`;
   });
 
   return optimized;

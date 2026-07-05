@@ -1,5 +1,6 @@
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
+import VideoFacadeHandler from '@/components/VideoFacadeHandler';
 
 export default function PublicLayout({
   children,
@@ -11,6 +12,7 @@ export default function PublicLayout({
       <SiteHeader />
       {children}
       <SiteFooter />
+      <VideoFacadeHandler />
     </>
   );
 }
