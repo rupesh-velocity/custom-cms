@@ -42,32 +42,13 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
     setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const Accordion = ({ id, title, children, noPadding = false }: { id: keyof typeof expanded, title: string, children: React.ReactNode, noPadding?: boolean }) => (
-    <div className="bg-white border border-[#c3c4c7] shadow-sm mb-4">
-      <button 
-        onClick={() => toggleAccordion(id)}
-        className="w-full flex items-center justify-between px-3 py-2 border-b border-transparent bg-white hover:bg-[#f6f7f7] transition-colors"
-      >
-        <h2 className="text-[14px] font-semibold text-[#1d2327]">{title}</h2>
-        <div className="flex gap-1 text-gray-500">
-          {expanded[id] ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-        </div>
-      </button>
-      {expanded[id] && (
-        <div className={`border-t border-[#c3c4c7] ${noPadding ? '' : 'p-3'}`}>
-          {children}
-        </div>
-      )}
-    </div>
-  );
-
   let scoreColor = 'bg-[#ffaba8] text-[#d63638]';
   if (score > 50) scoreColor = 'bg-[#f0b849] text-[#8a6d3b]';
   if (score >= 80) scoreColor = 'bg-[#c6e1c6] text-[#007017]';
 
   return (
     <div className="w-full max-w-[280px] font-sans">
-      <Accordion id="publish" title="Publish" noPadding>
+      <Accordion id="publish" title="Publish" expanded={expanded.publish} toggleAccordion={() => toggleAccordion('publish')} noPadding>
         <div className="p-3 bg-white">
           <div className="flex justify-between mb-4">
             <button 
@@ -167,7 +148,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
         </div>
 
         <div className="p-3 bg-[#f6f7f7] flex items-center justify-between rounded-b-[3px]">
-           <button className="text-[#b32d2e] text-[13px] hover:underline">Move to Trash</button>
+           <button onClick={() => onPublish('Trash')} className="text-[#b32d2e] text-[13px] hover:underline disabled:opacity-50" disabled={isSaving}>Move to Trash</button>
            <button 
              onClick={() => onPublish('Published')}
              disabled={isSaving}
@@ -178,7 +159,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
         </div>
       </Accordion>
 
-      <Accordion id="pageAttributes" title="Page Attributes">
+      <Accordion id="pageAttributes" title="Page Attributes" expanded={expanded.pageAttributes} toggleAccordion={() => toggleAccordion('pageAttributes')}>
         <div className="text-[13px] text-[#1d2327]">
            <label className="block font-semibold mb-1">Parent</label>
            <select className="w-full border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none mb-3">
@@ -190,7 +171,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
         </div>
       </Accordion>
 
-      <Accordion id="featuredImage" title="Featured image">
+      <Accordion id="featuredImage" title="Featured image" expanded={expanded.featuredImage} toggleAccordion={() => toggleAccordion('featuredImage')}>
         {featuredImage ? (
           <div className="text-center">
             <img src={featuredImage} alt="Featured" className="w-full h-auto mb-2 rounded border border-gray-200" />
@@ -209,7 +190,7 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
         />
       </Accordion>
 
-      <Accordion id="pageSettings" title="Page Settings">
+      <Accordion id="pageSettings" title="Page Settings" expanded={expanded.pageSettings} toggleAccordion={() => toggleAccordion('pageSettings')}>
         <div className="text-[13px] text-[#1d2327]">
            {setHideTitle !== undefined && (
              <label className="flex items-center gap-2 cursor-pointer">
@@ -231,4 +212,25 @@ export default function ClassicSidebar({ status, setStatus, onPublish, isSaving,
 // Temporary icon since TrendingUp wasn't imported at top
 function TrendingUp(props: any) {
   return <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+}
+
+function Accordion({ id, title, children, expanded, toggleAccordion, noPadding = false }: { id: string, title: string, children: React.ReactNode, expanded: boolean, toggleAccordion: () => void, noPadding?: boolean }) {
+  return (
+    <div className="bg-white border border-[#c3c4c7] shadow-sm mb-4">
+      <button 
+        onClick={toggleAccordion}
+        className="w-full flex items-center justify-between px-3 py-2 border-b border-transparent bg-white hover:bg-[#f6f7f7] transition-colors"
+      >
+        <h2 className="text-[14px] font-semibold text-[#1d2327]">{title}</h2>
+        <div className="flex gap-1 text-gray-500">
+          {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        </div>
+      </button>
+      {expanded && (
+        <div className={`border-t border-[#c3c4c7] ${noPadding ? '' : 'p-3'}`}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
 }

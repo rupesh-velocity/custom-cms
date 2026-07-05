@@ -1,62 +1,50 @@
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
-import ActionButtons from '@/components/ActionButtons';
 import { prisma } from '@/lib/prisma';
+import AdminListClient from '@/components/AdminListClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PagesPage() {
+export default async function PagesPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  const params = await searchParams;
+  const statusFilter = params?.status || 'All';
+
+  const whereClause = statusFilter !== 'All' ? { status: statusFilter } : {};
+
+  const [allCount, publishedCount, draftCount, trashCount] = await Promise.all([
+    prisma.page.count(),
+    prisma.page.count({ where: { status: 'Published' } }),
+    prisma.page.count({ where: { status: 'Draft' } }),
+    prisma.page.count({ where: { status: 'Trash' } }),
+  ]);
+
   const pages = await prisma.page.findMany({
+    where: whereClause,
     orderBy: { createdAt: 'desc' }
   });
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Pages</h1>
+    <div className="font-sans text-[13px] text-[#3c434a]">
+      <div className="flex items-center gap-4 mb-2 pt-2">
+        <h1 className="text-[23px] text-[#1d2327] font-normal">Pages</h1>
         <Link 
           href="/admin/pages/new"
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="border border-[#2271b1] text-[#2271b1] bg-[#f6f7f7] px-2.5 py-1 rounded-[3px] hover:bg-[#f0f0f1] transition-colors"
         >
-          <Plus size={18} />
-          Add New Page
+          Add Page
         </Link>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-        {pages.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">No pages found. Create one!</div>
-        ) : (
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-4 font-medium text-gray-500">Title</th>
-                <th className="px-6 py-4 font-medium text-gray-500">Status</th>
-                <th className="px-6 py-4 font-medium text-gray-500">Date</th>
-                <th className="px-6 py-4 font-medium text-gray-500 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {pages.map((page) => (
-                <tr key={page.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-900">{page.title}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      page.status === 'Published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {page.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">{new Date(page.createdAt).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 text-right">
-                    <ActionButtons id={page.id} type="pages" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className="flex text-[13px] mb-2 text-[#50575e]">
+        <Link href="/admin/pages" className={statusFilter === 'All' ? 'font-semibold text-black' : 'text-[#2271b1] hover:underline'}>All <span className="text-gray-500 font-normal">({allCount})</span></Link>
+        <span className="mx-1 text-gray-300">|</span>
+        <Link href="/admin/pages?status=Published" className={statusFilter === 'Published' ? 'font-semibold text-black' : 'text-[#2271b1] hover:underline'}>Published <span className="text-gray-500 font-normal">({publishedCount})</span></Link>
+        <span className="mx-1 text-gray-300">|</span>
+        <Link href="/admin/pages?status=Draft" className={statusFilter === 'Draft' ? 'font-semibold text-black' : 'text-[#2271b1] hover:underline'}>Draft <span className="text-gray-500 font-normal">({draftCount})</span></Link>
+        <span className="mx-1 text-gray-300">|</span>
+        <Link href="/admin/pages?status=Trash" className={statusFilter === 'Trash' ? 'font-semibold text-black' : 'text-[#2271b1] hover:underline'}>Trash <span className="text-gray-500 font-normal">({trashCount})</span></Link>
       </div>
+
+      <AdminListClient items={pages} type="pages" />
     </div>
   );
 }
