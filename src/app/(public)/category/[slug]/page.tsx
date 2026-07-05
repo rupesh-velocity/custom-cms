@@ -87,14 +87,16 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
   const totalPages = Math.ceil(totalPosts / limit);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] py-16 px-4 w-full font-sans">
-      <div className="max-w-[1200px] mx-auto flex flex-col lg:flex-row gap-12">
-        <div className="flex-1 min-w-0">
-          <header className="mb-12">
-            <div className="text-[#5e3fde] font-bold tracking-wide uppercase mb-2 text-sm">Category</div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight font-outfit">{category.name}</h1>
-          </header>
+    <div className="min-h-screen bg-[#f8f9fa] w-full font-sans">
+      <div className="bg-white border-b border-gray-200 py-16 px-4 mb-12">
+        <div className="max-w-[1200px] mx-auto text-center lg:text-left">
+          <div className="text-[#5e3fde] font-bold tracking-wide uppercase mb-2 text-sm">Category</div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight font-outfit">{category.name}</h1>
+        </div>
+      </div>
 
+      <div className="max-w-[1200px] mx-auto px-4 flex flex-col lg:flex-row gap-12 pb-16">
+        <div className="flex-1 min-w-0">
           {posts.length === 0 ? (
             <div className="bg-white p-12 rounded-2xl shadow-sm text-center border border-gray-100">
               <p className="text-gray-500 text-lg">No posts published in this category yet.</p>
@@ -102,13 +104,13 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
           ) : (
             <div className="space-y-10">
               {posts.map((post: any) => (
-                <article key={post.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                <article key={post.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col sm:flex-row">
                   {post.featuredImage && (
-                    <Link href={`/${post.slug}`} className="block h-64 md:h-80 w-full overflow-hidden">
-                      <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                    <Link href={`/${post.slug}`} className="block sm:w-[40%] shrink-0 overflow-hidden border-b sm:border-b-0 sm:border-r border-gray-100">
+                      <img src={post.featuredImage} alt={post.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 aspect-[4/3] sm:aspect-auto sm:h-full" />
                     </Link>
                   )}
-                  <div className="p-8">
+                  <div className="p-6 sm:p-8 flex-1 flex flex-col justify-center">
                     <div className="flex flex-wrap items-center gap-2 text-sm text-[#5e3fde] font-semibold mb-3">
                       {post.categories?.map((cat: any, i: number) => (
                         <span key={cat.id}>
