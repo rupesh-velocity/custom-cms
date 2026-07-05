@@ -5,9 +5,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const settings = await prisma.setting.findMany();
-    const testPage = await prisma.page.findUnique({ where: { slug: 'test' } });
-    return NextResponse.json({ settings, testPage });
+    const user = await prisma.user.findFirst();
+    if (user) {
+      await prisma.page.updateMany({ where: { authorId: null }, data: { authorId: user.id } });
+      await prisma.post.updateMany({ where: { authorId: null }, data: { authorId: user.id } });
+    }
+    return NextResponse.json({ success: true, user });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
