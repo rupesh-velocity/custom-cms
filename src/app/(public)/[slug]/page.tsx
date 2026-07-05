@@ -289,7 +289,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
       ) : data.__type === 'post' ? (
         <div className="min-h-screen bg-[#f8f9fa] w-full font-sans pt-8 pb-16">
           <div className="max-w-[1200px] mx-auto px-4 mb-12">
-            <div className="bg-gradient-to-br from-[#5e3fde] to-[#8a72ec] rounded-3xl p-10 md:p-14 lg:p-20 text-center lg:text-left shadow-lg relative overflow-hidden min-h-[350px] md:min-h-[450px] flex flex-col justify-end">
+            <div className="bg-gradient-to-br from-[#5e3fde] to-[#8a72ec] rounded-3xl p-10 md:p-14 lg:p-20 text-center lg:text-left shadow-lg relative overflow-hidden h-[350px] flex flex-col justify-end">
               {data.featuredImage && (
                 <>
                   <div className="absolute inset-0">
@@ -308,7 +308,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
                     </span>
                   ))}
                 </div>
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight font-outfit leading-tight mb-6">{data.title}</h1>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white tracking-tight font-outfit leading-tight mb-6">{data.title}</h1>
                 <div className="flex items-center justify-center lg:justify-start gap-3 text-sm text-white/80 font-medium">
                   {data.author?.firstName && <span>By <strong className="text-white">{data.author.firstName} {data.author.lastName}</strong></span>}
                   {data.author?.firstName && <span>•</span>}

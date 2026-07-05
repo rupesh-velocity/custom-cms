@@ -38,7 +38,40 @@ export default function TipTapEditor({ content, onChange }: { content: string, o
 
   return (
     <div className="flex flex-col bg-white h-full">
-      <div className="bg-[#f1f1f1] border-b border-[#c3c4c7] p-1.5 flex gap-1 flex-wrap">
+      <div className="bg-[#f1f1f1] border-b border-[#c3c4c7] p-1.5 flex gap-1 flex-wrap items-center">
+        <select
+          className="px-2 py-[3px] text-[13px] border border-[#c3c4c7] rounded-[2px] bg-white text-[#32373c] outline-none hover:border-[#8c8f94] cursor-pointer mr-1"
+          value={
+            editor.isActive('heading', { level: 1 }) ? 'h1' :
+            editor.isActive('heading', { level: 2 }) ? 'h2' :
+            editor.isActive('heading', { level: 3 }) ? 'h3' :
+            editor.isActive('heading', { level: 4 }) ? 'h4' :
+            editor.isActive('heading', { level: 5 }) ? 'h5' :
+            editor.isActive('heading', { level: 6 }) ? 'h6' :
+            editor.isActive('codeBlock') ? 'codeBlock' : 'p'
+          }
+          onChange={(e) => {
+            const val = e.target.value;
+            if (val === 'p') editor.chain().focus().setParagraph().run();
+            else if (val === 'h1') editor.chain().focus().toggleHeading({ level: 1 }).run();
+            else if (val === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
+            else if (val === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
+            else if (val === 'h4') editor.chain().focus().toggleHeading({ level: 4 }).run();
+            else if (val === 'h5') editor.chain().focus().toggleHeading({ level: 5 }).run();
+            else if (val === 'h6') editor.chain().focus().toggleHeading({ level: 6 }).run();
+            else if (val === 'codeBlock') editor.chain().focus().toggleCodeBlock().run();
+          }}
+        >
+          <option value="p">Paragraph</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
+          <option value="h4">Heading 4</option>
+          <option value="h5">Heading 5</option>
+          <option value="h6">Heading 6</option>
+          <option value="codeBlock">Preformatted</option>
+        </select>
+        
         <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')}>
           <span className="font-bold font-serif">b</span>
         </ToolbarButton>

@@ -292,21 +292,23 @@ export default function ClassicSidebar({
         />
       </Accordion>
 
-      <Accordion id="pageSettings" title="Page Settings" expanded={expanded.pageSettings} toggleAccordion={() => toggleAccordion('pageSettings')}>
-        <div className="text-[13px] text-[#1d2327]">
-           {setHideTitle !== undefined && (
-             <label className="flex items-center gap-2 cursor-pointer">
-               <input 
-                 type="checkbox" 
-                 checked={hideTitle} 
-                 onChange={(e) => setHideTitle(e.target.checked)}
-                 className="w-4 h-4 border-[#8c8f94] rounded-[2px]"
-               />
-               <span>Hide Page Title on Frontend</span>
-             </label>
-           )}
-        </div>
-      </Accordion>
+      {!isPost && (
+        <Accordion id="pageSettings" title="Page Settings" expanded={expanded.pageSettings} toggleAccordion={() => toggleAccordion('pageSettings')}>
+          <div className="text-[13px] text-[#1d2327]">
+             {setHideTitle !== undefined && (
+               <label className="flex items-center gap-2 cursor-pointer">
+                 <input 
+                   type="checkbox" 
+                   checked={hideTitle} 
+                   onChange={(e) => setHideTitle(e.target.checked)}
+                   className="w-4 h-4 border-[#8c8f94] rounded-[2px]"
+                 />
+                 <span>Hide Page Title on Frontend</span>
+               </label>
+             )}
+          </div>
+        </Accordion>
+      )}
     </div>
   );
 }
