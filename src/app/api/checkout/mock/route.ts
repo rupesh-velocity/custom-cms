@@ -57,7 +57,7 @@ export async function POST(req: Request) {
           password: hashedPassword,
           firstName: name?.split(' ')[0] || '',
           lastName: name?.split(' ').slice(1).join(' ') || '',
-          role: 'Subscriber'
+          role: 'Customer'
         }
       });
       userId = newUser.id;

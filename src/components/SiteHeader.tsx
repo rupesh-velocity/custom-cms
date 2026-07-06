@@ -139,12 +139,14 @@ export default async function SiteHeader() {
   const cookieStore = await cookies();
   const token = cookieStore.get('cms_session')?.value;
   let isAuthenticated = false;
+  let userRole = '';
   
   if (token) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_super_secret_key_change_in_production');
-      await jwtVerify(token, secret);
+      const { payload } = await jwtVerify(token, secret);
       isAuthenticated = true;
+      userRole = payload.role as string;
     } catch (e) {}
   }
 
@@ -175,14 +177,16 @@ export default async function SiteHeader() {
           
           <div className="hidden lg:flex items-center gap-6">
             {isAuthenticated ? (
-              <div className="flex items-center gap-4">
-                <Link href="/my-account" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde]">
-                  <User size={16} /> My Dashboard
-                </Link>
-                <form action="/api/users/logout" method="POST">
-                  <button type="submit" className="text-sm font-medium text-red-500 hover:text-red-700">Logout</button>
-                </form>
-              </div>
+              userRole !== 'Admin' && (
+                <div className="flex items-center gap-4">
+                  <Link href="/my-account" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde]">
+                    <User size={16} /> My Dashboard
+                  </Link>
+                  <form action="/api/users/logout" method="POST">
+                    <button type="submit" className="text-sm font-medium text-red-500 hover:text-red-700">Logout</button>
+                  </form>
+                </div>
+              )
             ) : (
               <Link href="/login" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde]">
                 <LogIn size={16} /> Login
