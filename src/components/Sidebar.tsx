@@ -9,8 +9,9 @@ export default function Sidebar() {
   const pathname = usePathname();
   
   // Settings is considered active if we are on /admin/settings or any of its subpages
-  const isSettingsActive = pathname.startsWith('/admin/settings');
+  const isSettingsActive = pathname.startsWith('/admin/settings') && pathname !== '/admin/settings/ecommerce';
   const isSeoActive = pathname.startsWith('/admin/seo');
+  const isEcommerceActive = pathname.startsWith('/admin/orders') || pathname.startsWith('/admin/products') || pathname === '/admin/settings/ecommerce' || pathname.startsWith('/admin/customers');
 
   return (
     <aside className="w-64 bg-white border-r border-gray-100 text-gray-600 flex flex-col h-screen sticky top-0 shadow-sm">
@@ -54,16 +55,41 @@ export default function Sidebar() {
               <Link href="/admin/categories" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/categories') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Categories
               </Link>
+        <div className="space-y-1">
+          <Link 
+            href="/admin/orders" 
+            className={clsx(
+              "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
+              isEcommerceActive ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <ShoppingCart size={20} /> E-Commerce
+            </div>
+            {isEcommerceActive ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          </Link>
+
+          {/* Sub-options for E-Commerce */}
+          <div className={clsx(
+            "overflow-hidden transition-all duration-300 ease-in-out",
+            isEcommerceActive ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
+          )}>
+            <div className="pl-3 py-1 space-y-1 border-l-2 border-gray-100 ml-8 mt-1">
+              <Link href="/admin/orders" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/orders') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Orders
+              </Link>
+              <Link href="/admin/products" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/products') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Products
+              </Link>
+              <Link href="/admin/customers" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/customers') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Customers
+              </Link>
+              <Link href="/admin/settings/ecommerce" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/ecommerce' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Settings
+              </Link>
             </div>
           </div>
         </div>
-        
-        <Link href="/admin/orders" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/orders') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
-          <ShoppingCart size={20} /> Orders
-        </Link>
-        <Link href="/admin/products" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/products') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
-          <Package size={20} /> Products
-        </Link>
         <Link href="/admin/pages" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/pages') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <Files size={20} /> Pages
         </Link>
@@ -138,9 +164,6 @@ export default function Sidebar() {
               </Link>
               <Link href="/admin/settings/advanced" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/advanced' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Advanced
-              </Link>
-              <Link href="/admin/settings/ecommerce" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/ecommerce' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
-                E-Commerce
               </Link>
             </div>
           </div>
