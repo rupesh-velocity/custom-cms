@@ -14,6 +14,15 @@ export default function NewProductPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
+  const [tempSlug, setTempSlug] = useState('');
+  const [origin, setOrigin] = useState('');
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
   
   const [product, setProduct] = useState({
     title: '',
@@ -98,6 +107,39 @@ export default function NewProductPage() {
               placeholder="Product Name"
               className="w-full text-xl px-4 py-3 outline-none border-b border-[#c3c4c7]"
             />
+            {product.title && (
+              <div className="px-4 py-2 flex items-center gap-1 text-[13px] text-[#50575e] border-b border-[#c3c4c7]">
+                <span className="font-semibold">Permalink:</span>
+                <span className="text-[#0073aa]">
+                  {origin ? origin : 'http://localhost:3000'}/product/
+                  {isEditingSlug ? (
+                    <input 
+                      type="text" 
+                      value={tempSlug} 
+                      onChange={(e) => setTempSlug(e.target.value)}
+                      className="border border-[#8c8f94] rounded-[3px] px-1 h-[22px] bg-white ml-1 text-black outline-none"
+                    />
+                  ) : (
+                    <span>{product.slug || product.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')}</span>
+                  )}
+                  /
+                </span>
+                {isEditingSlug ? (
+                  <div className="flex gap-1 ml-2">
+                    <button onClick={() => {
+                      setProduct(prev => ({...prev, slug: tempSlug}));
+                      setIsEditingSlug(false);
+                    }} className="bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-2 py-0.5 rounded-[3px] hover:bg-[#f1f1f1]">OK</button>
+                    <button onClick={() => setIsEditingSlug(false)} className="text-[#0071a1] underline px-2 py-0.5 hover:text-[#005a80]">Cancel</button>
+                  </div>
+                ) : (
+                  <button onClick={() => {
+                    setTempSlug(product.slug || product.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''));
+                    setIsEditingSlug(true);
+                  }} className="ml-2 bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-2 py-0.5 rounded-[3px] hover:bg-[#f1f1f1]">Edit</button>
+                )}
+              </div>
+            )}
             <div className="p-4 h-[400px]">
               <TipTapEditor 
                 content={product.description} 
