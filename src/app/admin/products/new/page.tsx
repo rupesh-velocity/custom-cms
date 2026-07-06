@@ -346,18 +346,52 @@ export default function NewProductPage() {
                           </button>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="text-[12px] text-gray-600 block">Attributes JSON (e.g. {"{\"Size\":\"Large\"}"})</label>
-                            <input 
-                              type="text"
-                              value={v.attributes}
-                              onChange={(e) => {
-                                const newVars = [...product.variations];
-                                newVars[idx].attributes = e.target.value;
-                                setProduct(prev => ({...prev, variations: newVars}));
-                              }}
-                              className="w-full border border-[#8c8f94] px-2 py-1 text-[13px]"
-                            />
+                          <div className="space-y-2 col-span-2 mb-2">
+                            <label className="text-[13px] font-semibold text-gray-700 block">Variation Attributes</label>
+                            {product.attributes.length === 0 && (
+                              <p className="text-xs text-red-500">Please define attributes first before setting variations.</p>
+                            )}
+                            <div className="grid grid-cols-2 gap-4">
+                              {product.attributes.map(attr => {
+                                if (!attr.name) return null;
+                                const opts = (attr.options || '').split('|').map(s => s.trim()).filter(Boolean);
+                                if (opts.length === 0) return null;
+                                
+                                let currentVal = '';
+                                try {
+                                  const parsed = JSON.parse(v.attributes || '{}');
+                                  currentVal = parsed[attr.name] || '';
+                                } catch(e) {}
+
+                                return (
+                                  <div key={attr.name} className="space-y-1">
+                                    <label className="text-[12px] text-gray-600 block">{attr.name}</label>
+                                    <select
+                                      value={currentVal}
+                                      onChange={(e) => {
+                                        const newVars = [...product.variations];
+                                        try {
+                                          const parsed = JSON.parse(v.attributes || '{}');
+                                          if (e.target.value) {
+                                            parsed[attr.name] = e.target.value;
+                                          } else {
+                                            delete parsed[attr.name];
+                                          }
+                                          newVars[idx].attributes = JSON.stringify(parsed);
+                                          setProduct(prev => ({...prev, variations: newVars}));
+                                        } catch(err) {}
+                                      }}
+                                      className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] bg-white outline-none"
+                                    >
+                                      <option value="">Any {attr.name}...</option>
+                                      {opts.map(opt => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
                           <div className="space-y-1">
                             <label className="text-[12px] text-gray-600 block">SKU</label>
