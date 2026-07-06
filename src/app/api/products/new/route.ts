@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     const product = await prisma.product.create({
       data: {
         title: data.title,
-        slug: slugify(data.title, { lower: true, strict: true }),
+        slug: data.slug || slugify(data.title, { lower: true, strict: true }),
         description: data.description,
         type: data.type,
         price: data.price ? parseFloat(data.price) : 0,

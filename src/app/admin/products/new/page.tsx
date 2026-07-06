@@ -26,6 +26,7 @@ export default function NewProductPage() {
   
   const [product, setProduct] = useState({
     title: '',
+    slug: '',
     description: '',
     type: 'SIMPLE',
     price: '',
