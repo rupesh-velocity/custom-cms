@@ -4,21 +4,22 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-interface ProductData {
+interface ItemData {
   id: number;
   title: string;
   price: number;
   image: string | null;
+  type: 'course' | 'product';
 }
 
 interface CheckoutClientProps {
-  product: ProductData;
+  item: ItemData;
   isAuthenticated: boolean;
   initialEmail: string;
   initialName: string;
 }
 
-export default function CheckoutClient({ product, isAuthenticated, initialEmail, initialName }: CheckoutClientProps) {
+export default function CheckoutClient({ item, isAuthenticated, initialEmail, initialName }: CheckoutClientProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   
@@ -44,7 +45,8 @@ export default function CheckoutClient({ product, isAuthenticated, initialEmail,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          productId: product.id,
+          itemId: item.id,
+          type: item.type,
           name: formData.name,
           email: formData.email,
           password: formData.password
@@ -57,7 +59,7 @@ export default function CheckoutClient({ product, isAuthenticated, initialEmail,
         throw new Error(data.error || 'Checkout failed');
       }
 
-      toast.success('Payment successful!');
+      toast.success(item.type === 'course' ? 'Enrollment successful!' : 'Payment successful!');
       router.push('/my-account');
       
     } catch (error: any) {
@@ -101,7 +103,7 @@ export default function CheckoutClient({ product, isAuthenticated, initialEmail,
             
             {!isAuthenticated && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Create a Password (to access your course later)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Create a Password (to access your {item.type} later)</label>
                 <input 
                   type="password" name="password" required
                   value={formData.password} onChange={handleChange}
@@ -149,7 +151,7 @@ export default function CheckoutClient({ product, isAuthenticated, initialEmail,
             type="submit" disabled={isLoading}
             className="w-full py-3 px-6 bg-[#5e3fde] text-white font-bold rounded-lg hover:bg-[#4b32b2] transition-colors disabled:opacity-50"
           >
-            {isLoading ? 'Processing...' : `Pay $${product.price} Now`}
+            {isLoading ? 'Processing...' : `Pay $${item.price} Now`}
           </button>
         </form>
       </div>
@@ -160,21 +162,21 @@ export default function CheckoutClient({ product, isAuthenticated, initialEmail,
           <h2 className="text-lg font-bold text-gray-900 mb-4">Order Summary</h2>
           <div className="flex gap-4 items-start mb-6">
             <div className="w-20 h-20 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden relative">
-              {product.image ? (
-                <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+              {item.image ? (
+                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Image</div>
               )}
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">{product.title}</h3>
-              <p className="text-[#5e3fde] font-bold mt-1">${product.price}</p>
+              <h3 className="font-semibold text-gray-900">{item.title}</h3>
+              <p className="text-[#5e3fde] font-bold mt-1">${item.price}</p>
             </div>
           </div>
           <hr className="border-gray-100 mb-4" />
           <div className="flex justify-between items-center text-lg font-bold text-gray-900">
             <span>Total</span>
-            <span>${product.price}</span>
+            <span>${item.price}</span>
           </div>
           <p className="text-xs text-gray-500 mt-4 text-center">
             Secured by MockPay. Your card will not be charged.

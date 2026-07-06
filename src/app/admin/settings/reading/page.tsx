@@ -10,6 +10,7 @@ export default function ReadingSettings() {
     homepage_page_id: '',
     posts_page_id: '',
     shop_page_id: '',
+    courses_page_id: '',
     blog_pages_at_most: '10',
     syndication_feeds_at_most: '10',
     feed_include: 'full_text',
@@ -29,6 +30,7 @@ export default function ReadingSettings() {
         homepage_page_id: settingsData.homepage_page_id || '',
         posts_page_id: settingsData.posts_page_id || '',
         shop_page_id: settingsData.shop_page_id || '',
+        courses_page_id: settingsData.courses_page_id || '',
         blog_pages_at_most: settingsData.blog_pages_at_most || '10',
         syndication_feeds_at_most: settingsData.syndication_feeds_at_most || '10',
         feed_include: settingsData.feed_include || 'full_text',
@@ -133,6 +135,21 @@ export default function ReadingSettings() {
               <select
                 name="shop_page_id"
                 value={settings.shop_page_id}
+                onChange={handleChange}
+                disabled={settings.homepage_displays !== 'static_page'}
+                className="flex-1 max-w-xs border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-400"
+              >
+                <option value="">— Select —</option>
+                {pages.map(page => (
+                  <option key={page.id} value={page.id}>{page.title}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="w-24 text-sm text-gray-600">Courses page:</label>
+              <select
+                name="courses_page_id"
+                value={settings.courses_page_id}
                 onChange={handleChange}
                 disabled={settings.homepage_displays !== 'static_page'}
                 className="flex-1 max-w-xs border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-400"

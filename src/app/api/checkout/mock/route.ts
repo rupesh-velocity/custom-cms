@@ -6,10 +6,10 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
   try {
-    const { productId, name, email, password } = await req.json();
+    const { itemId, type, name, email, password } = await req.json();
 
-    if (!productId) {
-      return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+    if (!itemId) {
+      return NextResponse.json({ error: 'Item ID required' }, { status: 400 });
     }
 
     // Verify Authentication
@@ -64,57 +64,66 @@ export async function POST(req: Request) {
       isNewUser = true;
     }
 
-    const product = await prisma.product.findUnique({
-      where: { id: parseInt(productId) }
-    });
+    let responseData: any = { success: true };
 
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
-
-    // Create an order (simplified for mock checkout)
-    const order = await prisma.order.create({
-      data: {
-        customerId: userId,
-        customerEmail: userEmail,
-        orderNumber: `MOCK-${Date.now()}`,
-        status: 'COMPLETED',
-        totalAmount: product.salePrice || product.price || 0,
-        billingAddress: '{}',
-        shippingAddress: '{}',
-        items: {
-          create: [{
-            productId: product.id,
-            name: product.title,
-            quantity: 1,
-            price: product.salePrice || product.price || 0,
-            total: product.salePrice || product.price || 0
-          }]
-        }
+    if (type === 'course') {
+      const course = await prisma.course.findUnique({ where: { id: parseInt(itemId) } });
+      if (!course) {
+        return NextResponse.json({ error: 'Course not found' }, { status: 404 });
       }
-    });
 
-    // If product has a linked course, grant access!
-    if (product.linkedCourseId) {
-      // Check if access already exists
       const existingAccess = await prisma.userCourseAccess.findFirst({
-        where: {
-          userId: userId,
-          courseId: product.linkedCourseId
-        }
+        where: { userId: userId, courseId: course.id }
       });
       
       if (!existingAccess) {
         await prisma.userCourseAccess.create({
-          data: {
-            userId: userId,
-            courseId: product.linkedCourseId
-          }
+          data: { userId: userId, courseId: course.id }
         });
       }
+      responseData.enrollmentId = course.id;
+    } else {
+      const product = await prisma.product.findUnique({ where: { id: parseInt(itemId) } });
+      if (!product) {
+        return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      }
+
+      const order = await prisma.order.create({
+        data: {
+          customerId: userId,
+          customerEmail: userEmail,
+          orderNumber: `MOCK-${Date.now()}`,
+          status: 'COMPLETED',
+          totalAmount: product.salePrice || product.price || 0,
+          billingAddress: '{}',
+          shippingAddress: '{}',
+          items: {
+            create: [{
+              productId: product.id,
+              name: product.title,
+              quantity: 1,
+              price: product.salePrice || product.price || 0,
+              total: product.salePrice || product.price || 0
+            }]
+          }
+        }
+      });
+
+      if (product.linkedCourseId) {
+        const existingAccess = await prisma.userCourseAccess.findFirst({
+          where: { userId: userId, courseId: product.linkedCourseId }
+        });
+        
+        if (!existingAccess) {
+          await prisma.userCourseAccess.create({
+            data: { userId: userId, courseId: product.linkedCourseId }
+          });
+        }
+      }
+      responseData.orderId = order.id;
     }
 
-    const response = NextResponse.json({ success: true, orderId: order.id });
+    const response = NextResponse.json(responseData);
 
     // Set cookie if we just created a new user
     if (isNewUser && userId) {

@@ -16,9 +16,9 @@ interface ShopItem {
   url: string;
 }
 
-export default function ShopClient({ initialItems }: { initialItems: ShopItem[] }) {
+export default function ShopClient({ initialItems, mode = 'all' }: { initialItems: ShopItem[], mode?: 'all' | 'courses' | 'products' }) {
   const [items] = useState<ShopItem[]>(initialItems);
-  const [filter, setFilter] = useState<'all' | 'course' | 'product'>('all');
+  const [filter, setFilter] = useState<'all' | 'course' | 'product'>(mode === 'courses' ? 'course' : mode === 'products' ? 'product' : 'all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredItems = items.filter(item => {
@@ -28,37 +28,39 @@ export default function ShopClient({ initialItems }: { initialItems: ShopItem[] 
   });
 
   return (
-    <div className="bg-gray-50 min-h-screen py-16">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Our Shop</h1>
-          <p className="text-lg text-gray-600">Browse our selection of premium courses and products.</p>
-        </div>
-
+    <div className="bg-transparent py-8">
+      <div className="container mx-auto max-w-7xl">
         {/* Toolbar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex bg-gray-100/80 p-1.5 rounded-xl w-full md:w-auto">
-            <button
-              onClick={() => setFilter('all')}
-              className={`flex-1 md:px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${filter === 'all' ? 'bg-white text-[#5e3fde] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-            >
-              All Items
-            </button>
-            <button
-              onClick={() => setFilter('course')}
-              className={`flex-1 md:px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${filter === 'course' ? 'bg-white text-[#5e3fde] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-            >
-              <BookOpen size={16} />
-              Courses
-            </button>
-            <button
-              onClick={() => setFilter('product')}
-              className={`flex-1 md:px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${filter === 'product' ? 'bg-white text-[#5e3fde] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-            >
-              <ShoppingBag size={16} />
-              Products
-            </button>
-          </div>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
+          
+          {mode === 'all' ? (
+            <div className="flex bg-gray-100/80 p-1.5 rounded-xl w-full md:w-auto shadow-sm">
+              <button
+                onClick={() => setFilter('all')}
+                className={`flex-1 md:px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${filter === 'all' ? 'bg-white text-[#5e3fde] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                All Items
+              </button>
+              <button
+                onClick={() => setFilter('course')}
+                className={`flex-1 md:px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${filter === 'course' ? 'bg-white text-[#5e3fde] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                <BookOpen size={16} />
+                Courses
+              </button>
+              <button
+                onClick={() => setFilter('product')}
+                className={`flex-1 md:px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${filter === 'product' ? 'bg-white text-[#5e3fde] shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                <ShoppingBag size={16} />
+                Products
+              </button>
+            </div>
+          ) : (
+            <div className="w-full md:w-auto font-outfit text-xl font-bold text-gray-800">
+              {mode === 'courses' ? 'Explore Courses' : 'Explore Products'}
+            </div>
+          )}
 
           <div className="relative w-full md:w-80">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />

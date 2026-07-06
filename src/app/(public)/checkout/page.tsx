@@ -3,27 +3,52 @@ import CheckoutClient from './CheckoutClient';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 
-export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ productId?: string }> }) {
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ id?: string, type?: string, productId?: string }> }) {
   const params = await searchParams;
   
-  if (!params.productId) {
+  const id = params.id || params.productId;
+  const type = params.type || 'product';
+
+  if (!id) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold mb-4 text-gray-900">Invalid Checkout Link</h1>
-        <p className="text-gray-500">No product was specified for checkout.</p>
+        <p className="text-gray-500">No item was specified for checkout.</p>
       </div>
     );
   }
   
-  const product = await prisma.product.findUnique({
-    where: { id: parseInt(params.productId) }
-  });
+  let itemData = null;
 
-  if (!product) {
+  if (type === 'course') {
+    const course = await prisma.course.findUnique({ where: { id: parseInt(id) } });
+    if (course) {
+      itemData = {
+        id: course.id,
+        title: course.title,
+        price: 0, // Courses might have price via linked product, or free for now
+        image: course.featuredImage,
+        type: 'course'
+      };
+    }
+  } else {
+    const product = await prisma.product.findUnique({ where: { id: parseInt(id) } });
+    if (product) {
+      itemData = {
+        id: product.id,
+        title: product.title,
+        price: product.salePrice || product.price || 0,
+        image: product.featuredImage,
+        type: 'product'
+      };
+    }
+  }
+
+  if (!itemData) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-2xl font-bold mb-4 text-gray-900">Product Not Found</h1>
-        <p className="text-gray-500">The product you are trying to purchase does not exist.</p>
+        <h1 className="text-2xl font-bold mb-4 text-gray-900">Item Not Found</h1>
+        <p className="text-gray-500">The item you are trying to purchase does not exist.</p>
       </div>
     );
   }
@@ -51,12 +76,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
       <div className="max-w-4xl mx-auto px-6">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">Secure Checkout</h1>
         <CheckoutClient 
-          product={{ 
-            id: product.id, 
-            title: product.title, 
-            price: product.salePrice || product.price || 0,
-            image: product.featuredImage 
-          }} 
+          item={itemData}
           isAuthenticated={!!userEmail}
           initialEmail={userEmail}
           initialName={userName}

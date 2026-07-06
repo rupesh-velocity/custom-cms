@@ -119,6 +119,9 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
   
   const shopPageSetting = await prisma.setting.findUnique({ where: { key: 'shop_page_id' } });
   const isShopPage = data.__type === 'page' && shopPageSetting?.value === String(data.id);
+  
+  const coursesPageSetting = await prisma.setting.findUnique({ where: { key: 'courses_page_id' } });
+  const isCoursesPage = data.__type === 'page' && coursesPageSetting?.value === String(data.id);
 
   // Handle page/post level SEO redirect if configured
   if (data.redirectUrl) {
@@ -181,19 +184,27 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
   const showAuthorBox = showAuthorBoxSetting?.value !== 'false';
 
   let shopItems: any[] = [];
-  if (isShopPage) {
-    const [courses, products] = await Promise.all([
-      prisma.course.findMany({
+  let shopMode: 'products' | 'courses' | 'all' = 'all';
+
+  if (isShopPage || isCoursesPage) {
+    let courses: any[] = [];
+    let products: any[] = [];
+
+    if (isCoursesPage) {
+      shopMode = 'courses';
+      courses = await prisma.course.findMany({
         where: { status: 'Published' },
         select: { id: true, title: true, slug: true, featuredImage: true },
         orderBy: { createdAt: 'desc' }
-      }),
-      prisma.product.findMany({
+      });
+    } else {
+      shopMode = 'products';
+      products = await prisma.product.findMany({
         where: { status: 'Published' },
         select: { id: true, title: true, slug: true, featuredImage: true, price: true, salePrice: true, type: true },
         orderBy: { createdAt: 'desc' }
-      })
-    ]);
+      });
+    }
 
     const normalizedCourses = courses.map(c => ({
       id: `course-${c.id}`,
@@ -432,9 +443,9 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
           )}
           <div className="mt-12" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} />
           
-          {isShopPage && (
+          {(isShopPage || isCoursesPage) && (
             <div className="mt-8">
-              <ShopClient initialItems={shopItems} />
+              <ShopClient initialItems={shopItems} mode={shopMode} />
             </div>
           )}
         </main>
