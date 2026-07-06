@@ -31,7 +31,6 @@ export default function EditProductPage() {
     manageStock: false,
     stockQuantity: 0,
     status: 'Published',
-    status: 'Published',
     featuredImage: ''
   });
 
