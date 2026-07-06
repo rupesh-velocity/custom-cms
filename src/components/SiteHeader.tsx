@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, LogIn, User } from 'lucide-react';
 import MobileMenu from '@/components/MobileMenu';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 
 // Helper to build a nested tree from the flat items list
 function buildTree(items: any[], parentId: number | null = null, homepageSlug: string = ''): any[] {
@@ -133,6 +135,19 @@ export default async function SiteHeader() {
 
   const menuTree = primaryMenu ? buildTree(primaryMenu.items, null, homepageSlug) : [];
 
+  // Check Auth State
+  const cookieStore = await cookies();
+  const token = cookieStore.get('cms_session')?.value;
+  let isAuthenticated = false;
+  
+  if (token) {
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_super_secret_key_change_in_production');
+      await jwtVerify(token, secret);
+      isAuthenticated = true;
+    } catch (e) {}
+  }
+
   return (
     <header className="site-header h-auto">
       <div className="container py-4 lg:h-full flex flex-wrap items-center justify-between">
@@ -158,8 +173,22 @@ export default async function SiteHeader() {
             )}
           </nav>
           
-          <div className="hidden lg:block">
-            <Link href="#on-demand" className="theme-btn theme-btn-primary">
+          <div className="hidden lg:flex items-center gap-6">
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <Link href="/my-account" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde]">
+                  <User size={16} /> My Dashboard
+                </Link>
+                <form action="/api/users/logout" method="POST">
+                  <button type="submit" className="text-sm font-medium text-red-500 hover:text-red-700">Logout</button>
+                </form>
+              </div>
+            ) : (
+              <Link href="/login" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde]">
+                <LogIn size={16} /> Login
+              </Link>
+            )}
+            <Link href="#on-demand" className="theme-btn theme-btn-primary ml-2">
               <span>On Demand Classes</span><span className="btn-icon">↗</span>
             </Link>
           </div>

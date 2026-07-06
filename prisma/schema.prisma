@@ -80,7 +80,7 @@ model Course {
   slug            String   @unique
   contentHtml     String?
   contentText     String?
-  videoUrl        String?
+  videos          Json?    @default("[]")
   metaDescription String?
   focusKeyword    String?
   status          String   @default("Draft")

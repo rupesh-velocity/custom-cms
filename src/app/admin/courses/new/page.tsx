@@ -14,7 +14,7 @@ export default function NewCourse() {
   const [title, setTitle] = useState('');
   const [contentHtml, setContentHtml] = useState('<p>Start writing your course description here...</p>');
   const [contentText, setContentText] = useState('Start writing your course description here...');
-  const [videoUrl, setVideoUrl] = useState('');
+  const [videos, setVideos] = useState<{title: string, url: string}[]>([{ title: '', url: '' }]);
   
   const [focusKeyword, setFocusKeyword] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
@@ -44,7 +44,7 @@ export default function NewCourse() {
           slug: slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
           contentHtml,
           contentText,
-          videoUrl,
+          videos: videos.filter(v => v.title.trim() !== '' && v.url.trim() !== ''),
           metaDescription,
           focusKeyword,
           status: finalStatus,
@@ -82,19 +82,62 @@ export default function NewCourse() {
         />
         
         <div className="bg-white border border-[#c3c4c7] mt-4">
-          <div className="px-4 py-3 border-b border-[#c3c4c7] font-semibold text-[#1d2327]">
-            Course Video
+          <div className="px-4 py-3 border-b border-[#c3c4c7] font-semibold text-[#1d2327] flex justify-between items-center">
+            <span>Course Curriculum (Videos)</span>
+            <button 
+              type="button" 
+              onClick={() => setVideos([...videos, { title: '', url: '' }])}
+              className="text-[#5e3fde] text-sm hover:underline"
+            >
+              + Add Video
+            </button>
           </div>
-          <div className="p-4">
-            <label className="block text-[13px] font-semibold text-[#2c3338] mb-1">Video Embed URL</label>
-            <input 
-              type="text" 
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              placeholder="e.g. https://www.youtube.com/embed/..."
-              className="w-full border border-[#8c8f94] px-3 py-1.5 rounded-[3px] text-[13px] focus:outline-none focus:border-[#5e3fde]"
-            />
-            <p className="text-[12px] text-gray-500 mt-1">Enter the embed URL for the course video.</p>
+          <div className="p-4 space-y-4">
+            {videos.map((video, index) => (
+              <div key={index} className="flex gap-4 items-start border border-gray-200 p-3 rounded bg-gray-50 relative">
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <label className="block text-[12px] font-semibold text-gray-700 mb-1">Video Title</label>
+                    <input 
+                      type="text" 
+                      value={video.title}
+                      onChange={(e) => {
+                        const newVids = [...videos];
+                        newVids[index].title = e.target.value;
+                        setVideos(newVids);
+                      }}
+                      placeholder="e.g. Lesson 1: Introduction"
+                      className="w-full border border-[#8c8f94] px-3 py-1.5 rounded-[3px] text-[13px] focus:outline-none focus:border-[#5e3fde]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[12px] font-semibold text-gray-700 mb-1">Video Embed URL</label>
+                    <input 
+                      type="text" 
+                      value={video.url}
+                      onChange={(e) => {
+                        const newVids = [...videos];
+                        newVids[index].url = e.target.value;
+                        setVideos(newVids);
+                      }}
+                      placeholder="e.g. https://www.youtube.com/embed/..."
+                      className="w-full border border-[#8c8f94] px-3 py-1.5 rounded-[3px] text-[13px] focus:outline-none focus:border-[#5e3fde]"
+                    />
+                  </div>
+                </div>
+                {videos.length > 1 && (
+                  <button 
+                    type="button"
+                    onClick={() => setVideos(videos.filter((_, i) => i !== index))}
+                    className="text-red-500 hover:text-red-700 p-1"
+                    title="Remove Video"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </button>
+                )}
+              </div>
+            ))}
+            <p className="text-[12px] text-gray-500 mt-2">Enter the title and embed URLs for the course videos. The order here dictates the playlist order.</p>
           </div>
         </div>
         

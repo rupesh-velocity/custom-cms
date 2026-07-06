@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         slug: uniqueSlug,
         contentHtml: data.contentHtml || '',
         contentText: data.contentText || '',
-        videoUrl: data.videoUrl || null,
+        videos: data.videos || [],
         metaDescription: data.metaDescription || '',
         focusKeyword: data.focusKeyword || '',
         status: data.status || 'Draft',

@@ -28,7 +28,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         slug: data.slug || slugify(data.title, { lower: true, strict: true }),
         contentHtml: data.contentHtml,
         contentText: data.contentText,
-        videoUrl: data.videoUrl,
+        videos: data.videos,
         metaDescription: data.metaDescription,
         focusKeyword: data.focusKeyword,
         status: data.status,
