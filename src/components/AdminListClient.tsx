@@ -99,7 +99,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                   {item.status !== 'Published' && item.status !== 'Trash' && <span className="font-bold text-gray-500 ml-1">— {item.status}</span>}
                   
                   <div className="opacity-0 group-hover:opacity-100 flex gap-2 mt-1 text-[13px] font-normal transition-opacity duration-150">
-                     <Link href={`/admin/${type}/${item.id}`} className="text-[#5e3fde] hover:underline">Edit</Link>
+                     <Link href={type === 'courses' ? `/admin/courses/${item.id}/edit` : `/admin/${type}/${item.id}`} className="text-[#5e3fde] hover:underline">Edit</Link>
                      <span className="text-[#ddd]">|</span>
                      {item.status !== 'Trash' && (
                        <>
@@ -107,7 +107,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                          <span className="text-[#ddd]">|</span>
                        </>
                      )}
-                     <Link href={`/${item.slug}`} className="text-[#5e3fde] hover:underline" target="_blank">View</Link>
+                     <Link href={type === 'courses' ? `/courses/${item.slug}` : `/${item.slug}`} className="text-[#5e3fde] hover:underline" target="_blank">View</Link>
                   </div>
                 </td>
                 <td className="p-2 align-top text-[13px]">
