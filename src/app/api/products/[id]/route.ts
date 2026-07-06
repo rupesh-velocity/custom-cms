@@ -7,7 +7,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const resolvedParams = await params;
     const product = await prisma.product.findUnique({
       where: { id: parseInt(resolvedParams.id) },
-      include: { categories: true }
+      include: { 
+        categories: true,
+        attributes: true,
+        variations: true
+      }
     });
     
     if (!product) return NextResponse.json({ error: 'Product not found' }, { status: 404 });
@@ -36,6 +40,28 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         stockQuantity: parseInt(data.stockQuantity) || 0,
         status: data.status,
         featuredImage: data.featuredImage || null,
+        attributes: {
+          deleteMany: {},
+          create: data.attributes ? data.attributes.map((attr: any) => ({
+            name: attr.name,
+            options: attr.options
+          })) : []
+        },
+        variations: {
+          deleteMany: {},
+          create: data.variations ? data.variations.map((v: any) => ({
+            attributes: v.attributes,
+            price: v.price ? parseFloat(v.price) : 0,
+            salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
+            sku: v.sku || null,
+            manageStock: v.manageStock || false,
+            stockQuantity: parseInt(v.stockQuantity) || 0
+          })) : []
+        }
+      },
+      include: {
+        attributes: true,
+        variations: true
       }
     });
     

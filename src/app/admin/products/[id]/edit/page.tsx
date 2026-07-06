@@ -31,7 +31,9 @@ export default function EditProductPage() {
     manageStock: false,
     stockQuantity: 0,
     status: 'Published',
-    featuredImage: ''
+    featuredImage: '',
+    attributes: [] as { name: string; options: string }[],
+    variations: [] as { attributes: string; price: string; salePrice: string; sku: string; manageStock: boolean; stockQuantity: number }[]
   });
 
   const [expanded, setExpanded] = useState({
@@ -62,8 +64,15 @@ export default function EditProductPage() {
           sku: data.sku || '',
           manageStock: data.manageStock || false,
           stockQuantity: data.stockQuantity || 0,
-          status: data.status || 'Published',
-          featuredImage: data.featuredImage || ''
+          status: data.status || 'Draft',
+          featuredImage: data.featuredImage || '',
+          attributes: data.attributes || [],
+          variations: data.variations ? data.variations.map((v: any) => ({
+            ...v,
+            price: v.price?.toString() || '',
+            salePrice: v.salePrice?.toString() || '',
+            stockQuantity: v.stockQuantity || 0
+          })) : []
         });
         setIsLoading(false);
       })
@@ -195,7 +204,7 @@ export default function EditProductPage() {
                 className="border border-[#8c8f94] rounded-[3px] px-2 py-1 text-[13px] outline-none focus:border-[#5e3fde]"
               >
                 <option value="SIMPLE">Simple product</option>
-                <option value="VARIABLE" disabled>Variable product (Coming Soon)</option>
+                <option value="VARIABLE">Variable product</option>
               </select>
             </div>
             
@@ -214,6 +223,20 @@ export default function EditProductPage() {
                 >
                   Inventory
                 </button>
+                <button 
+                  onClick={() => setActiveTab('attributes')}
+                  className={`text-left px-4 py-2.5 text-[13px] ${activeTab === 'attributes' ? 'bg-white font-semibold border-l-4 border-[#5e3fde] text-[#5e3fde]' : 'hover:bg-[#f0f0f1] text-gray-700'}`}
+                >
+                  Attributes
+                </button>
+                {product.type === 'VARIABLE' && (
+                  <button 
+                    onClick={() => setActiveTab('variations')}
+                    className={`text-left px-4 py-2.5 text-[13px] ${activeTab === 'variations' ? 'bg-white font-semibold border-l-4 border-[#5e3fde] text-[#5e3fde]' : 'hover:bg-[#f0f0f1] text-gray-700'}`}
+                  >
+                    Variations
+                  </button>
+                )}
               </div>
               
               {/* Tab Content */}
@@ -283,6 +306,144 @@ export default function EditProductPage() {
                         />
                       </div>
                     )}
+                  </div>
+                )}
+                {activeTab === 'attributes' && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-gray-500 mb-4">Add attributes (like Size or Color) and separate options with a pipe (|). e.g. Small | Medium | Large</p>
+                    {product.attributes.map((attr, idx) => (
+                      <div key={idx} className="flex gap-2 items-start border border-[#c3c4c7] p-3 bg-gray-50 mb-2">
+                        <div className="flex-1 space-y-2">
+                          <input 
+                            type="text" 
+                            placeholder="Name (e.g. Size)" 
+                            value={attr.name}
+                            onChange={(e) => {
+                              const newAttrs = [...product.attributes];
+                              newAttrs[idx].name = e.target.value;
+                              setProduct(prev => ({...prev, attributes: newAttrs}));
+                            }}
+                            className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] outline-none"
+                          />
+                          <textarea 
+                            placeholder="Values (e.g. Small | Medium | Large)" 
+                            value={attr.options}
+                            onChange={(e) => {
+                              const newAttrs = [...product.attributes];
+                              newAttrs[idx].options = e.target.value;
+                              setProduct(prev => ({...prev, attributes: newAttrs}));
+                            }}
+                            className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] outline-none h-20"
+                          />
+                        </div>
+                        <button 
+                          onClick={() => {
+                            const newAttrs = product.attributes.filter((_, i) => i !== idx);
+                            setProduct(prev => ({...prev, attributes: newAttrs}));
+                          }}
+                          className="text-red-500 text-xs px-2 py-1 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button 
+                      onClick={() => {
+                        setProduct(prev => ({
+                          ...prev, 
+                          attributes: [...prev.attributes, { name: '', options: '' }]
+                        }));
+                      }}
+                      className="border border-[#c3c4c7] px-3 py-1.5 text-[13px] bg-white hover:bg-gray-50"
+                    >
+                      Add Attribute
+                    </button>
+                  </div>
+                )}
+                {activeTab === 'variations' && (
+                  <div className="space-y-4">
+                    <p className="text-xs text-gray-500 mb-4">Add variations manually after you have defined attributes.</p>
+                    {product.variations.map((v, idx) => (
+                      <div key={idx} className="border border-[#c3c4c7] p-3 bg-gray-50 mb-4 space-y-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-semibold text-[13px]">Variation #{idx + 1}</span>
+                          <button 
+                            onClick={() => {
+                              const newVars = product.variations.filter((_, i) => i !== idx);
+                              setProduct(prev => ({...prev, variations: newVars}));
+                            }}
+                            className="text-red-500 text-xs hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[12px] text-gray-600 block">Attributes JSON (e.g. {"{\"Size\":\"Large\"}"})</label>
+                            <input 
+                              type="text"
+                              value={v.attributes}
+                              onChange={(e) => {
+                                const newVars = [...product.variations];
+                                newVars[idx].attributes = e.target.value;
+                                setProduct(prev => ({...prev, variations: newVars}));
+                              }}
+                              className="w-full border border-[#8c8f94] px-2 py-1 text-[13px]"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[12px] text-gray-600 block">SKU</label>
+                            <input 
+                              type="text"
+                              value={v.sku}
+                              onChange={(e) => {
+                                const newVars = [...product.variations];
+                                newVars[idx].sku = e.target.value;
+                                setProduct(prev => ({...prev, variations: newVars}));
+                              }}
+                              className="w-full border border-[#8c8f94] px-2 py-1 text-[13px]"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[12px] text-gray-600 block">Regular Price</label>
+                            <input 
+                              type="number"
+                              value={v.price}
+                              onChange={(e) => {
+                                const newVars = [...product.variations];
+                                newVars[idx].price = e.target.value;
+                                setProduct(prev => ({...prev, variations: newVars}));
+                              }}
+                              className="w-full border border-[#8c8f94] px-2 py-1 text-[13px]"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[12px] text-gray-600 block">Sale Price</label>
+                            <input 
+                              type="number"
+                              value={v.salePrice}
+                              onChange={(e) => {
+                                const newVars = [...product.variations];
+                                newVars[idx].salePrice = e.target.value;
+                                setProduct(prev => ({...prev, variations: newVars}));
+                              }}
+                              className="w-full border border-[#8c8f94] px-2 py-1 text-[13px]"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <button 
+                      onClick={() => {
+                        setProduct(prev => ({
+                          ...prev, 
+                          variations: [...prev.variations, { attributes: '{}', price: '', salePrice: '', sku: '', manageStock: false, stockQuantity: 0 }]
+                        }));
+                      }}
+                      className="border border-[#c3c4c7] px-3 py-1.5 text-[13px] bg-white hover:bg-gray-50"
+                    >
+                      Add Variation
+                    </button>
                   </div>
                 )}
               </div>

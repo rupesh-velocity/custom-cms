@@ -19,7 +19,27 @@ export async function POST(req: Request) {
         stockQuantity: parseInt(data.stockQuantity) || 0,
         status: data.status,
         featuredImage: data.featuredImage || null,
+        attributes: data.attributes && data.attributes.length > 0 ? {
+          create: data.attributes.map((attr: any) => ({
+            name: attr.name,
+            options: attr.options
+          }))
+        } : undefined,
+        variations: data.variations && data.variations.length > 0 ? {
+          create: data.variations.map((v: any) => ({
+            attributes: v.attributes,
+            price: v.price ? parseFloat(v.price) : 0,
+            salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
+            sku: v.sku || null,
+            manageStock: v.manageStock || false,
+            stockQuantity: parseInt(v.stockQuantity) || 0
+          }))
+        } : undefined,
       },
+      include: {
+        attributes: true,
+        variations: true
+      }
     });
 
     return NextResponse.json(product);
