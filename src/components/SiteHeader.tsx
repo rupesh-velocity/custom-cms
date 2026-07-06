@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { ChevronDown } from 'lucide-react';
+import MobileMenu from '@/components/MobileMenu';
 
 // Helper to build a nested tree from the flat items list
 function buildTree(items: any[], parentId: number | null = null, homepageSlug: string = ''): any[] {
@@ -159,6 +160,8 @@ export default async function SiteHeader() {
         <Link href="#on-demand" className="theme-btn theme-btn-primary hidden sm:inline-flex">
           <span>On Demand Classes</span><span className="btn-icon">↗</span>
         </Link>
+        
+        <MobileMenu menuTree={menuTree} />
       </div>
     </header>
   );
