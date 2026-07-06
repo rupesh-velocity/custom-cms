@@ -381,21 +381,50 @@ export default function NewProductPage() {
                           
                           <div className="flex-1">
                             {attr.isGlobal ? (
-                              <select 
-                                multiple
-                                value={attr.options.split('|').map(s => s.trim()).filter(Boolean)}
-                                onChange={(e) => {
-                                  const selected = Array.from(e.target.selectedOptions, option => option.value);
-                                  const newAttrs = [...product.attributes];
-                                  newAttrs[idx].options = selected.join(' | ');
-                                  setProduct(prev => ({...prev, attributes: newAttrs}));
-                                }}
-                                className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] outline-none h-[120px]"
-                              >
-                                {globalAttributes.find(ga => ga.name === attr.name)?.terms?.map((t: any) => (
-                                  <option key={t.id} value={t.name}>{t.name}</option>
-                                ))}
-                              </select>
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex gap-2">
+                                    <button 
+                                      onClick={() => {
+                                        const terms = globalAttributes.find(ga => ga.name === attr.name)?.terms || [];
+                                        const newAttrs = [...product.attributes];
+                                        newAttrs[idx].options = terms.map((t: any) => t.name).join(' | ');
+                                        setProduct(prev => ({...prev, attributes: newAttrs}));
+                                      }}
+                                      className="bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-2 py-0.5 rounded-[3px] text-[12px] hover:bg-[#f1f1f1]"
+                                    >Select all</button>
+                                    <button 
+                                      onClick={() => {
+                                        const newAttrs = [...product.attributes];
+                                        newAttrs[idx].options = '';
+                                        setProduct(prev => ({...prev, attributes: newAttrs}));
+                                      }}
+                                      className="bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-2 py-0.5 rounded-[3px] text-[12px] hover:bg-[#f1f1f1]"
+                                    >Select none</button>
+                                  </div>
+                                </div>
+                                {globalAttributes.find(ga => ga.name === attr.name)?.terms?.length ? (
+                                  <select 
+                                    multiple
+                                    value={attr.options.split('|').map(s => s.trim()).filter(Boolean)}
+                                    onChange={(e) => {
+                                      const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                      const newAttrs = [...product.attributes];
+                                      newAttrs[idx].options = selected.join(' | ');
+                                      setProduct(prev => ({...prev, attributes: newAttrs}));
+                                    }}
+                                    className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] outline-none h-[120px]"
+                                  >
+                                    {globalAttributes.find(ga => ga.name === attr.name)?.terms?.map((t: any) => (
+                                      <option key={t.id} value={t.name}>{t.name}</option>
+                                    ))}
+                                  </select>
+                                ) : (
+                                  <div className="w-full border border-[#8c8f94] bg-white text-gray-500 flex items-center justify-center text-[13px] h-[120px]">
+                                    No terms exist. <Link href={`/admin/products/attributes/${globalAttributes.find(ga => ga.name === attr.name)?.id}`} target="_blank" className="text-[#0071a1] ml-1 hover:underline">Add new terms</Link>
+                                  </div>
+                                )}
+                              </div>
                             ) : (
                               <textarea 
                                 placeholder="Values (e.g. Small | Medium | Large). Separate options with a pipe (|)." 
