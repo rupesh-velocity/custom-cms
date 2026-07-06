@@ -5,10 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Save, Loader2, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import dynamic from 'next/dynamic';
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+import TipTapEditor from '@/components/TipTapEditor';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -89,12 +86,10 @@ export default function NewProductPage() {
               placeholder="Product Name"
               className="w-full text-xl px-4 py-3 outline-none border-b border-[#c3c4c7]"
             />
-            <div className="p-4">
-              <ReactQuill 
-                value={product.description} 
+            <div className="p-4 h-[400px]">
+              <TipTapEditor 
+                content={product.description} 
                 onChange={(content) => setProduct(prev => ({ ...prev, description: content }))}
-                className="h-[250px] mb-12"
-                theme="snow"
               />
             </div>
           </div>
