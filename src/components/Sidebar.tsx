@@ -26,6 +26,9 @@ export default function Sidebar() {
         <Link href="/admin" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname === '/admin' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <LayoutDashboard size={20} /> Dashboard
         </Link>
+        <Link href="/admin/media" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/media') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+          <ImageIcon size={20} /> Media
+        </Link>
         <div className="space-y-1">
           <Link 
             href="/admin/posts" 
@@ -65,7 +68,7 @@ export default function Sidebar() {
 
         <div className="space-y-1">
           <Link 
-            href="/admin/orders" 
+            href="/admin/settings/ecommerce" 
             className={clsx(
               "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
               isEcommerceActive ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
@@ -98,12 +101,6 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
-        <Link href="/admin/media" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/media') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
-          <ImageIcon size={20} /> Media
-        </Link>
-        <Link href="/admin/users" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/users') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
-          <Users size={20} /> Users
-        </Link>
         <Link href="/admin/menus" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/menus') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <MenuIcon size={20} /> Menus
         </Link>
@@ -140,6 +137,10 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
+
+        <Link href="/admin/users" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/users') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+          <Users size={20} /> Users
+        </Link>
         
         <div className="space-y-1">
           <Link 
