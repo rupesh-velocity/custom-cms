@@ -75,10 +75,8 @@ export default function EcommerceSettingsPage() {
 
       {/* WooCommerce style horizontal tabs */}
       <div className="flex border-b border-[#c3c4c7] mb-6 overflow-x-auto scrollbar-hide">
-        {['General', 'Products', 'Tax', 'Shipping', 'Payments', 'Accounts & Privacy', 'Emails', 'Integration'].map(tab => {
-          const tabId = tab.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-          const isActive = activeTab === tabId;
-          // Map default active tab since we renamed 'payments' to 'Payments'
+        {['General', 'Shipping', 'Payments', 'Emails'].map(tab => {
+          const tabId = tab.toLowerCase();
           const displayActiveTab = activeTab === 'payments' ? 'payments' : activeTab;
           
           return (
@@ -187,9 +185,15 @@ export default function EcommerceSettingsPage() {
           </div>
         )}
 
-        {!['general', 'payments', 'shipping'].includes(activeTab) && (
-          <div className="border border-[#c3c4c7] rounded bg-[#f6f7f7] p-12 text-center text-gray-500 text-[14px]">
-            This settings panel is coming in a future update.
+        {activeTab === 'emails' && (
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Email Notifications</h2>
+            <p className="text-[13px] text-gray-500 mb-6">Manage how and where order notifications are sent.</p>
+            
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+              <label className="text-[13px] font-semibold text-gray-700">Admin Email Address</label>
+              <input type="email" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="orders@yourdomain.com" />
+            </div>
           </div>
         )}
       </div>
