@@ -108,6 +108,7 @@ export default function CourseViewerClient({ course }: CourseViewerClientProps) 
           </button>
         </div>
       </div>
+    </div>
     </main>
   );
 }
