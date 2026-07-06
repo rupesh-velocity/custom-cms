@@ -41,15 +41,7 @@ export default async function MyAccountPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-[#2c3338]">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
-        <div className="text-xl font-bold text-[#5e3fde] tracking-tight">YourLogo</div>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <Link href="/" className="text-gray-600 hover:text-[#5e3fde] transition-colors">Home</Link>
-          <span className="text-gray-300">|</span>
-          <span className="text-gray-900 font-semibold">{user.firstName || user.username}</span>
-        </div>
-      </header>
+
 
       <main className="flex-1 max-w-5xl mx-auto w-full p-6 md:p-8">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">My Dashboard</h1>

@@ -16,12 +16,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
-        <div className="text-xl font-bold text-[#5e3fde] tracking-tight">YourLogo</div>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <Link href="/my-account" className="text-gray-600 hover:text-[#5e3fde] transition-colors">My Dashboard</Link>
-        </div>
-      </header>
+
 
       <main className="flex-1 max-w-5xl mx-auto w-full p-6 md:p-12">
         <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden flex flex-col md:flex-row">

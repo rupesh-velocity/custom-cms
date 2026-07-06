@@ -19,7 +19,12 @@ export async function middleware(request: NextRequest) {
       );
       
       // Verify the JWT token
-      await jwtVerify(token, secret);
+      const { payload } = await jwtVerify(token, secret);
+      
+      if (payload.role !== 'Admin') {
+        return NextResponse.redirect(new URL('/my-account', request.url));
+      }
+      
       return NextResponse.next();
     } catch (error) {
       // If token is invalid/expired, redirect to login

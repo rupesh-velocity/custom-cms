@@ -93,7 +93,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                   <input type="checkbox" checked={selectedIds.includes(item.id)} onChange={() => handleSelect(item)} className="border-[#8c8f94] rounded-[2px]" />
                 </th>
                 <td className="p-2 font-medium text-[#5e3fde] align-top">
-                  <Link href={`/admin/${type}/${item.id}`} className="font-bold text-[#5e3fde] text-[14px] hover:underline">
+                  <Link href={type === 'courses' ? `/admin/courses/${item.id}/edit` : `/admin/${type}/${item.id}`} className="font-bold text-[#5e3fde] text-[14px] hover:underline">
                     {item.title || '(no title)'}
                   </Link>
                   {item.status !== 'Published' && item.status !== 'Trash' && <span className="font-bold text-gray-500 ml-1">— {item.status}</span>}
