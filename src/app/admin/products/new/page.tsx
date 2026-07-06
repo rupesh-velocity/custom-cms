@@ -7,6 +7,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import TipTapEditor from '@/components/TipTapEditor';
 import MediaModal from '@/components/MediaModal';
+import { Accordion } from '@/components/ClassicSidebar';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -26,6 +27,14 @@ export default function NewProductPage() {
     status: 'Published',
     featuredImage: ''
   });
+
+  const [expanded, setExpanded] = useState({
+    publish: true,
+    productImage: true,
+    productGallery: true,
+    categories: true
+  });
+  const toggleAccordion = (section: keyof typeof expanded) => setExpanded(prev => ({...prev, [section]: !prev[section]}));
 
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target;
@@ -204,13 +213,10 @@ export default function NewProductPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="w-[280px] shrink-0 font-sans">
           {/* Publish Box */}
-          <div className="bg-white border border-[#c3c4c7]">
-            <div className="px-4 py-3 border-b border-[#c3c4c7] font-semibold text-[14px]">
-              Publish
-            </div>
-            <div className="p-4 space-y-4">
+          <Accordion id="publish" title="Publish" expanded={expanded.publish} toggleAccordion={() => toggleAccordion('publish')} noPadding>
+            <div className="p-3 bg-white space-y-4">
               <div className="flex items-center justify-between text-[13px]">
                 <span className="text-gray-600">Status:</span>
                 <select 
@@ -223,41 +229,42 @@ export default function NewProductPage() {
                   <option value="Published">Published</option>
                 </select>
               </div>
+            </div>
+            <div className="p-3 bg-[#f6f7f7] border-t border-[#c3c4c7] flex justify-end">
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="w-full py-2 bg-[#5e3fde] text-white rounded-[3px] text-[13px] font-medium hover:bg-[#4b32b2] disabled:opacity-50 transition-colors"
+                className="bg-[#5e3fde] text-white px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#4b32b2] disabled:opacity-50"
               >
                 {isSaving ? 'Saving...' : 'Publish'}
               </button>
             </div>
-          </div>
+          </Accordion>
 
           {/* Product Image */}
-          <div className="bg-white border border-[#c3c4c7]">
-            <div className="px-4 py-3 border-b border-[#c3c4c7] font-semibold text-[14px]">
-              Product Image
-            </div>
-            <div className="p-4">
-              {product.featuredImage ? (
-                <div className="text-center">
-                  <img src={product.featuredImage} alt="Featured" className="w-full h-auto mb-2 rounded border border-gray-200" />
-                  <div className="flex gap-2 justify-center">
-                    <button onClick={() => setIsMediaModalOpen(true)} className="text-[#0071a1] text-[13px] hover:underline">Replace</button>
-                    <button onClick={() => setProduct(prev => ({ ...prev, featuredImage: '' }))} className="text-[#b32d2e] text-[13px] hover:underline">Remove</button>
-                  </div>
+          <Accordion id="productImage" title="Product image" expanded={expanded.productImage} toggleAccordion={() => toggleAccordion('productImage')}>
+            {product.featuredImage ? (
+              <div className="text-center">
+                <img src={product.featuredImage} alt="Product image" className="w-full h-auto mb-2 rounded border border-gray-200" />
+                <div className="flex gap-2 justify-center">
+                  <button onClick={() => setIsMediaModalOpen(true)} className="text-[#0071a1] text-[13px] hover:underline">Replace image</button>
+                  <button onClick={() => setProduct(prev => ({ ...prev, featuredImage: '' }))} className="text-[#b32d2e] text-[13px] hover:underline">Remove product image</button>
                 </div>
-              ) : (
-                <div 
-                  onClick={() => setIsMediaModalOpen(true)}
-                  className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 hover:border-[#5e3fde] transition-colors cursor-pointer group"
-                >
-                  <ImageIcon size={32} className="mb-2 group-hover:text-[#5e3fde]" />
-                  <span className="text-sm">Set product image</span>
-                </div>
-              )}
-            </div>
-          </div>
+              </div>
+            ) : (
+              <button onClick={() => setIsMediaModalOpen(true)} className="text-[#0071a1] text-[13px] hover:underline">Set product image</button>
+            )}
+          </Accordion>
+          
+          {/* Product Gallery */}
+          <Accordion id="productGallery" title="Product gallery" expanded={expanded.productGallery} toggleAccordion={() => toggleAccordion('productGallery')}>
+            <button onClick={() => setIsMediaModalOpen(true)} className="text-[#0071a1] text-[13px] hover:underline">Add product gallery images</button>
+          </Accordion>
+          
+          {/* Product Categories */}
+          <Accordion id="categories" title="Product categories" expanded={expanded.categories} toggleAccordion={() => toggleAccordion('categories')}>
+            <p className="text-xs text-gray-500">Categories coming soon.</p>
+          </Accordion>
         </div>
       </div>
       
