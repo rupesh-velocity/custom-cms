@@ -10,6 +10,7 @@ import CopyLinkButton from '@/components/CopyLinkButton';
 import { Link as LinkIcon, User } from 'lucide-react';
 import { generateToc } from '@/lib/toc';
 import TableOfContents from '@/components/TableOfContents';
+import ShopClient from '@/components/shop/ShopClient';
 
 const TwitterIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -115,6 +116,9 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
   }
 
   const isPostsPage = data.__type === 'page' && displayModeSetting?.value === 'static_page' && postsPageSetting?.value === String(data.id);
+  
+  const shopPageSetting = await prisma.setting.findUnique({ where: { key: 'shop_page_id' } });
+  const isShopPage = data.__type === 'page' && shopPageSetting?.value === String(data.id);
 
   // Handle page/post level SEO redirect if configured
   if (data.redirectUrl) {
@@ -175,6 +179,49 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
 
   const showAuthorBoxSetting = await prisma.setting.findUnique({ where: { key: 'show_author_box' } });
   const showAuthorBox = showAuthorBoxSetting?.value !== 'false';
+
+  let shopItems: any[] = [];
+  if (isShopPage) {
+    const [courses, products] = await Promise.all([
+      prisma.course.findMany({
+        where: { status: 'Published' },
+        select: { id: true, title: true, slug: true, featuredImage: true },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.product.findMany({
+        where: { status: 'Published' },
+        select: { id: true, title: true, slug: true, featuredImage: true, price: true, salePrice: true, type: true },
+        orderBy: { createdAt: 'desc' }
+      })
+    ]);
+
+    const normalizedCourses = courses.map(c => ({
+      id: `course-${c.id}`,
+      originalId: c.id,
+      type: 'course',
+      title: c.title,
+      slug: c.slug,
+      image: c.featuredImage,
+      price: null,
+      url: `/courses/${c.slug}`
+    }));
+
+    const normalizedProducts = products.map(p => ({
+      id: `product-${p.id}`,
+      originalId: p.id,
+      type: 'product',
+      title: p.title,
+      slug: p.slug,
+      image: p.featuredImage,
+      price: p.price,
+      salePrice: p.salePrice,
+      url: `/product/${p.slug || p.id}`
+    }));
+
+    shopItems = [...normalizedCourses, ...normalizedProducts].sort((a, b) => 
+      a.title.localeCompare(b.title)
+    );
+  }
 
   return (
     <>
@@ -384,6 +431,12 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
             </div>
           )}
           <div className="mt-12" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} />
+          
+          {isShopPage && (
+            <div className="mt-8">
+              <ShopClient initialItems={shopItems} />
+            </div>
+          )}
         </main>
       )}
     </>
