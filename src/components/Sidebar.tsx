@@ -55,6 +55,14 @@ export default function Sidebar() {
               <Link href="/admin/categories" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/categories') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Categories
               </Link>
+            </div>
+          </div>
+        </div>
+        
+        <Link href="/admin/pages" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/pages') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+          <Files size={20} /> Pages
+        </Link>
+
         <div className="space-y-1">
           <Link 
             href="/admin/orders" 
@@ -90,9 +98,6 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
-        <Link href="/admin/pages" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/pages') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
-          <Files size={20} /> Pages
-        </Link>
         <Link href="/admin/media" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/media') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <ImageIcon size={20} /> Media
         </Link>
