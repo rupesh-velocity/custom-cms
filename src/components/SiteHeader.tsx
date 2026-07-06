@@ -134,8 +134,8 @@ export default async function SiteHeader() {
   const menuTree = primaryMenu ? buildTree(primaryMenu.items, null, homepageSlug) : [];
 
   return (
-    <header className="site-header">
-      <div className="container py-4 md:py-0 md:h-full flex flex-wrap items-center justify-between">
+    <header className="site-header h-auto">
+      <div className="container py-4 lg:py-0 lg:h-full flex flex-wrap items-center justify-between">
         <Link href="/" className="shrink-0 flex items-center w-auto max-w-[70%]">
           {siteLogo ? (
             <img src={optimizeLogoUrl(siteLogo)} alt={siteTitle} className="logo-img max-h-12 w-auto object-contain" loading="eager" fetchPriority="high" />
