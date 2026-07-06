@@ -40,6 +40,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         stockQuantity: parseInt(data.stockQuantity) || 0,
         status: data.status,
         createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
+        linkedCourseId: data.linkedCourseId ? parseInt(data.linkedCourseId) : null,
         featuredImage: data.featuredImage || null,
         attributes: {
           deleteMany: {},

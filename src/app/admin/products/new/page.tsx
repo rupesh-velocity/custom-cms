@@ -29,6 +29,8 @@ export default function NewProductPage() {
   const [globalAttributes, setGlobalAttributes] = useState<any[]>([]);
   const [selectedGlobalAttr, setSelectedGlobalAttr] = useState('');
   
+  const [courses, setCourses] = useState<any[]>([]);
+  
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setOrigin(window.location.origin);
@@ -36,6 +38,11 @@ export default function NewProductPage() {
     fetch('/api/products/attributes')
       .then(res => res.json())
       .then(data => setGlobalAttributes(data))
+      .catch(console.error);
+      
+    fetch('/api/courses')
+      .then(res => res.json())
+      .then(data => setCourses(data))
       .catch(console.error);
   }, []);
   
@@ -51,6 +58,7 @@ export default function NewProductPage() {
     stockQuantity: 0,
     status: 'Published',
     featuredImage: '',
+    linkedCourseId: '',
     attributes: [] as { name: string; options: string; visible: boolean; variation: boolean; isGlobal: boolean }[],
     variations: [] as { attributes: string; price: string; salePrice: string; sku: string; manageStock: boolean; stockQuantity: number }[]
   });
@@ -238,6 +246,20 @@ export default function NewProductPage() {
                         className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-48 outline-none focus:border-[#5e3fde]" 
                         step="0.01"
                       />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <label className="w-32 text-right text-[13px] text-[#50575e]">Linked Course</label>
+                      <select
+                        name="linkedCourseId"
+                        value={product.linkedCourseId}
+                        onChange={handleChange}
+                        className="w-1/2 border border-[#8c8f94] rounded-[3px] px-2 py-1 text-[13px] outline-none focus:border-[#5e3fde]"
+                      >
+                        <option value="">None</option>
+                        {courses.map((course: any) => (
+                          <option key={course.id} value={course.id}>{course.title}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 )}

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-export default function AdminListClient({ items, type }: { items: any[], type: 'pages' | 'posts' }) {
+export default function AdminListClient({ items, type }: { items: any[], type: 'pages' | 'posts' | 'courses' }) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const router = useRouter();
 
@@ -64,7 +64,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
         <div className="flex items-center gap-2">
            <input type="text" className="border border-[#8c8f94] rounded-[3px] px-2 py-0.5 outline-none text-[13px] w-[180px] h-[30px]" />
            <button className="border border-[#5e3fde] text-[#5e3fde] bg-[#f6f7f7] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f0f0f1] h-[30px]">
-             Search {type === 'pages' ? 'Pages' : 'Posts'}
+             Search {type === 'pages' ? 'Pages' : (type === 'courses' ? 'Courses' : 'Posts')}
            </button>
         </div>
       </div>

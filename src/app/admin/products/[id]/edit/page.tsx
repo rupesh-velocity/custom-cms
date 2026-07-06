@@ -21,6 +21,7 @@ export default function EditProductPage() {
   const [origin, setOrigin] = useState('');
   const [globalAttributes, setGlobalAttributes] = useState<any[]>([]);
   const [selectedGlobalAttr, setSelectedGlobalAttr] = useState('');
+  const [courses, setCourses] = useState<any[]>([]);
 
   const [editingStatus, setEditingStatus] = useState(false);
   const [editingVisibility, setEditingVisibility] = useState(false);
@@ -42,6 +43,7 @@ export default function EditProductPage() {
     stockQuantity: 0,
     status: 'Published',
     featuredImage: '',
+    linkedCourseId: '',
     attributes: [] as { name: string; options: string; visible: boolean; variation: boolean; isGlobal: boolean }[],
     variations: [] as { attributes: string; price: string; salePrice: string; sku: string; manageStock: boolean; stockQuantity: number }[]
   });
@@ -76,6 +78,7 @@ export default function EditProductPage() {
           stockQuantity: data.stockQuantity || 0,
           status: data.status || 'Draft',
           featuredImage: data.featuredImage || '',
+          linkedCourseId: data.linkedCourseId ? String(data.linkedCourseId) : '',
           attributes: data.attributes || [],
           variations: data.variations ? data.variations.map((v: any) => ({
             ...v,
@@ -98,6 +101,11 @@ export default function EditProductPage() {
     fetch('/api/products/attributes')
       .then(res => res.json())
       .then(data => setGlobalAttributes(data))
+      .catch(console.error);
+
+    fetch('/api/courses')
+      .then(res => res.json())
+      .then(data => setCourses(data))
       .catch(console.error);
   }, [params?.id, router]);
 
@@ -281,7 +289,22 @@ export default function EditProductPage() {
                         step="0.01"
                       />
                     </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <label className="w-32 text-right text-[13px] text-[#50575e]">Linked Course</label>
+                    <select
+                      name="linkedCourseId"
+                      value={product.linkedCourseId}
+                      onChange={handleChange}
+                      className="w-1/2 border border-[#8c8f94] rounded-[3px] px-2 py-1 text-[13px] outline-none focus:border-[#5e3fde]"
+                    >
+                      <option value="">None</option>
+                      {courses.map((course: any) => (
+                        <option key={course.id} value={course.id}>{course.title}</option>
+                      ))}
+                    </select>
                   </div>
+                </div>
                 )}
                 
                 {activeTab === 'inventory' && (
