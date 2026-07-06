@@ -22,7 +22,7 @@ export default function CourseViewerClient({ course }: CourseViewerClientProps) 
   const activeVideo = videos[activeVideoIndex];
 
   return (
-    <main className="flex-1 max-w-6xl mx-auto w-full p-6 md:p-8 flex flex-col lg:flex-row gap-8">
+    <main className="flex-1 max-w-6xl mx-auto w-full p-6 pt-12 md:p-8 md:pt-16 flex flex-col lg:flex-row gap-8">
       {/* Left Col - Video & Description */}
       <div className="flex-1 min-w-0">
         <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6 tracking-tight">{course.title}</h1>
