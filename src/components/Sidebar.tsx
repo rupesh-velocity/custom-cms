@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Files, Users, Settings, ChevronDown, ChevronRight, Menu as MenuIcon, Image as ImageIcon, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, FileText, Files, Users, Settings, ChevronDown, ChevronRight, Menu as MenuIcon, Image as ImageIcon, BarChart2, ShoppingCart, Package } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function Sidebar() {
@@ -57,6 +57,13 @@ export default function Sidebar() {
             </div>
           </div>
         </div>
+        
+        <Link href="/admin/orders" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/orders') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+          <ShoppingCart size={20} /> Orders
+        </Link>
+        <Link href="/admin/products" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/products') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+          <Package size={20} /> Products
+        </Link>
         <Link href="/admin/pages" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/pages') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <Files size={20} /> Pages
         </Link>
@@ -120,7 +127,7 @@ export default function Sidebar() {
           {/* Sub-options for Settings */}
           <div className={clsx(
             "overflow-hidden transition-all duration-300 ease-in-out",
-            isSettingsActive ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+            isSettingsActive ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
           )}>
             <div className="pl-3 py-1 space-y-1 border-l-2 border-gray-100 ml-8 mt-1">
               <Link href="/admin/settings/general" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/general' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
@@ -131,6 +138,9 @@ export default function Sidebar() {
               </Link>
               <Link href="/admin/settings/advanced" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/advanced' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Advanced
+              </Link>
+              <Link href="/admin/settings/ecommerce" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/ecommerce' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                E-Commerce
               </Link>
             </div>
           </div>

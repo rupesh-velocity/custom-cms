@@ -1,0 +1,44 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET() {
+  try {
+    const keys = [
+      'stripeEnabled', 'stripePublicKey', 'stripeSecretKey',
+      'paypalEnabled', 'paypalClientId', 'currency'
+    ];
+    
+    const settings = await prisma.setting.findMany({
+      where: { key: { in: keys } }
+    });
+    
+    const result: any = {};
+    settings.forEach(s => {
+      result[s.key] = s.value || '';
+    });
+    
+    return NextResponse.json(result);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const data = await req.json();
+    
+    for (const [key, value] of Object.entries(data)) {
+      if (typeof value === 'string') {
+        await prisma.setting.upsert({
+          where: { key },
+          update: { value },
+          create: { key, value }
+        });
+      }
+    }
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });
+  }
+}

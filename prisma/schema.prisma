@@ -70,6 +70,7 @@ model User {
   updatedAt DateTime @updatedAt
   posts     Post[]
   pages     Page[]
+  orders    Order[]
 }
 
 model Setting {
@@ -134,4 +135,137 @@ model Category {
   posts       Post[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+// --- E-COMMERCE MODELS ---
+
+model Product {
+  id               Int                @id @default(autoincrement())
+  title            String
+  slug             String             @unique
+  description      String?            @db.Text
+  shortDescription String?            @db.Text
+  type             String             @default("SIMPLE") // SIMPLE or VARIABLE
+  price            Float              @default(0)
+  salePrice        Float?
+  sku              String?            @unique
+  manageStock      Boolean            @default(false)
+  stockQuantity    Int                @default(0)
+  status           String             @default("Draft") // Draft, Published
+  featuredImage    String?
+  galleryImages    String?            // JSON string of image URLs
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  attributes       ProductAttribute[]
+  variations       ProductVariation[]
+  orderItems       OrderItem[]
+  categories       ProductCategory[]
+}
+
+model ProductCategory {
+  id          Int               @id @default(autoincrement())
+  name        String
+  slug        String            @unique
+  description String?           @db.Text
+  parentId    Int?
+  parent      ProductCategory?  @relation("ProductCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    ProductCategory[] @relation("ProductCategoryHierarchy")
+  products    Product[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model ProductAttribute {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String   // e.g., "Size", "Color"
+  options   String   // JSON string array of options e.g. ["Small", "Medium", "Large"]
+}
+
+model ProductVariation {
+  id            Int         @id @default(autoincrement())
+  productId     Int
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attributes    String      // JSON string mapping attribute names to selected options e.g. {"Size": "Large", "Color": "Red"}
+  price         Float
+  salePrice     Float?
+  sku           String?     @unique
+  manageStock   Boolean     @default(false)
+  stockQuantity Int         @default(0)
+  orderItems    OrderItem[]
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  orderNumber     String      @unique
+  status          String      @default("PENDING") // PENDING, PROCESSING, COMPLETED, CANCELLED
+  totalAmount     Float
+  currency        String      @default("USD")
+  
+  customerEmail   String
+  customerId      Int?
+  customer        User?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  
+  billingAddress  String      // JSON string
+  shippingAddress String      // JSON string
+  
+  paymentMethod   String?     // "STRIPE", "PAYPAL", "COD"
+  paymentId       String?     // Transaction ID from gateway
+  
+  shippingMethod  String?
+  shippingCost    Float       @default(0)
+  
+  items           OrderItem[]
+  notes           OrderNote[]
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id           Int               @id @default(autoincrement())
+  orderId      Int
+  order        Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId    Int?
+  product      Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
+  
+  variationId  Int?
+  variation    ProductVariation? @relation(fields: [variationId], references: [id], onDelete: SetNull)
+  
+  name         String            // Snapshot of product name at purchase
+  quantity     Int
+  price        Float             // Snapshot of price at purchase
+  total        Float
+}
+
+model OrderNote {
+  id             Int      @id @default(autoincrement())
+  orderId        Int
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  content        String   @db.Text
+  isCustomerNote Boolean  @default(false) // If true, customer can see it
+  createdAt      DateTime @default(now())
+}
+
+model ShippingZone {
+  id        Int              @id @default(autoincrement())
+  name      String
+  regions   String           // JSON string of country/state codes
+  methods   ShippingMethod[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model ShippingMethod {
+  id         Int          @id @default(autoincrement())
+  zoneId     Int
+  zone       ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  name       String       // "Flat Rate", "Free Shipping"
+  type       String       // "FLAT_RATE", "FREE_SHIPPING"
+  cost       Float        @default(0)
+  conditions String?      // JSON string for free shipping thresholds, etc.
+  enabled    Boolean      @default(true)
 }
