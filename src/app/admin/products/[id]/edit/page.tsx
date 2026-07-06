@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Save, Loader2, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { Save, Loader2, ArrowLeft, Image as ImageIcon, MapPin, Eye, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import TipTapEditor from '@/components/TipTapEditor';
@@ -19,6 +19,14 @@ export default function EditProductPage() {
   const [isEditingSlug, setIsEditingSlug] = useState(false);
   const [tempSlug, setTempSlug] = useState('');
   const [origin, setOrigin] = useState('');
+
+  const [editingStatus, setEditingStatus] = useState(false);
+  const [editingVisibility, setEditingVisibility] = useState(false);
+  const [editingDate, setEditingDate] = useState(false);
+  const [visibility, setVisibility] = useState('Public');
+  const [password, setPassword] = useState('');
+  const [publishDate, setPublishDate] = useState('');
+  const [seoScore, setSeoScore] = useState(0);
   
   const [product, setProduct] = useState({
     title: '',
@@ -94,18 +102,19 @@ export default function EditProductPage() {
     }));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (overrideStatus?: string) => {
     if (!product.title) {
       toast.error('Product title is required');
       return;
     }
 
     setIsSaving(true);
+    const finalStatus = overrideStatus || product.status;
     try {
       const res = await fetch(`/api/products/${params?.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(product)
+        body: JSON.stringify({ ...product, status: finalStatus })
       });
       
       if (!res.ok) throw new Error('Failed to update product');
@@ -455,27 +464,118 @@ export default function EditProductPage() {
         <div className="w-[280px] shrink-0 font-sans">
           {/* Publish Box */}
           <Accordion id="publish" title="Publish" expanded={expanded.publish} toggleAccordion={() => toggleAccordion('publish')} noPadding>
-            <div className="p-3 bg-white space-y-4">
-              <div className="flex items-center justify-between text-[13px]">
-                <span className="text-gray-600">Status:</span>
-                <select 
-                  name="status"
-                  value={product.status}
-                  onChange={handleChange}
-                  className="border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none focus:border-[#5e3fde]"
+            <div className="p-3 bg-white">
+              <div className="flex justify-between mb-4">
+                <button 
+                  onClick={() => {
+                    const newStatus = 'Draft';
+                    setProduct(prev => ({...prev, status: newStatus}));
+                    handleSave(newStatus);
+                  }}
+                  disabled={isSaving}
+                  className="bg-white border border-[#5e3fde] text-[#5e3fde] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f6f7f7] disabled:opacity-50"
                 >
-                  <option value="Draft">Draft</option>
-                  <option value="Published">Published</option>
-                </select>
+                  Save Draft
+                </button>
+                <button className="bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f1f1f1]">
+                  Preview
+                </button>
+              </div>
+              
+              <div className="space-y-3 text-[13px] text-[#50575e] mb-4">
+                {/* Status */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-gray-400" /> 
+                    <span>Status: <span className="font-semibold text-[#1d2327]">{product.status}</span></span>
+                    {!editingStatus && <button onClick={() => setEditingStatus(true)} className="text-[#0071a1] hover:underline ml-1">Edit</button>}
+                  </div>
+                  {editingStatus && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <select 
+                        value={product.status} 
+                        onChange={(e) => setProduct(prev => ({...prev, status: e.target.value}))}
+                        className="border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none text-[13px]"
+                      >
+                        <option value="Published">Published</option>
+                        <option value="Pending Review">Pending Review</option>
+                        <option value="Draft">Draft</option>
+                      </select>
+                      <button onClick={() => setEditingStatus(false)} className="bg-[#f3f5f6] border border-[#8c8f94] px-2 py-1 rounded-[3px]">OK</button>
+                      <button onClick={() => setEditingStatus(false)} className="text-[#0071a1] hover:underline">Cancel</button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Visibility */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-4 h-4 text-gray-400" /> 
+                    <span>Visibility: <span className="font-semibold text-[#1d2327]">{visibility}</span></span>
+                    {!editingVisibility && <button onClick={() => setEditingVisibility(true)} className="text-[#0071a1] hover:underline ml-1">Edit</button>}
+                  </div>
+                  {editingVisibility && (
+                    <div className="flex flex-col gap-1 mt-1">
+                      <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Public'} onChange={() => setVisibility('Public')} /> Public</label>
+                      <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Password Protected'} onChange={() => setVisibility('Password Protected')} /> Password Protected</label>
+                      {visibility === 'Password Protected' && (
+                        <div className="pl-6 mt-1 mb-1">
+                          <label className="block text-xs text-gray-500 mb-1">Password:</label>
+                          <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} className="border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none text-[13px] w-full" />
+                        </div>
+                      )}
+                      <label className="flex items-center gap-2"><input type="radio" name="vis" checked={visibility === 'Private'} onChange={() => setVisibility('Private')} /> Private</label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <button onClick={() => setEditingVisibility(false)} className="bg-[#f3f5f6] border border-[#8c8f94] px-2 py-1 rounded-[3px]">OK</button>
+                        <button onClick={() => setEditingVisibility(false)} className="text-[#0071a1] hover:underline">Cancel</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Publish Date */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-400" /> 
+                    <span>Published on: <span className="font-semibold text-[#1d2327]">{publishDate ? new Date(publishDate).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Immediately'}</span></span>
+                    {!editingDate && <button onClick={() => setEditingDate(true)} className="text-[#0071a1] hover:underline ml-1">Edit</button>}
+                  </div>
+                  {editingDate && (
+                    <div className="flex flex-col gap-2 mt-1">
+                      <input 
+                        type="datetime-local" 
+                        value={publishDate ? new Date(new Date(publishDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''} 
+                        onChange={(e) => setPublishDate(new Date(e.target.value).toISOString())}
+                        className="border border-[#8c8f94] rounded-[3px] px-2 py-1 outline-none text-[13px] w-full"
+                      />
+                      <div className="flex items-center gap-2 mt-1">
+                        <button onClick={() => setEditingDate(false)} className="bg-[#f3f5f6] border border-[#8c8f94] px-2 py-1 rounded-[3px]">OK</button>
+                        <button onClick={() => {
+                           setPublishDate('');
+                           setEditingDate(false);
+                        }} className="text-[#0071a1] hover:underline">Cancel</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="p-3 bg-[#f6f7f7] border-t border-[#c3c4c7] flex justify-end">
+            
+            <div className={`p-2 text-center text-[13px] font-semibold border-t border-[#c3c4c7] ${seoScore > 50 ? (seoScore >= 80 ? 'bg-[#c6e1c6] text-[#007017]' : 'bg-[#f0b849] text-[#8a6d3b]') : 'bg-[#ffaba8] text-[#d63638]'}`}>
+              <div className="flex items-center justify-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                SEO: {seoScore} / 100
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#f6f7f7] border-t border-[#c3c4c7] flex justify-between items-center">
+              <button className="text-[#b32d2e] text-[13px] hover:underline">Move to Trash</button>
               <button
-                onClick={handleSave}
+                onClick={() => handleSave()}
                 disabled={isSaving}
                 className="bg-[#5e3fde] text-white px-4 py-1.5 rounded-[3px] text-[13px] font-semibold hover:bg-[#4b32b2] disabled:opacity-50"
               >
-                {isSaving ? 'Updating...' : 'Update'}
+                {isSaving ? 'Saving...' : (product.status === 'Published' ? 'Update' : 'Publish')}
               </button>
             </div>
           </Accordion>
