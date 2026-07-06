@@ -2,9 +2,25 @@
 
 import { User, Bell, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function Header() {
   const router = useRouter();
+  const [userName, setUserName] = useState('Admin User');
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          const name = data.user.firstName 
+            ? `${data.user.firstName} ${data.user.lastName || ''}`.trim() 
+            : data.user.username;
+          if (name) setUserName(name);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -20,7 +36,7 @@ export default function Header() {
         <div className="flex items-center gap-4 border-l pl-4 border-gray-300">
           <div className="flex items-center gap-2">
             <User size={20} />
-            <span className="text-sm font-medium">Admin User</span>
+            <span className="text-sm font-medium">{userName}</span>
           </div>
           <button 
             onClick={handleLogout}

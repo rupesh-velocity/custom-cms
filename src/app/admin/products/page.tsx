@@ -9,9 +9,21 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [currentUserName, setCurrentUserName] = useState('Admin User');
 
   useEffect(() => {
     fetchProducts();
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          const name = data.user.firstName 
+            ? `${data.user.firstName} ${data.user.lastName || ''}`.trim() 
+            : data.user.username;
+          if (name) setCurrentUserName(name);
+        }
+      })
+      .catch(() => {});
   }, [search]);
 
   const fetchProducts = async () => {
@@ -83,6 +95,7 @@ export default function ProductsPage() {
                 <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">Image</th>
                 <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">SKU</th>
+                <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Author</th>
                 <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock</th>
                 <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
@@ -134,6 +147,9 @@ export default function ProductsPage() {
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-600">
                       {product.sku || <span className="text-gray-400 italic">No SKU</span>}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-[#5e3fde] hover:underline cursor-pointer">
+                      {currentUserName}
                     </td>
                     <td className="py-4 px-6">
                       {product.manageStock ? (

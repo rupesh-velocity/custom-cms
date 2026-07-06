@@ -7,7 +7,22 @@ import toast from 'react-hot-toast';
 
 export default function AdminListClient({ items, type }: { items: any[], type: 'pages' | 'posts' | 'courses' }) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [currentUserName, setCurrentUserName] = useState<string>('Admin User');
   const router = useRouter();
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          const name = data.user.firstName 
+            ? `${data.user.firstName} ${data.user.lastName || ''}`.trim() 
+            : data.user.username;
+          if (name) setCurrentUserName(name);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -112,7 +127,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                 </td>
                 <td className="p-2 align-top text-[13px]">
                    <span className="text-[#5e3fde] hover:underline cursor-pointer">
-                     {item.author ? (item.author.firstName ? `${item.author.firstName} ${item.author.lastName || ''}`.trim() : item.author.username) : 'CIIS'}
+                     {item.author ? (item.author.firstName ? `${item.author.firstName} ${item.author.lastName || ''}`.trim() : item.author.username) : currentUserName}
                    </span>
                 </td>
                 <td className="p-2 align-top text-[13px] text-[#50575e]">
