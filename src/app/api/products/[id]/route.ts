@@ -44,7 +44,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           deleteMany: {},
           create: data.attributes ? data.attributes.map((attr: any) => ({
             name: attr.name,
-            options: attr.options
+            options: attr.options,
+            visible: attr.visible !== undefined ? attr.visible : true,
+            variation: attr.variation !== undefined ? attr.variation : false,
+            isGlobal: attr.isGlobal !== undefined ? attr.isGlobal : false
           })) : []
         },
         variations: {

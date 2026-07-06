@@ -19,6 +19,8 @@ export default function EditProductPage() {
   const [isEditingSlug, setIsEditingSlug] = useState(false);
   const [tempSlug, setTempSlug] = useState('');
   const [origin, setOrigin] = useState('');
+  const [globalAttributes, setGlobalAttributes] = useState<any[]>([]);
+  const [selectedGlobalAttr, setSelectedGlobalAttr] = useState('');
 
   const [editingStatus, setEditingStatus] = useState(false);
   const [editingVisibility, setEditingVisibility] = useState(false);
@@ -40,7 +42,7 @@ export default function EditProductPage() {
     stockQuantity: 0,
     status: 'Published',
     featuredImage: '',
-    attributes: [] as { name: string; options: string }[],
+    attributes: [] as { name: string; options: string; visible: boolean; variation: boolean; isGlobal: boolean }[],
     variations: [] as { attributes: string; price: string; salePrice: string; sku: string; manageStock: boolean; stockQuantity: number }[]
   });
 
@@ -92,6 +94,10 @@ export default function EditProductPage() {
     if (typeof window !== 'undefined') {
       setOrigin(window.location.origin);
     }
+    fetch('/api/products/attributes')
+      .then(res => res.json())
+      .then(data => setGlobalAttributes(data))
+      .catch(console.error);
   }, [params?.id, router]);
 
   const handleChange = (e: any) => {
@@ -319,54 +325,134 @@ export default function EditProductPage() {
                 )}
                 {activeTab === 'attributes' && (
                   <div className="space-y-4">
-                    <p className="text-xs text-gray-500 mb-4">Add attributes (like Size or Color) and separate options with a pipe (|). e.g. Small | Medium | Large</p>
+                    <p className="text-xs text-gray-500 mb-4">Add descriptive pieces of information that customers can use to search for this product on your store, such as "Material" or "Size".</p>
+                    
+                    <div className="flex gap-2 mb-4 p-3 bg-gray-50 border border-[#c3c4c7] items-center">
+                      <select 
+                        value={selectedGlobalAttr} 
+                        onChange={(e) => setSelectedGlobalAttr(e.target.value)}
+                        className="border border-[#8c8f94] px-2 py-1.5 text-[13px] outline-none min-w-[200px]"
+                      >
+                        <option value="">Custom product attribute</option>
+                        {globalAttributes.map(ga => (
+                          <option key={ga.id} value={ga.id}>{ga.name}</option>
+                        ))}
+                      </select>
+                      <button 
+                        onClick={() => {
+                          if (!selectedGlobalAttr) {
+                            setProduct(prev => ({
+                              ...prev, 
+                              attributes: [...prev.attributes, { name: '', options: '', visible: true, variation: false, isGlobal: false }]
+                            }));
+                          } else {
+                            const ga = globalAttributes.find(a => a.id === parseInt(selectedGlobalAttr));
+                            if (ga && !product.attributes.find(a => a.name === ga.name)) {
+                              setProduct(prev => ({
+                                ...prev, 
+                                attributes: [...prev.attributes, { name: ga.name, options: '', visible: true, variation: false, isGlobal: true }]
+                              }));
+                            }
+                          }
+                          setSelectedGlobalAttr('');
+                        }}
+                        className="border border-[#c3c4c7] px-4 py-1.5 text-[13px] bg-white hover:bg-gray-100 font-medium"
+                      >
+                        Add
+                      </button>
+                    </div>
+
                     {product.attributes.map((attr, idx) => (
-                      <div key={idx} className="flex gap-2 items-start border border-[#c3c4c7] p-3 bg-gray-50 mb-2">
-                        <div className="flex-1 space-y-2">
-                          <input 
-                            type="text" 
-                            placeholder="Name (e.g. Size)" 
-                            value={attr.name}
-                            onChange={(e) => {
-                              const newAttrs = [...product.attributes];
-                              newAttrs[idx].name = e.target.value;
+                      <div key={idx} className="border border-[#c3c4c7] p-3 bg-gray-50 mb-2">
+                        <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#c3c4c7]">
+                          <span className="font-semibold text-[13px]">{attr.name || 'New Attribute'}</span>
+                          <button 
+                            onClick={() => {
+                              const newAttrs = product.attributes.filter((_, i) => i !== idx);
                               setProduct(prev => ({...prev, attributes: newAttrs}));
                             }}
-                            className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] outline-none"
-                          />
-                          <textarea 
-                            placeholder="Values (e.g. Small | Medium | Large)" 
-                            value={attr.options}
-                            onChange={(e) => {
-                              const newAttrs = [...product.attributes];
-                              newAttrs[idx].options = e.target.value;
-                              setProduct(prev => ({...prev, attributes: newAttrs}));
-                            }}
-                            className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] outline-none h-20"
-                          />
+                            className="text-red-500 text-xs hover:underline"
+                          >
+                            Remove
+                          </button>
                         </div>
-                        <button 
-                          onClick={() => {
-                            const newAttrs = product.attributes.filter((_, i) => i !== idx);
-                            setProduct(prev => ({...prev, attributes: newAttrs}));
-                          }}
-                          className="text-red-500 text-xs px-2 py-1 hover:underline"
-                        >
-                          Remove
-                        </button>
+                        <div className="flex gap-6 items-start">
+                          <div className="w-[200px] shrink-0 space-y-4">
+                            <input 
+                              type="text" 
+                              placeholder="Name (e.g. Size)" 
+                              value={attr.name}
+                              onChange={(e) => {
+                                const newAttrs = [...product.attributes];
+                                newAttrs[idx].name = e.target.value;
+                                setProduct(prev => ({...prev, attributes: newAttrs}));
+                              }}
+                              readOnly={attr.isGlobal}
+                              className={`w-full border border-[#8c8f94] px-2 py-1.5 text-[13px] outline-none ${attr.isGlobal ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
+                            />
+                            <div className="space-y-2">
+                              <label className="flex items-center gap-2 text-[12px] text-gray-700">
+                                <input 
+                                  type="checkbox" 
+                                  checked={attr.visible} 
+                                  onChange={(e) => {
+                                    const newAttrs = [...product.attributes];
+                                    newAttrs[idx].visible = e.target.checked;
+                                    setProduct(prev => ({...prev, attributes: newAttrs}));
+                                  }}
+                                  className="w-3.5 h-3.5 text-[#5e3fde] rounded-sm focus:ring-0"
+                                />
+                                Visible on the product page
+                              </label>
+                              <label className="flex items-center gap-2 text-[12px] text-gray-700">
+                                <input 
+                                  type="checkbox" 
+                                  checked={attr.variation} 
+                                  onChange={(e) => {
+                                    const newAttrs = [...product.attributes];
+                                    newAttrs[idx].variation = e.target.checked;
+                                    setProduct(prev => ({...prev, attributes: newAttrs}));
+                                  }}
+                                  className="w-3.5 h-3.5 text-[#5e3fde] rounded-sm focus:ring-0"
+                                />
+                                Used for variations
+                              </label>
+                            </div>
+                          </div>
+                          
+                          <div className="flex-1">
+                            {attr.isGlobal ? (
+                              <select 
+                                multiple
+                                value={attr.options.split('|').map(s => s.trim()).filter(Boolean)}
+                                onChange={(e) => {
+                                  const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                  const newAttrs = [...product.attributes];
+                                  newAttrs[idx].options = selected.join(' | ');
+                                  setProduct(prev => ({...prev, attributes: newAttrs}));
+                                }}
+                                className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] outline-none h-[120px]"
+                              >
+                                {globalAttributes.find(ga => ga.name === attr.name)?.terms?.map((t: any) => (
+                                  <option key={t.id} value={t.name}>{t.name}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <textarea 
+                                placeholder="Values (e.g. Small | Medium | Large). Separate options with a pipe (|)." 
+                                value={attr.options}
+                                onChange={(e) => {
+                                  const newAttrs = [...product.attributes];
+                                  newAttrs[idx].options = e.target.value;
+                                  setProduct(prev => ({...prev, attributes: newAttrs}));
+                                }}
+                                className="w-full border border-[#8c8f94] px-2 py-1 text-[13px] outline-none h-[120px]"
+                              />
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
-                    <button 
-                      onClick={() => {
-                        setProduct(prev => ({
-                          ...prev, 
-                          attributes: [...prev.attributes, { name: '', options: '' }]
-                        }));
-                      }}
-                      className="border border-[#c3c4c7] px-3 py-1.5 text-[13px] bg-white hover:bg-gray-50"
-                    >
-                      Add Attribute
-                    </button>
                   </div>
                 )}
                 {activeTab === 'variations' && (
@@ -389,11 +475,11 @@ export default function EditProductPage() {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2 col-span-2 mb-2">
                             <label className="text-[13px] font-semibold text-gray-700 block">Variation Attributes</label>
-                            {product.attributes.length === 0 && (
-                              <p className="text-xs text-red-500">Please define attributes first before setting variations.</p>
+                            {product.attributes.filter(a => a.variation).length === 0 && (
+                              <p className="text-xs text-red-500">Please define attributes and check "Used for variations" first.</p>
                             )}
                             <div className="grid grid-cols-2 gap-4">
-                              {product.attributes.map(attr => {
+                              {product.attributes.filter(a => a.variation).map(attr => {
                                 if (!attr.name) return null;
                                 const opts = (attr.options || '').split('|').map(s => s.trim()).filter(Boolean);
                                 if (opts.length === 0) return null;

@@ -182,6 +182,29 @@ model ProductAttribute {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   name      String   // e.g., "Size", "Color"
   options   String   // JSON string array of options e.g. ["Small", "Medium", "Large"]
+  visible   Boolean  @default(true) // Visible on the product page
+  variation Boolean  @default(false) // Used for variations
+  isGlobal  Boolean  @default(false) // Whether this was imported from a Global Attribute
+}
+
+model GlobalAttribute {
+  id        Int                   @id @default(autoincrement())
+  name      String
+  slug      String                @unique
+  terms     GlobalAttributeTerm[]
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+}
+
+model GlobalAttributeTerm {
+  id           Int             @id @default(autoincrement())
+  attributeId  Int
+  attribute    GlobalAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String          @unique
+  description  String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 }
 
 model ProductVariation {

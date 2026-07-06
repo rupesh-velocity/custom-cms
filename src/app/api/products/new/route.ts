@@ -22,7 +22,10 @@ export async function POST(req: Request) {
         attributes: data.attributes && data.attributes.length > 0 ? {
           create: data.attributes.map((attr: any) => ({
             name: attr.name,
-            options: attr.options
+            options: attr.options,
+            visible: attr.visible !== undefined ? attr.visible : true,
+            variation: attr.variation !== undefined ? attr.variation : false,
+            isGlobal: attr.isGlobal !== undefined ? attr.isGlobal : false
           }))
         } : undefined,
         variations: data.variations && data.variations.length > 0 ? {
