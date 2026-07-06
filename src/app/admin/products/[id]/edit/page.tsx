@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { Save, Loader2, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import TipTapEditor from '@/components/TipTapEditor';
 import MediaModal from '@/components/MediaModal';
 
-export default function NewProductPage() {
+export default function EditProductPage() {
   const router = useRouter();
+  const params = useParams();
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
@@ -27,6 +29,36 @@ export default function NewProductPage() {
     featuredImage: ''
   });
 
+  useEffect(() => {
+    if (!params?.id) return;
+    fetch(`/api/products/${params.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          toast.error('Product not found');
+          router.push('/admin/products');
+          return;
+        }
+        setProduct({
+          title: data.title || '',
+          description: data.description || '',
+          type: data.type || 'SIMPLE',
+          price: data.price ? String(data.price) : '',
+          salePrice: data.salePrice ? String(data.salePrice) : '',
+          sku: data.sku || '',
+          manageStock: data.manageStock || false,
+          stockQuantity: data.stockQuantity || 0,
+          status: data.status || 'Published',
+          featuredImage: data.featuredImage || ''
+        });
+        setIsLoading(false);
+      })
+      .catch(err => {
+        toast.error('Failed to load product');
+        setIsLoading(false);
+      });
+  }, [params?.id, router]);
+
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target;
     setProduct(prev => ({
@@ -43,23 +75,26 @@ export default function NewProductPage() {
 
     setIsSaving(true);
     try {
-      const res = await fetch('/api/products/new', {
-        method: 'POST',
+      const res = await fetch(`/api/products/${params?.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(product)
       });
       
-      if (!res.ok) throw new Error('Failed to create product');
-      const data = await res.json();
+      if (!res.ok) throw new Error('Failed to update product');
       
-      toast.success('Product created successfully');
-      router.push(`/admin/products/${data.id}/edit`);
+      toast.success('Product updated successfully');
+      router.refresh();
     } catch (error) {
-      toast.error('Error creating product');
+      toast.error('Error updating product');
     } finally {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-gray-500">Loading product...</div>;
+  }
 
   return (
     <div className="max-w-[1200px] text-[#2c3338]">
@@ -67,14 +102,14 @@ export default function NewProductPage() {
         <Link href="/admin/products" className="p-2 border border-[#c3c4c7] rounded hover:bg-gray-50 transition-colors">
           <ArrowLeft size={18} />
         </Link>
-        <h1 className="text-2xl font-normal flex-1">Add New Product</h1>
+        <h1 className="text-2xl font-normal flex-1">Edit Product</h1>
         <button
           onClick={handleSave}
           disabled={isSaving}
           className="px-4 py-2 bg-[#5e3fde] text-white rounded-[3px] text-[13px] font-medium hover:bg-[#4b32b2] disabled:opacity-50 flex items-center gap-2"
         >
           {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          Save Product
+          Update Product
         </button>
       </div>
 
@@ -228,7 +263,7 @@ export default function NewProductPage() {
                 disabled={isSaving}
                 className="w-full py-2 bg-[#5e3fde] text-white rounded-[3px] text-[13px] font-medium hover:bg-[#4b32b2] disabled:opacity-50 transition-colors"
               >
-                {isSaving ? 'Saving...' : 'Publish'}
+                {isSaving ? 'Saving...' : 'Update'}
               </button>
             </div>
           </div>
