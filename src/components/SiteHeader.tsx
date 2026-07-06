@@ -135,8 +135,8 @@ export default async function SiteHeader() {
 
   return (
     <header className="site-header">
-      <div className="container h-full flex items-center justify-between gap-4 md:gap-6">
-        <Link href="/" className="shrink-0 flex items-center">
+      <div className="container py-4 md:py-0 md:h-full flex flex-wrap items-center justify-between">
+        <Link href="/" className="shrink-0 flex items-center w-auto max-w-[70%]">
           {siteLogo ? (
             <img src={optimizeLogoUrl(siteLogo)} alt={siteTitle} className="logo-img max-h-12 w-auto object-contain" loading="eager" fetchPriority="high" />
           ) : siteIcon ? (
@@ -146,22 +146,31 @@ export default async function SiteHeader() {
           )}
         </Link>
         
-        <nav className="main-menu hidden lg:flex items-center gap-10">
-          {menuTree.map((node: any) => (
-            <MenuNode key={node.id} node={node} />
-          ))}
-          {!primaryMenu?.items?.length && (
-            <div className="text-sm text-gray-400 italic">
-              Create a menu to add links
-            </div>
-          )}
-        </nav>
-        
-        <Link href="#on-demand" className="theme-btn theme-btn-primary hidden sm:inline-flex">
-          <span>On Demand Classes</span><span className="btn-icon">↗</span>
-        </Link>
-        
-        <MobileMenu menuTree={menuTree} />
+        <div className="flex items-center gap-4 lg:gap-10">
+          <nav className="main-menu hidden lg:flex items-center gap-10">
+            {menuTree.map((node: any) => (
+              <MenuNode key={node.id} node={node} />
+            ))}
+            {!primaryMenu?.items?.length && (
+              <div className="text-sm text-gray-400 italic">
+                Create a menu to add links
+              </div>
+            )}
+          </nav>
+          
+          <Link href="#on-demand" className="theme-btn theme-btn-primary hidden sm:inline-flex">
+            <span>On Demand Classes</span><span className="btn-icon">↗</span>
+          </Link>
+          
+          <MobileMenu menuTree={menuTree} />
+        </div>
+
+        {/* Mobile-only full width button below logo/menu */}
+        <div className="w-full mt-4 sm:hidden">
+          <Link href="#on-demand" className="theme-btn theme-btn-primary w-full flex justify-center items-center">
+            <span>On Demand Classes</span><span className="btn-icon ml-2">↗</span>
+          </Link>
+        </div>
       </div>
     </header>
   );
