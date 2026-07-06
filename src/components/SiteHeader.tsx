@@ -150,6 +150,8 @@ export default async function SiteHeader() {
     } catch (e) {}
   }
 
+  const isCustomerOrSubscriber = isAuthenticated && userRole !== 'Admin';
+
   return (
     <header className="site-header h-auto">
       <div className="container py-4 lg:h-full flex flex-wrap items-center justify-between">
@@ -164,23 +166,25 @@ export default async function SiteHeader() {
         </Link>
         
         <div className="flex items-center gap-4 lg:gap-10">
-          <nav className="main-menu hidden lg:flex items-center gap-10">
-            {menuTree.map((node: any) => (
-              <MenuNode key={node.id} node={node} />
-            ))}
-            {!primaryMenu?.items?.length && (
-              <div className="text-sm text-gray-400 italic">
-                Create a menu to add links
-              </div>
-            )}
-          </nav>
+          {!isCustomerOrSubscriber && (
+            <nav className="main-menu hidden lg:flex items-center gap-10">
+              {menuTree.map((node: any) => (
+                <MenuNode key={node.id} node={node} />
+              ))}
+              {!primaryMenu?.items?.length && (
+                <div className="text-sm text-gray-400 italic">
+                  Create a menu to add links
+                </div>
+              )}
+            </nav>
+          )}
           
-          <div className="hidden lg:flex items-center gap-6">
+          <div className={`${isCustomerOrSubscriber ? 'flex' : 'hidden lg:flex'} items-center gap-6`}>
             {isAuthenticated ? (
               userRole !== 'Admin' && (
                 <div className="flex items-center gap-4">
                   <Link href="/my-account" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde]">
-                    <User size={16} /> My Dashboard
+                    <User size={16} /> <span className="hidden sm:inline">My Dashboard</span>
                   </Link>
                   <form action="/api/users/logout" method="POST">
                     <button type="submit" className="text-sm font-medium text-red-500 hover:text-red-700">Logout</button>
@@ -192,20 +196,25 @@ export default async function SiteHeader() {
                 <LogIn size={16} /> Login
               </Link>
             )}
-            <Link href="#on-demand" className="theme-btn theme-btn-primary ml-2">
-              <span>On Demand Classes</span><span className="btn-icon">↗</span>
-            </Link>
+            
+            {!isCustomerOrSubscriber && (
+              <Link href="#on-demand" className="theme-btn theme-btn-primary ml-2">
+                <span>On Demand Classes</span><span className="btn-icon">↗</span>
+              </Link>
+            )}
           </div>
           
-          <MobileMenu menuTree={menuTree} />
+          {!isCustomerOrSubscriber && <MobileMenu menuTree={menuTree} />}
         </div>
 
         {/* Mobile-only full width button below logo/menu */}
-        <div className="w-full mt-4 lg:hidden">
-          <Link href="#on-demand" className="theme-btn theme-btn-primary w-full flex justify-center items-center">
-            <span>On Demand Classes</span><span className="btn-icon ml-2">↗</span>
-          </Link>
-        </div>
+        {!isCustomerOrSubscriber && (
+          <div className="w-full mt-4 lg:hidden">
+            <Link href="#on-demand" className="theme-btn theme-btn-primary w-full flex justify-center items-center">
+              <span>On Demand Classes</span><span className="btn-icon ml-2">↗</span>
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );
