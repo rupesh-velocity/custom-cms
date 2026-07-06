@@ -84,6 +84,7 @@ export default function EditProductPage() {
             stockQuantity: v.stockQuantity || 0
           })) : []
         });
+        setPublishDate(data.createdAt || '');
         setIsLoading(false);
       })
       .catch(err => {
@@ -120,7 +121,7 @@ export default function EditProductPage() {
       const res = await fetch(`/api/products/${params?.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...product, status: finalStatus })
+        body: JSON.stringify({ ...product, status: finalStatus, createdAt: publishDate || undefined })
       });
       
       if (!res.ok) throw new Error('Failed to update product');

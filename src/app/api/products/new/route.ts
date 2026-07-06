@@ -18,6 +18,7 @@ export async function POST(req: Request) {
         manageStock: data.manageStock,
         stockQuantity: parseInt(data.stockQuantity) || 0,
         status: data.status,
+        createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
         featuredImage: data.featuredImage || null,
         attributes: data.attributes && data.attributes.length > 0 ? {
           create: data.attributes.map((attr: any) => ({

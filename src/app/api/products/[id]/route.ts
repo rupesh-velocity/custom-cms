@@ -39,6 +39,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         manageStock: data.manageStock,
         stockQuantity: parseInt(data.stockQuantity) || 0,
         status: data.status,
+        createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
         featuredImage: data.featuredImage || null,
         attributes: {
           deleteMany: {},

@@ -83,7 +83,7 @@ export default function NewProductPage() {
       const res = await fetch('/api/products/new', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...product, status: finalStatus })
+        body: JSON.stringify({ ...product, status: finalStatus, createdAt: publishDate || undefined })
       });
       
       if (!res.ok) throw new Error('Failed to create product');

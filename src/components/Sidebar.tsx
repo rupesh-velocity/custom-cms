@@ -89,8 +89,11 @@ export default function Sidebar() {
               <Link href="/admin/orders" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/orders') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Orders
               </Link>
-              <Link href="/admin/products" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/products') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+              <Link href="/admin/products" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", (pathname.startsWith('/admin/products') && !pathname.startsWith('/admin/products/attributes')) ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Products
+              </Link>
+              <Link href="/admin/products/attributes" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/products/attributes') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Attributes
               </Link>
               <Link href="/admin/customers" className={clsx("flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/customers') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Customers
