@@ -18,6 +18,7 @@ export default function EditProductPage() {
   
   const [product, setProduct] = useState({
     title: '',
+    slug: '',
     description: '',
     type: 'SIMPLE',
     price: '',
@@ -41,6 +42,7 @@ export default function EditProductPage() {
         }
         setProduct({
           title: data.title || '',
+          slug: data.slug || '',
           description: data.description || '',
           type: data.type || 'SIMPLE',
           price: data.price ? String(data.price) : '',
@@ -103,14 +105,15 @@ export default function EditProductPage() {
           <ArrowLeft size={18} />
         </Link>
         <h1 className="text-2xl font-normal flex-1">Edit Product</h1>
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="px-4 py-2 bg-[#5e3fde] text-white rounded-[3px] text-[13px] font-medium hover:bg-[#4b32b2] disabled:opacity-50 flex items-center gap-2"
-        >
-          {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-          Update Product
-        </button>
+        {product.slug && (
+          <Link
+            href={`/product/${product.slug}`}
+            target="_blank"
+            className="px-4 py-2 border border-[#5e3fde] text-[#5e3fde] rounded-[3px] text-[13px] font-medium hover:bg-[#5e3fde]/10 transition-colors flex items-center gap-2"
+          >
+            View Product
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-[1fr_300px] gap-6">
