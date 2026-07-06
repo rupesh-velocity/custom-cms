@@ -22,10 +22,23 @@ export default function CourseViewerClient({ course }: CourseViewerClientProps) 
   const activeVideo = videos[activeVideoIndex];
 
   return (
-    <main className="flex-1 max-w-6xl mx-auto w-full p-6 pt-12 md:p-8 md:pt-16 flex flex-col lg:flex-row gap-8">
-      {/* Left Col - Video & Description */}
-      <div className="flex-1 min-w-0">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6 tracking-tight">{course.title}</h1>
+    <main className="flex-1 w-full flex flex-col font-sans bg-gray-50 pb-24">
+      {/* Hero Banner */}
+      <div className="bg-[#111827] text-white pt-16 pb-32 px-6 border-b-8 border-[#5e3fde] relative overflow-hidden shrink-0">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#5e3fde 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+        <div className="max-w-6xl mx-auto relative z-10 flex flex-col">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-[#5e3fde]/20 text-[#a5b4fc] font-bold text-sm mb-4 border border-[#5e3fde]/30 uppercase tracking-widest w-max">
+            My Course
+          </div>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight font-outfit mb-2 leading-tight">
+            {course.title}
+          </h1>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 -mt-16 relative z-20 flex flex-col lg:flex-row gap-8">
+        {/* Left Col - Video & Description */}
+        <div className="flex-1 min-w-0">
         
         <div className="bg-black rounded-xl overflow-hidden shadow-lg aspect-video mb-8 border border-gray-200 relative group">
           {activeVideo && activeVideo.url ? (
