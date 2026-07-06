@@ -434,20 +434,39 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
             <BlogSidebar />
           </div>
         </div>
+      ) : (isShopPage || isCoursesPage) ? (
+        <main className="w-full font-sans bg-gray-50 min-h-screen">
+          {/* Store/Courses Hero Banner */}
+          <div className="bg-[#111827] text-white pt-24 pb-32 px-6 border-b-8 border-[#5e3fde] relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#5e3fde 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+            
+            <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center text-center">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight font-outfit mb-6 leading-tight">
+                {data.title}
+              </h1>
+              {data.contentHtml && data.contentHtml.trim() !== '<p></p>' && (
+                <div 
+                  className="text-xl text-gray-300 max-w-3xl font-medium leading-relaxed prose prose-invert prose-p:mb-0"
+                  dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} 
+                />
+              )}
+            </div>
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 -mt-16 relative z-20 pb-24">
+             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-10">
+               <ShopClient initialItems={shopItems} mode={shopMode} />
+             </div>
+          </div>
+        </main>
       ) : (
-        <main className="w-full font-sans">
+        <main className="w-full font-sans min-h-screen">
           {data.title && !data.hideTitle && (
             <div className="max-w-7xl mx-auto px-6 pt-16">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight font-outfit">{data.title}</h1>
             </div>
           )}
-          <div className="mt-12" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} />
-          
-          {(isShopPage || isCoursesPage) && (
-            <div className="mt-8">
-              <ShopClient initialItems={shopItems} mode={shopMode} />
-            </div>
-          )}
+          <div className="mt-12 max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} />
         </main>
       )}
     </>
