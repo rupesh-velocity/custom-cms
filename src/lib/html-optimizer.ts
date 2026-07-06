@@ -87,6 +87,11 @@ export function optimizeHtmlImages(html: string | null, seoSettings?: Record<str
         inlineStyle += '; width: 100%;';
       }
       
+      // Ensure it never overflows on mobile even if a fixed width like 546px is provided
+      if (!inlineStyle.includes('max-width')) {
+        inlineStyle += '; max-width: 100%;';
+      }
+      
       const styleAttr = `style="${inlineStyle}"`;
       
       return `
