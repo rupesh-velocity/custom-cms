@@ -135,14 +135,14 @@ export default async function SiteHeader() {
 
   return (
     <header className="site-header">
-      <div className="container h-full flex items-center justify-between gap-6">
-        <Link href="/">
+      <div className="container h-full flex items-center justify-between gap-4 md:gap-6">
+        <Link href="/" className="shrink-0 flex items-center">
           {siteLogo ? (
-            <img src={optimizeLogoUrl(siteLogo)} alt={siteTitle} className="logo-img" loading="eager" fetchPriority="high" />
+            <img src={optimizeLogoUrl(siteLogo)} alt={siteTitle} className="logo-img max-h-12 w-auto object-contain" loading="eager" fetchPriority="high" />
           ) : siteIcon ? (
-            <img src={optimizeLogoUrl(siteIcon)} alt={siteTitle} className="logo-img" loading="eager" fetchPriority="high" />
+            <img src={optimizeLogoUrl(siteIcon)} alt={siteTitle} className="logo-img max-h-12 w-auto object-contain" loading="eager" fetchPriority="high" />
           ) : (
-            <span className="text-xl font-bold">{siteTitle}</span>
+            <span className="text-xl font-bold whitespace-nowrap">{siteTitle}</span>
           )}
         </Link>
         

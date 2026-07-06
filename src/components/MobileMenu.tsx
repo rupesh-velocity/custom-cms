@@ -5,16 +5,21 @@ import Link from 'next/link';
 import { Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
-function MobileMenuNode({ node, onClick }: { node: any, onClick: () => void }) {
+function MobileMenuNode({ node, onClick, depth = 0 }: { node: any, onClick: () => void, depth?: number }) {
   const hasChildren = node.children && node.children.length > 0;
   const [isOpen, setIsOpen] = useState(false);
+
+  const isSub = depth > 0;
+  const textStyle = isSub ? "text-base text-gray-600 font-normal hover:text-[#5e3fde]" : "text-lg font-medium text-gray-800 hover:text-[#5e3fde]";
+  const paddingStyle = isSub ? "py-2" : "py-3";
+  const borderStyle = isSub ? "" : "border-b border-gray-100";
 
   if (!hasChildren) {
     return (
       <Link 
         href={node.url}
         onClick={onClick}
-        className="block py-3 text-lg font-medium text-gray-800 border-b border-gray-100"
+        className={`block ${textStyle} ${paddingStyle} ${borderStyle} transition-colors`}
       >
         {node.label}
       </Link>
@@ -22,19 +27,21 @@ function MobileMenuNode({ node, onClick }: { node: any, onClick: () => void }) {
   }
 
   return (
-    <div className="border-b border-gray-100">
+    <div className={borderStyle}>
       <div 
-        className="flex items-center justify-between py-3 cursor-pointer text-lg font-medium text-gray-800"
+        className={`flex items-center justify-between ${paddingStyle} cursor-pointer ${textStyle} transition-colors`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{node.label}</span>
-        {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        {isOpen ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
       </div>
       
       {isOpen && (
-        <div className="pl-4 pb-2 space-y-1">
+        <div className="pl-4 mt-1 mb-2 space-y-1 border-l-2 border-gray-100 ml-2">
           {node.children.map((child: any) => (
-            <MobileMenuNode key={child.id} node={child} onClick={onClick} />
+            <div key={child.id} className="pl-3">
+              <MobileMenuNode node={child} onClick={onClick} depth={depth + 1} />
+            </div>
           ))}
         </div>
       )}
