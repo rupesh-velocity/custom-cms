@@ -7,7 +7,8 @@ export async function GET() {
   try {
     const keys = [
       'stripeEnabled', 'stripePublicKey', 'stripeSecretKey',
-      'paypalEnabled', 'paypalClientId', 'currency', 'adminEmail'
+      'paypalEnabled', 'paypalClientId', 'currency', 'adminEmail',
+      'storeAddress1', 'storeAddress2', 'storeCity'
     ];
     
     const settings = await prisma.setting.findMany({

@@ -13,6 +13,9 @@ export default function EcommerceSettingsPage() {
     paypalClientId: '',
     currency: 'USD',
     adminEmail: '',
+    storeAddress1: '',
+    storeAddress2: '',
+    storeCity: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -104,17 +107,17 @@ export default function EcommerceSettingsPage() {
             
             <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
               <label className="text-[13px] font-semibold text-gray-700">Address line 1</label>
-              <input type="text" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="e.g. 123 Main St" />
+              <input type="text" name="storeAddress1" value={(settings as any).storeAddress1 || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="e.g. 123 Main St" />
             </div>
             
             <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
               <label className="text-[13px] font-semibold text-gray-700">Address line 2</label>
-              <input type="text" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="Apartment, suite, unit etc. (optional)" />
+              <input type="text" name="storeAddress2" value={(settings as any).storeAddress2 || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="Apartment, suite, unit etc. (optional)" />
             </div>
 
             <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
               <label className="text-[13px] font-semibold text-gray-700">City</label>
-              <input type="text" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" />
+              <input type="text" name="storeCity" value={(settings as any).storeCity || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" />
             </div>
             
             <div className="grid grid-cols-[200px_1fr] gap-4 items-center pt-8 border-t border-gray-100">
