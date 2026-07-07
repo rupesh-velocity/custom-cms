@@ -81,7 +81,7 @@ export async function POST(req: Request) {
           data: { userId: userId, courseId: course.id }
         });
         // Send notification email asynchronously
-        sendCoursePurchaseEmail(userEmail, course.title, (course.salePrice || course.price || 0).toString()).catch(console.error);
+        sendCoursePurchaseEmail(userEmail, course.title, "Free").catch(console.error);
       }
       responseData.enrollmentId = course.id;
     } else {
