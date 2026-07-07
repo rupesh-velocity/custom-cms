@@ -53,7 +53,7 @@ export async function sendCoursePurchaseEmail(userEmail: string, courseName: str
         </div>
         <p style="font-size: 16px; color: #333; margin-top: 32px;">
           Happy learning!<br>
-          <span style="color: #666;">- The Velocity Team</span>
+          <span style="color: #666;">- Fitness Arts Team</span>
         </p>
       </div>
     </div>
