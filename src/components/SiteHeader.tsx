@@ -166,7 +166,7 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
         </Link>
         
         <div className="flex items-center gap-4 lg:gap-10">
-          {(!isCustomerOrSubscriber && !hideMenu) && (
+          {!hideMenu && (
             <nav className="main-menu hidden lg:flex items-center gap-10">
               {menuTree.map((node: any) => (
                 <MenuNode key={node.id} node={node} />
@@ -179,16 +179,25 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
             </nav>
           )}
           
-          <div className={`${isCustomerOrSubscriber ? 'flex' : 'hidden lg:flex'} items-center gap-6`}>
+          <div className="hidden lg:flex items-center gap-6">
             {isAuthenticated ? (
               userRole !== 'Admin' && (
-                <div className="flex items-center gap-4">
-                  <Link href="/my-account" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde]">
-                    <User size={16} /> <span className="hidden sm:inline">My Dashboard</span>
-                  </Link>
-                  <form action="/api/users/logout" method="POST">
-                    <button type="submit" className="text-sm font-medium text-red-500 hover:text-red-700">Logout</button>
-                  </form>
+                <div className="relative group flex items-center cursor-pointer">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde] py-2">
+                    <User size={16} /> <span className="hidden sm:inline">My Account</span>
+                    <ChevronDown size={14} className="opacity-70 transition-transform" />
+                  </div>
+                  
+                  <div className="absolute top-full right-0 hidden group-hover:block min-w-[160px] bg-white border border-gray-100 shadow-xl rounded-lg py-2 z-50">
+                    <Link href="/my-account" className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#5e3fde]">
+                      Dashboard
+                    </Link>
+                    <form action="/api/users/logout" method="POST" className="block w-full">
+                      <button type="submit" className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 font-medium">
+                        Logout
+                      </button>
+                    </form>
+                  </div>
                 </div>
               )
             ) : (
@@ -204,7 +213,7 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
             )}
           </div>
           
-          {!isCustomerOrSubscriber && !hideMenu && <MobileMenu menuTree={menuTree} />}
+          {!hideMenu && <MobileMenu menuTree={menuTree} isAuthenticated={isAuthenticated} userRole={userRole} />}
         </div>
 
         {/* Mobile-only full width button below logo/menu */}

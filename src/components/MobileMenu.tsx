@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { LogIn, User } from 'lucide-react';
 
 function MobileMenuNode({ node, onClick, depth = 0 }: { node: any, onClick: () => void, depth?: number }) {
   const hasChildren = node.children && node.children.length > 0;
@@ -49,7 +50,7 @@ function MobileMenuNode({ node, onClick, depth = 0 }: { node: any, onClick: () =
   );
 }
 
-export default function MobileMenu({ menuTree }: { menuTree: any[] }) {
+export default function MobileMenu({ menuTree, isAuthenticated, userRole }: { menuTree: any[], isAuthenticated?: boolean, userRole?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -109,6 +110,35 @@ export default function MobileMenu({ menuTree }: { menuTree: any[] }) {
             {menuTree.map((node) => (
               <MobileMenuNode key={node.id} node={node} onClick={() => setIsOpen(false)} />
             ))}
+            
+            {isAuthenticated ? (
+              userRole !== 'Admin' && (
+                <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-1">
+                  <Link 
+                    href="/my-account" 
+                    onClick={() => setIsOpen(false)}
+                    className="text-lg font-medium text-gray-800 hover:text-[#5e3fde] py-2 flex items-center gap-2"
+                  >
+                    <User size={20} /> My Dashboard
+                  </Link>
+                  <form action="/api/users/logout" method="POST">
+                    <button type="submit" className="text-lg font-medium text-red-500 hover:text-red-700 py-2 text-left w-full">
+                      Logout
+                    </button>
+                  </form>
+                </div>
+              )
+            ) : (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <Link 
+                  href="/login" 
+                  onClick={() => setIsOpen(false)}
+                  className="text-lg font-medium text-gray-800 hover:text-[#5e3fde] py-2 flex items-center gap-2"
+                >
+                  <LogIn size={20} /> Login
+                </Link>
+              </div>
+            )}
             
             <div className="mt-8">
               <Link 
