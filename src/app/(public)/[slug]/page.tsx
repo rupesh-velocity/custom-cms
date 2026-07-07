@@ -194,7 +194,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
       shopMode = 'courses';
       courses = await prisma.course.findMany({
         where: { status: 'Published' },
-        select: { id: true, title: true, slug: true, featuredImage: true },
+        select: { id: true, title: true, slug: true, featuredImage: true, price: true, salePrice: true },
         orderBy: { createdAt: 'desc' }
       });
     } else {
@@ -213,7 +213,8 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
       title: c.title,
       slug: c.slug,
       image: c.featuredImage,
-      price: null,
+      price: c.price,
+      salePrice: c.salePrice,
       url: `/courses/${c.slug}`
     }));
 

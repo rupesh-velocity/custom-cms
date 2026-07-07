@@ -8,6 +8,8 @@ interface CourseLandingClientProps {
     title: string;
     contentHtml: string | null;
     featuredImage: string | null;
+    price?: number | null;
+    salePrice?: number | null;
   }
 }
 
@@ -31,6 +33,20 @@ export default function CourseLandingClient({ course }: CourseLandingClientProps
             <p className="text-xl text-gray-300 mb-10 max-w-2xl font-medium leading-relaxed">
               Enroll today to unlock exclusive video lessons, comprehensive guides, and expert knowledge tailored just for you.
             </p>
+            
+            {course.price !== null && course.price !== undefined && course.price > 0 && (
+              <div className="mb-8 flex items-baseline gap-3 justify-center md:justify-start">
+                <span className="text-4xl font-bold text-white">
+                  ${course.salePrice ? course.salePrice.toFixed(2) : course.price.toFixed(2)}
+                </span>
+                {course.salePrice && (
+                  <span className="text-xl text-gray-400 line-through">
+                    ${course.price.toFixed(2)}
+                  </span>
+                )}
+              </div>
+            )}
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <Link 
                 href={`/checkout?type=course&id=${course.id}`}

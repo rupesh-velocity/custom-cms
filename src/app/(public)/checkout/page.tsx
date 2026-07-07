@@ -26,7 +26,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
       itemData = {
         id: course.id,
         title: course.title,
-        price: 0, // Courses might have price via linked product, or free for now
+        price: course.salePrice || course.price || 0,
         image: course.featuredImage,
         type: 'course'
       };
