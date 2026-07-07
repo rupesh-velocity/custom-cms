@@ -80,7 +80,7 @@ function MenuNode({ node, depth = 0 }: { node: any, depth?: number }) {
   );
 }
 
-export default async function SiteHeader() {
+export default async function SiteHeader({ hideMenu = false }: { hideMenu?: boolean } = {}) {
   // Fetch settings for branding and homepage
   const settingsRecords = await prisma.setting.findMany({
     where: {
@@ -166,7 +166,7 @@ export default async function SiteHeader() {
         </Link>
         
         <div className="flex items-center gap-4 lg:gap-10">
-          {!isCustomerOrSubscriber && (
+          {(!isCustomerOrSubscriber && !hideMenu) && (
             <nav className="main-menu hidden lg:flex items-center gap-10">
               {menuTree.map((node: any) => (
                 <MenuNode key={node.id} node={node} />
@@ -204,11 +204,11 @@ export default async function SiteHeader() {
             )}
           </div>
           
-          {!isCustomerOrSubscriber && <MobileMenu menuTree={menuTree} />}
+          {!isCustomerOrSubscriber && !hideMenu && <MobileMenu menuTree={menuTree} />}
         </div>
 
         {/* Mobile-only full width button below logo/menu */}
-        {!isCustomerOrSubscriber && (
+        {(!isCustomerOrSubscriber && !hideMenu) && (
           <div className="w-full mt-4 lg:hidden">
             <Link href="#on-demand" className="theme-btn theme-btn-primary w-full flex justify-center items-center">
               <span>On Demand Classes</span><span className="btn-icon ml-2">↗</span>
