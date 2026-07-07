@@ -12,6 +12,7 @@ export default function EcommerceSettingsPage() {
     paypalEnabled: 'false',
     paypalClientId: '',
     currency: 'USD',
+    adminEmail: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
