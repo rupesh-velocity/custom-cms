@@ -123,9 +123,11 @@ export default function GeneralSettings() {
       />
       <form onSubmit={handleSubmit} className="max-w-4xl space-y-10">
       
-      {/* SECTION: Site Identity */}
+      {/* SECTION 1: Basic Details */}
       <section className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-6">
-        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Site Identity</h2>
+        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-4 flex items-center gap-2">
+          <span className="text-xl">📝</span> Basic Details
+        </h2>
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Site Title</label>
@@ -134,7 +136,7 @@ export default function GeneralSettings() {
             name="site_title"
             value={settings.site_title}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none max-w-2xl"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#5e3fde] outline-none max-w-2xl"
           />
         </div>
         
@@ -145,10 +147,17 @@ export default function GeneralSettings() {
             name="site_tagline"
             value={settings.site_tagline}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none max-w-2xl"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#5e3fde] outline-none max-w-2xl"
           />
           <p className="mt-1 text-sm text-gray-500">In a few words, explain what this site is about.</p>
         </div>
+      </section>
+
+      {/* SECTION 2: Branding & Assets */}
+      <section className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-8">
+        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-4 flex items-center gap-2">
+          <span className="text-xl">🎨</span> Branding & Assets
+        </h2>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Site Icon</label>
@@ -180,7 +189,7 @@ export default function GeneralSettings() {
           </div>
         </div>
 
-        <div>
+        <div className="pt-6 border-t border-gray-100">
           <label className="block text-sm font-medium text-gray-700 mb-2">Site Logo (Header)</label>
           <div className="flex items-start gap-6">
             <div className="flex flex-col items-center justify-center w-64 h-32 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 overflow-hidden relative group">
@@ -211,30 +220,6 @@ export default function GeneralSettings() {
         </div>
         
         <div className="pt-6 border-t border-gray-100">
-          <label className="flex items-start gap-3 cursor-pointer">
-            <div className="relative flex items-start pt-0.5">
-              <input
-                type="checkbox"
-                checked={settings.enable_physical_products === 'true'}
-                onChange={(e) => setSettings(prev => ({ ...prev, enable_physical_products: e.target.checked ? 'true' : 'false' }))}
-                className="w-4 h-4 text-[#5e3fde] rounded border-gray-300 focus:ring-[#5e3fde]"
-              />
-            </div>
-            <div>
-              <span className="block text-sm font-medium text-gray-900">Enable Physical Products</span>
-              <p className="mt-1 text-sm text-gray-500">
-                Turn this on if you want to sell physical merchandise alongside your courses. It will show the "Products" tab in the admin sidebar.
-              </p>
-            </div>
-          </label>
-        </div>
-      </section>
-
-      {/* SECTION: Footer Configuration */}
-      <section className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-8">
-        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-4">Footer Configuration</h2>
-        
-        <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Footer Logo</label>
           <div className="flex items-start gap-6">
             <div className="flex flex-col items-center justify-center w-64 h-32 border-2 border-dashed border-gray-300 rounded-lg bg-slate-800 overflow-hidden relative group">
@@ -263,6 +248,13 @@ export default function GeneralSettings() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* SECTION 3: Social Media Links */}
+      <section className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-8">
+        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-4 flex items-center gap-2">
+          <span className="text-xl">🔗</span> Social Media Links
+        </h2>
 
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -326,6 +318,32 @@ export default function GeneralSettings() {
               ))
             )}
           </div>
+        </div>
+      </section>
+
+      {/* SECTION 4: Features & Capabilities */}
+      <section className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-6">
+        <h2 className="text-xl font-semibold text-gray-900 border-b border-gray-100 pb-4 flex items-center gap-2">
+          <span className="text-xl">⚙️</span> Features & Capabilities
+        </h2>
+        
+        <div>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <div className="relative flex items-start pt-0.5">
+              <input
+                type="checkbox"
+                checked={settings.enable_physical_products === 'true'}
+                onChange={(e) => setSettings(prev => ({ ...prev, enable_physical_products: e.target.checked ? 'true' : 'false' }))}
+                className="w-4 h-4 text-[#5e3fde] rounded border-gray-300 focus:ring-[#5e3fde]"
+              />
+            </div>
+            <div>
+              <span className="block text-sm font-medium text-gray-900">Enable Physical Products</span>
+              <p className="mt-1 text-sm text-gray-500">
+                Turn this on if you want to sell physical merchandise alongside your courses. It will show the "Products" tab in the admin sidebar.
+              </p>
+            </div>
+          </label>
         </div>
       </section>
 
