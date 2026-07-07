@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { prisma } from '@/lib/prisma';
 
 interface SendEmailParams {
   to: string;
@@ -58,5 +59,32 @@ export async function sendCoursePurchaseEmail(userEmail: string, courseName: str
     </div>
   `;
 
-  return sendEmail({ to: userEmail, subject, html });
+  const result = await sendEmail({ to: userEmail, subject, html });
+
+  try {
+    const adminSetting = await prisma.setting.findUnique({ where: { key: 'adminEmail' } });
+    if (adminSetting && adminSetting.value) {
+      const adminHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px;">
+          <div style="background-color: #f6f7f7; padding: 24px; border-bottom: 1px solid #eaeaea;">
+            <h2 style="margin: 0; color: #111;">New Course Sale! 🎉</h2>
+          </div>
+          <div style="padding: 24px;">
+            <p><strong>Customer:</strong> ${userEmail}</p>
+            <p><strong>Course:</strong> ${courseName}</p>
+            <p><strong>Amount Paid:</strong> $${amount}</p>
+          </div>
+        </div>
+      `;
+      await sendEmail({ 
+        to: adminSetting.value, 
+        subject: `New Sale: ${courseName}`, 
+        html: adminHtml 
+      });
+    }
+  } catch (err) {
+    console.error("Failed to send admin email", err);
+  }
+
+  return result;
 }
