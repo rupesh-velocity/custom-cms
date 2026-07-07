@@ -31,7 +31,7 @@ export default function UserForm({ initialData, isEdit }: UserFormProps) {
     role: initialData?.role || 'Subscriber',
   });
 
-  const roles = ['Administrator', 'Editor', 'Author', 'Contributor', 'Subscriber'];
+  const roles = ['Administrator', 'Editor', 'Author', 'Contributor', 'Subscriber', 'Customer'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
