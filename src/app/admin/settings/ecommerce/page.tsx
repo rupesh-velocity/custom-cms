@@ -156,8 +156,8 @@ export default function EcommerceSettingsPage() {
                     <input type="checkbox" name="stripeEnabled" checked={settings.stripeEnabled === 'true'} onChange={handleChange} className="w-4 h-4 rounded text-[#5e3fde] focus:ring-[#5e3fde]" />
                   </td>
                   <td className="py-4 space-y-2">
-                    <input type="text" name="stripePublicKey" value={settings.stripePublicKey} onChange={handleChange} placeholder="Publishable Key" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-xs block focus:border-[#5e3fde] outline-none" />
-                    <input type="password" name="stripeSecretKey" value={settings.stripeSecretKey} onChange={handleChange} placeholder="Secret Key" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-xs block focus:border-[#5e3fde] outline-none" />
+                    <input type="text" name="stripePublicKey" value={settings.stripePublicKey} onChange={handleChange} placeholder="Publishable Key" autoComplete="off" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-xs block focus:border-[#5e3fde] outline-none" />
+                    <input type="text" name="stripeSecretKey" value={settings.stripeSecretKey} onChange={handleChange} placeholder="Secret Key" autoComplete="off" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-xs block focus:border-[#5e3fde] outline-none" />
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">
