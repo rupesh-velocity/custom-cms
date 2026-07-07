@@ -84,6 +84,8 @@ model Course {
   metaDescription String?
   focusKeyword    String?
   status          String   @default("Draft")
+  price           Float    @default(0)
+  salePrice       Float?
   featuredImage   String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

@@ -80,8 +80,32 @@ export async function POST(req: Request) {
         await prisma.userCourseAccess.create({
           data: { userId: userId, courseId: course.id }
         });
+        
+        const amountPaid = course.salePrice || course.price || 0;
+        
+        // CREATE ORDER
+        await prisma.order.create({
+          data: {
+            customerId: userId,
+            customerEmail: userEmail,
+            orderNumber: `MOCK-${Date.now()}`,
+            status: 'COMPLETED',
+            totalAmount: amountPaid,
+            billingAddress: '{}',
+            shippingAddress: '{}',
+            items: {
+              create: [{
+                name: course.title,
+                quantity: 1,
+                price: amountPaid,
+                total: amountPaid
+              }]
+            }
+          }
+        });
+
         // Send notification email asynchronously
-        sendCoursePurchaseEmail(userEmail, course.title, "Free").catch(console.error);
+        sendCoursePurchaseEmail(userEmail, course.title, amountPaid > 0 ? amountPaid.toString() : "Free").catch(console.error);
       }
       responseData.enrollmentId = course.id;
     } else {

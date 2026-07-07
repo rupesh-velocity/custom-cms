@@ -19,21 +19,23 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
-    const data = await req.json();
+    const { title, contentHtml, contentText, videos, metaDescription, focusKeyword, slug, status, featuredImage, createdAt, price, salePrice } = await req.json();
     
     const course = await prisma.course.update({
       where: { id: parseInt(resolvedParams.id) },
       data: {
-        title: data.title,
-        slug: data.slug || slugify(data.title, { lower: true, strict: true }),
-        contentHtml: data.contentHtml,
-        contentText: data.contentText,
-        videos: data.videos,
-        metaDescription: data.metaDescription,
-        focusKeyword: data.focusKeyword,
-        status: data.status,
-        featuredImage: data.featuredImage,
-        createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
+        title: title,
+        slug: slug || slugify(title, { lower: true, strict: true }),
+        contentHtml: contentHtml,
+        contentText: contentText,
+        videos: videos || [],
+        metaDescription,
+        focusKeyword,
+        status: status || 'Draft',
+        price: price || 0,
+        salePrice: salePrice || null,
+        featuredImage,
+        createdAt: createdAt ? new Date(createdAt) : undefined,
       }
     });
 

@@ -15,29 +15,32 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
+    const { title, contentHtml, contentText, videos, metaDescription, focusKeyword, slug, status, featuredImage, createdAt, price, salePrice } = await req.json();
     
-    let slug = data.slug || slugify(data.title, { lower: true, strict: true });
+    let generatedSlug = slug || slugify(title, { lower: true, strict: true });
     
     // Ensure unique slug
-    let uniqueSlug = slug;
+    let uniqueSlug = generatedSlug;
     let counter = 1;
     while (await prisma.course.findUnique({ where: { slug: uniqueSlug } })) {
-      uniqueSlug = `${slug}-${counter}`;
+      uniqueSlug = `${generatedSlug}-${counter}`;
       counter++;
     }
 
     const course = await prisma.course.create({
       data: {
-        title: data.title,
+        title,
         slug: uniqueSlug,
-        contentHtml: data.contentHtml || '',
-        contentText: data.contentText || '',
-        videos: data.videos || [],
-        metaDescription: data.metaDescription || '',
-        focusKeyword: data.focusKeyword || '',
-        status: data.status || 'Draft',
-        featuredImage: data.featuredImage || null,
+        contentHtml: contentHtml || '',
+        contentText: contentText || '',
+        videos: videos || [],
+        metaDescription: metaDescription || '',
+        focusKeyword: focusKeyword || '',
+        status: status || 'Draft',
+        price: price || 0,
+        salePrice: salePrice || null,
+        featuredImage: featuredImage || null,
+        createdAt: createdAt ? new Date(createdAt) : undefined,
       }
     });
 

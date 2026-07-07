@@ -26,6 +26,9 @@ export default function EditCourse({ params }: { params: Promise<{ id: string }>
   const [password, setPassword] = useState('');
   const [publishDate, setPublishDate] = useState('');
   
+  const [price, setPrice] = useState<number | ''>('');
+  const [salePrice, setSalePrice] = useState<number | ''>('');
+  
   const [seoScore, setSeoScore] = useState(0);
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
 
@@ -50,6 +53,8 @@ export default function EditCourse({ params }: { params: Promise<{ id: string }>
         setMetaDescription(data.metaDescription || '');
         setFocusKeyword(data.focusKeyword || '');
         setStatus(data.status || 'Draft');
+        setPrice(data.price || '');
+        setSalePrice(data.salePrice || '');
         setFeaturedImage(data.featuredImage || null);
         if (data.createdAt) {
           const d = new Date(data.createdAt);
@@ -89,6 +94,8 @@ export default function EditCourse({ params }: { params: Promise<{ id: string }>
           metaDescription,
           focusKeyword,
           status: finalStatus,
+          price: price ? Number(price) : 0,
+          salePrice: salePrice ? Number(salePrice) : null,
           featuredImage,
           createdAt: publishDate ? publishDate : undefined,
         }),
@@ -179,6 +186,36 @@ export default function EditCourse({ params }: { params: Promise<{ id: string }>
               </div>
             ))}
             <p className="text-[12px] text-gray-500 mt-2">Enter the title and embed URLs for the course videos. The order here dictates the playlist order.</p>
+          </div>
+        </div>
+        
+        <div className="bg-white border border-[#c3c4c7] mt-4">
+          <div className="px-4 py-3 border-b border-[#c3c4c7] font-semibold text-[#1d2327]">
+            Course Pricing
+          </div>
+          <div className="p-4 flex gap-4">
+            <div className="flex-1">
+              <label className="block text-[12px] font-semibold text-gray-700 mb-1">Regular Price ($)</label>
+              <input 
+                type="number"
+                step="0.01" 
+                value={price}
+                onChange={(e) => setPrice(e.target.value ? parseFloat(e.target.value) : '')}
+                placeholder="e.g. 99.00"
+                className="w-full border border-[#8c8f94] px-3 py-1.5 rounded-[3px] text-[13px] focus:outline-none focus:border-[#5e3fde]"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-[12px] font-semibold text-gray-700 mb-1">Sale Price ($) <span className="text-gray-400 font-normal">(Optional)</span></label>
+              <input 
+                type="number"
+                step="0.01" 
+                value={salePrice}
+                onChange={(e) => setSalePrice(e.target.value ? parseFloat(e.target.value) : '')}
+                placeholder="e.g. 49.00"
+                className="w-full border border-[#8c8f94] px-3 py-1.5 rounded-[3px] text-[13px] focus:outline-none focus:border-[#5e3fde]"
+              />
+            </div>
           </div>
         </div>
         
