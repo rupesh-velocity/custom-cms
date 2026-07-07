@@ -27,7 +27,7 @@ export default function EcommerceSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings/ecommerce');
+      const res = await fetch('/api/settings/ecommerce', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setSettings(prev => ({ ...prev, ...data }));
@@ -85,6 +85,7 @@ export default function EcommerceSettingsPage() {
           
           return (
             <button
+              type="button"
               key={tabId}
               onClick={() => setActiveTab(tabId)}
               className={`px-4 py-2 text-[14px] font-medium whitespace-nowrap transition-colors ${
