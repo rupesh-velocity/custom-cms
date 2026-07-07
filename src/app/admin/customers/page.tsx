@@ -60,9 +60,9 @@ export default async function CustomersPage() {
     <div className="max-w-7xl mx-auto p-8 text-[#2c3338]">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-normal">Customers</h1>
-        <button className="px-4 py-2 bg-[#5e3fde] text-white rounded text-[13px] font-medium hover:bg-[#4b32b2] transition-colors">
+        <a href="/api/customers/export" download className="px-4 py-2 bg-[#5e3fde] text-white rounded text-[13px] font-medium hover:bg-[#4b32b2] transition-colors">
           Export Customers
-        </button>
+        </a>
       </div>
 
       <div className="bg-white border border-[#c3c4c7] shadow-sm mb-6 flex items-center justify-between p-3">
