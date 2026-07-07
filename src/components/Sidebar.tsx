@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FileText, Files, Users, Settings, ChevronDown, ChevronRight, Menu as MenuIcon, Image as ImageIcon, BarChart2, ShoppingCart, Package } from 'lucide-react';
 import clsx from 'clsx';
 
-export default function Sidebar() {
+export default function Sidebar({ enableProducts = false }: { enableProducts?: boolean }) {
   const pathname = usePathname();
   
   // Settings is considered active if we are on /admin/settings or any of its subpages
@@ -71,39 +71,40 @@ export default function Sidebar() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> Courses
         </Link>
 
-        <div className="space-y-1">
-          <Link 
-            href="/admin/products" 
-            className={clsx(
-              "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
-              isProductsActive ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
-            )}
-          >
-            <div className="flex items-center gap-3">
-              <Package size={20} /> Products
-            </div>
-            {isProductsActive ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-          </Link>
+        {enableProducts && (
+          <div className="space-y-1">
+            <Link 
+              href="/admin/products" 
+              className={clsx(
+                "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
+                isProductsActive ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Package size={20} /> Products
+              </div>
+              {isProductsActive ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+            </Link>
 
-          {/* Sub-options for Products */}
-          <div className={clsx(
-            "overflow-hidden transition-all duration-300 ease-in-out",
-            isProductsActive ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
-          )}>
-            <div className="pl-3 py-1 space-y-1 border-l-2 border-gray-100 ml-8 mt-1">
-              <Link href="/admin/products" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", (pathname === '/admin/products') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
-                All Products
-              </Link>
-              <Link href="/admin/products/new" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/products/new' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
-                Add New
-              </Link>
-              {/* Product Categories could go here in future */}
-              <Link href="/admin/products/attributes" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/products/attributes') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
-                Attributes
-              </Link>
+            {/* Sub-options for Products */}
+            <div className={clsx(
+              "overflow-hidden transition-all duration-300 ease-in-out",
+              isProductsActive ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
+            )}>
+              <div className="pl-3 py-1 space-y-1 border-l-2 border-gray-100 ml-8 mt-1">
+                <Link href="/admin/products" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", (pathname === '/admin/products') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                  All Products
+                </Link>
+                <Link href="/admin/products/new" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/products/new' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                  Add New
+                </Link>
+                <Link href="/admin/products/attributes" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/products/attributes') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                  Attributes
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="space-y-1">
           <Link 

@@ -19,6 +19,7 @@ export default function GeneralSettings() {
     site_icon: '',
     site_logo: '',
     footer_logo: '',
+    enable_physical_products: 'false',
   });
   const [socialIcons, setSocialIcons] = useState<SocialIcon[]>([]);
   
@@ -42,6 +43,7 @@ export default function GeneralSettings() {
           site_icon: data.site_icon || '',
           site_logo: data.site_logo || '',
           footer_logo: data.footer_logo || '',
+          enable_physical_products: data.enable_physical_products || 'false',
         });
         
         if (data.social_icons) {
@@ -206,6 +208,25 @@ export default function GeneralSettings() {
               </p>
             </div>
           </div>
+        </div>
+        
+        <div className="pt-6 border-t border-gray-100">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <div className="relative flex items-start pt-0.5">
+              <input
+                type="checkbox"
+                checked={settings.enable_physical_products === 'true'}
+                onChange={(e) => setSettings(prev => ({ ...prev, enable_physical_products: e.target.checked ? 'true' : 'false' }))}
+                className="w-4 h-4 text-[#5e3fde] rounded border-gray-300 focus:ring-[#5e3fde]"
+              />
+            </div>
+            <div>
+              <span className="block text-sm font-medium text-gray-900">Enable Physical Products</span>
+              <p className="mt-1 text-sm text-gray-500">
+                Turn this on if you want to sell physical merchandise alongside your courses. It will show the "Products" tab in the admin sidebar.
+              </p>
+            </div>
+          </label>
         </div>
       </section>
 
