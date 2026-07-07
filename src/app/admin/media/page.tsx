@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Upload, Trash2, Image as ImageIcon } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Upload, Trash2, Image as ImageIcon, Search, CheckSquare, Square } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Media {
@@ -21,6 +21,9 @@ export default function MediaLibrary() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const fetchMedia = useCallback(async () => {
     try {
@@ -77,6 +80,7 @@ export default function MediaLibrary() {
       if (res.ok) {
         toast.success('Media deleted');
         if (selectedMedia?.id === id) setSelectedMedia(null);
+        setSelectedMediaIds(prev => prev.filter(selectedId => selectedId !== id));
         fetchMedia();
       } else {
         toast.error('Failed to delete media');
@@ -85,6 +89,43 @@ export default function MediaLibrary() {
       toast.error('An error occurred');
     }
   };
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Are you sure you want to delete ${selectedMediaIds.length} files? This action cannot be undone.`)) return;
+    
+    setIsBulkDeleting(true);
+    let successCount = 0;
+    
+    for (const id of selectedMediaIds) {
+      try {
+        const res = await fetch(`/api/media/${id}`, { method: 'DELETE' });
+        if (res.ok) successCount++;
+      } catch (error) {
+        console.error('Failed to delete', id);
+      }
+    }
+    
+    toast.success(`Deleted ${successCount} files`);
+    setSelectedMediaIds([]);
+    setIsBulkDeleting(false);
+    fetchMedia();
+  };
+
+  const toggleSelection = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedMediaIds(prev => 
+      prev.includes(id) ? prev.filter(selectedId => selectedId !== id) : [...prev, id]
+    );
+  };
+
+  const filteredMedia = useMemo(() => {
+    if (!searchQuery.trim()) return media;
+    const query = searchQuery.toLowerCase();
+    return media.filter(item => 
+      item.filename.toLowerCase().includes(query) || 
+      (item.altText && item.altText.toLowerCase().includes(query))
+    );
+  }, [media, searchQuery]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +184,39 @@ export default function MediaLibrary() {
         </div>
       </div>
 
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="relative max-w-sm w-full">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input 
+            type="text" 
+            placeholder="Search media..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-1.5 border border-[#8c8f94] rounded-[3px] text-[13px] focus:border-[#5e3fde] outline-none"
+          />
+        </div>
+        
+        {selectedMediaIds.length > 0 && (
+          <div className="flex items-center gap-3 bg-red-50 px-4 py-1.5 rounded border border-red-100">
+            <span className="text-[13px] text-red-700 font-medium">{selectedMediaIds.length} selected</span>
+            <button 
+              onClick={handleBulkDelete}
+              disabled={isBulkDeleting}
+              className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1 rounded text-xs font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              <Trash2 size={14} />
+              {isBulkDeleting ? 'Deleting...' : 'Delete Selected'}
+            </button>
+            <button 
+              onClick={() => setSelectedMediaIds([])}
+              className="text-xs text-red-600 hover:underline"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+
       <div 
         className={`w-full border-2 border-dashed rounded-lg p-12 text-center mb-8 transition-colors ${dragActive ? 'border-[#5e3fde] bg-[#f0f6fc]' : 'border-[#c3c4c7] bg-white'}`}
         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
@@ -173,18 +247,28 @@ export default function MediaLibrary() {
 
       {isLoading ? (
         <div className="text-center py-12 text-gray-500">Loading media...</div>
-      ) : media.length === 0 ? (
+      ) : filteredMedia.length === 0 ? (
         <div className="text-center py-12 text-gray-500 border border-[#c3c4c7] bg-white rounded-[3px]">
-          No media files found. Upload some files to get started.
+          {media.length === 0 ? 'No media files found. Upload some files to get started.' : 'No files match your search.'}
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-          {media.map((item) => (
+          {filteredMedia.map((item) => (
             <div 
               key={item.id} 
-              onClick={() => setSelectedMedia(item)}
-              className="relative group bg-white border border-[#c3c4c7] rounded-[3px] aspect-square flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#5e3fde] transition-colors"
+              className={`relative group bg-white border ${selectedMediaIds.includes(item.id) ? 'border-[#5e3fde] ring-2 ring-[#5e3fde]/20' : 'border-[#c3c4c7]'} rounded-[3px] aspect-square flex items-center justify-center overflow-hidden cursor-pointer transition-all`}
             >
+              <div 
+                className="absolute inset-0 z-10" 
+                onClick={() => setSelectedMedia(item)}
+              />
+              <button 
+                onClick={(e) => toggleSelection(item.id, e)}
+                className={`absolute top-2 right-2 z-20 bg-white rounded flex items-center justify-center shadow-sm ${selectedMediaIds.includes(item.id) ? 'text-[#5e3fde] opacity-100' : 'text-gray-300 opacity-0 group-hover:opacity-100 hover:text-gray-500'} transition-opacity`}
+              >
+                {selectedMediaIds.includes(item.id) ? <CheckSquare size={20} className="fill-white" /> : <Square size={20} />}
+              </button>
+              
               {item.mimeType.startsWith('image/') ? (
                 <img src={item.url} alt={item.filename} className="w-full h-full object-cover" />
               ) : (
