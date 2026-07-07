@@ -10,7 +10,9 @@ export async function GET() {
       'paypalEnabled', 'paypalClientId', 'currency', 'adminEmail',
       'storeAddress1', 'storeAddress2', 'storeCity',
       'emailSenderName', 'emailLogoUrl', 'emailTemplateSuccess',
-      'emailTemplateFailed', 'emailTemplateCancelled'
+      'emailTemplateFailed', 'emailTemplateCancelled',
+      'emailPrimaryColor', 'emailSubjectSuccess', 'emailSubjectFailed', 
+      'emailSubjectCancelled'
     ];
     
     const settings = await prisma.setting.findMany({

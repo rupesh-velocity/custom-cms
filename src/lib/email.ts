@@ -45,7 +45,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
 
 export async function sendCoursePurchaseEmail(userEmail: string, courseName: string, amount: string) {
   const settings = await prisma.setting.findMany({
-    where: { key: { in: ['emailSenderName', 'emailLogoUrl', 'emailTemplateSuccess', 'adminEmail'] } }
+    where: { key: { in: ['emailSenderName', 'emailLogoUrl', 'emailTemplateSuccess', 'adminEmail', 'emailPrimaryColor', 'emailSubjectSuccess'] } }
   });
   
   const settingsMap = settings.reduce((acc, curr) => {
@@ -55,16 +55,19 @@ export async function sendCoursePurchaseEmail(userEmail: string, courseName: str
 
   const senderName = settingsMap.emailSenderName || 'Velocity CMS';
   const logoUrl = settingsMap.emailLogoUrl;
+  const primaryColor = settingsMap.emailPrimaryColor || '#5e3fde';
   
   // Default template if none exists
   let customText = settingsMap.emailTemplateSuccess || "Your purchase of {courseName} was successful. You now have full access to this course.";
   customText = customText.replace(/{courseName}/g, courseName).replace(/{amount}/g, amount);
 
-  const subject = `Your receipt for ${courseName}`;
+  let subject = settingsMap.emailSubjectSuccess || "Your receipt for {courseName}";
+  subject = subject.replace(/{courseName}/g, courseName).replace(/{amount}/g, amount);
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px; overflow: hidden;">
       ${logoUrl ? `<div style="text-align: center; padding: 20px; background: #fff; border-bottom: 1px solid #eaeaea;"><img src="${logoUrl}" alt="Logo" style="max-height: 60px; max-width: 100%;" /></div>` : ''}
-      <div style="background-color: #5e3fde; padding: 24px; text-align: center;">
+      <div style="background-color: ${primaryColor}; padding: 24px; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">Thank you for your purchase!</h1>
       </div>
       <div style="padding: 32px;">
