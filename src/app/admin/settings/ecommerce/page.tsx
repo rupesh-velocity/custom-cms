@@ -192,7 +192,7 @@ export default function EcommerceSettingsPage() {
             
             <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
               <label className="text-[13px] font-semibold text-gray-700">Admin Email Address</label>
-              <input type="email" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="orders@yourdomain.com" />
+              <input type="email" name="adminEmail" value={(settings as any).adminEmail || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="orders@yourdomain.com" />
             </div>
           </div>
         )}

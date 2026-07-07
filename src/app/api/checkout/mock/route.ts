@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { jwtVerify, SignJWT } from 'jose';
 import bcrypt from 'bcryptjs';
-
+import { sendCoursePurchaseEmail } from '@/lib/email';
 export async function POST(req: Request) {
   try {
     const { itemId, type, name, email, password } = await req.json();
@@ -80,6 +80,8 @@ export async function POST(req: Request) {
         await prisma.userCourseAccess.create({
           data: { userId: userId, courseId: course.id }
         });
+        // Send notification email asynchronously
+        sendCoursePurchaseEmail(userEmail, course.title, (course.salePrice || course.price || 0).toString()).catch(console.error);
       }
       responseData.enrollmentId = course.id;
     } else {
@@ -118,6 +120,11 @@ export async function POST(req: Request) {
           await prisma.userCourseAccess.create({
             data: { userId: userId, courseId: product.linkedCourseId }
           });
+          
+          const linkedCourse = await prisma.course.findUnique({ where: { id: product.linkedCourseId } });
+          if (linkedCourse) {
+            sendCoursePurchaseEmail(userEmail, linkedCourse.title, (product.salePrice || product.price || 0).toString()).catch(console.error);
+          }
         }
       }
       responseData.orderId = order.id;
