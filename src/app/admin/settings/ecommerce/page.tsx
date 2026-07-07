@@ -16,6 +16,11 @@ export default function EcommerceSettingsPage() {
     storeAddress1: '',
     storeAddress2: '',
     storeCity: '',
+    emailSenderName: '',
+    emailLogoUrl: '',
+    emailTemplateSuccess: '',
+    emailTemplateFailed: '',
+    emailTemplateCancelled: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -59,7 +64,7 @@ export default function EcommerceSettingsPage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
@@ -198,6 +203,70 @@ export default function EcommerceSettingsPage() {
             <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
               <label className="text-[13px] font-semibold text-gray-700">Admin Email Address</label>
               <input type="email" name="adminEmail" value={(settings as any).adminEmail || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="orders@yourdomain.com" />
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <h3 className="text-md font-semibold mb-4">Email Customization</h3>
+              
+              <div className="space-y-6">
+                <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+                  <label className="text-[13px] font-semibold text-gray-700">Sender Name ("From")</label>
+                  <input type="text" name="emailSenderName" value={(settings as any).emailSenderName || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="e.g. Fitness Arts Team" />
+                </div>
+                
+                <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+                  <label className="text-[13px] font-semibold text-gray-700">Email Logo URL</label>
+                  <div>
+                    <input type="text" name="emailLogoUrl" value={(settings as any).emailLogoUrl || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none mb-1 block" placeholder="https://..." />
+                    <p className="text-xs text-gray-500">Provide an image URL to display at the top of your emails.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <h3 className="text-md font-semibold mb-2">Email Templates</h3>
+              <p className="text-[13px] text-gray-500 mb-6">
+                Use placeholders: <code>{`{courseName}`}</code>, <code>{`{amount}`}</code>, <code>{`{customerName}`}</code>
+              </p>
+              
+              <div className="space-y-8">
+                <div>
+                  <label className="block text-[13px] font-semibold text-gray-700 mb-2">Successful Purchase</label>
+                  <textarea 
+                    name="emailTemplateSuccess" 
+                    value={(settings as any).emailTemplateSuccess || ''} 
+                    onChange={handleChange} 
+                    rows={4}
+                    className="border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] w-full max-w-2xl focus:border-[#5e3fde] outline-none" 
+                    placeholder="Your purchase of {courseName} was successful. You now have full access to this course." 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-[13px] font-semibold text-gray-700 mb-2">Failed Order</label>
+                  <textarea 
+                    name="emailTemplateFailed" 
+                    value={(settings as any).emailTemplateFailed || ''} 
+                    onChange={handleChange} 
+                    rows={4}
+                    className="border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] w-full max-w-2xl focus:border-[#5e3fde] outline-none" 
+                    placeholder="Unfortunately, your payment of ${amount} for {courseName} failed. Please try again." 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-semibold text-gray-700 mb-2">Cancelled/Refunded Order</label>
+                  <textarea 
+                    name="emailTemplateCancelled" 
+                    value={(settings as any).emailTemplateCancelled || ''} 
+                    onChange={handleChange} 
+                    rows={4}
+                    className="border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] w-full max-w-2xl focus:border-[#5e3fde] outline-none" 
+                    placeholder="Your order for {courseName} has been cancelled and refunded." 
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}

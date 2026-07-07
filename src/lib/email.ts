@@ -19,9 +19,18 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
       },
     });
 
+    // Extract from name if provided
+    let fromAddress = `"${process.env.SMTP_USER}" <${process.env.SMTP_USER}>`;
+    let toAddress = to;
+    if (to.includes('__FROM_NAME__')) {
+      const parts = to.split('__FROM_NAME__');
+      fromAddress = `"${parts[1]}" <${process.env.SMTP_USER}>`;
+      toAddress = parts[0];
+    }
+
     const info = await transporter.sendMail({
-      from: `"Velocity CMS" <${process.env.SMTP_USER}>`,
-      to,
+      from: fromAddress,
+      to: toAddress,
       subject,
       html,
     });
@@ -35,16 +44,33 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
 }
 
 export async function sendCoursePurchaseEmail(userEmail: string, courseName: string, amount: string) {
+  const settings = await prisma.setting.findMany({
+    where: { key: { in: ['emailSenderName', 'emailLogoUrl', 'emailTemplateSuccess', 'adminEmail'] } }
+  });
+  
+  const settingsMap = settings.reduce((acc, curr) => {
+    acc[curr.key] = curr.value;
+    return acc;
+  }, {} as Record<string, string>);
+
+  const senderName = settingsMap.emailSenderName || 'Velocity CMS';
+  const logoUrl = settingsMap.emailLogoUrl;
+  
+  // Default template if none exists
+  let customText = settingsMap.emailTemplateSuccess || "Your purchase of {courseName} was successful. You now have full access to this course.";
+  customText = customText.replace(/{courseName}/g, courseName).replace(/{amount}/g, amount);
+
   const subject = `Your receipt for ${courseName}`;
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px; overflow: hidden;">
+      ${logoUrl ? `<div style="text-align: center; padding: 20px; background: #fff; border-bottom: 1px solid #eaeaea;"><img src="${logoUrl}" alt="Logo" style="max-height: 60px; max-width: 100%;" /></div>` : ''}
       <div style="background-color: #5e3fde; padding: 24px; text-align: center;">
         <h1 style="color: white; margin: 0; font-size: 24px;">Thank you for your purchase!</h1>
       </div>
       <div style="padding: 32px;">
         <p style="font-size: 16px; color: #333;">Hello,</p>
-        <p style="font-size: 16px; color: #333; line-height: 1.5;">
-          Your purchase of <strong>${courseName}</strong> was successful. You now have full access to this course.
+        <p style="font-size: 16px; color: #333; line-height: 1.5; white-space: pre-wrap;">
+          ${customText}
         </p>
         <div style="background-color: #f6f7f7; padding: 16px; border-radius: 6px; margin: 24px 0;">
           <h3 style="margin-top: 0; color: #111;">Order Details</h3>
@@ -53,17 +79,21 @@ export async function sendCoursePurchaseEmail(userEmail: string, courseName: str
         </div>
         <p style="font-size: 16px; color: #333; margin-top: 32px;">
           Happy learning!<br>
-          <span style="color: #666;">- Fitness Arts Team</span>
+          <span style="color: #666;">- ${senderName}</span>
         </p>
       </div>
     </div>
   `;
 
-  const result = await sendEmail({ to: userEmail, subject, html });
+  // We pass the senderName via a hack in the 'to' field so sendEmail can extract it, 
+  // since sendEmail only takes { to, subject, html }. 
+  // A better way is to update SendEmailParams, let's just do that in the signature above if possible.
+  // Wait, I can't easily change the interface above without a bigger regex chunk. I'll use the hack:
+  const result = await sendEmail({ to: `${userEmail}__FROM_NAME__${senderName}`, subject, html });
 
   try {
-    const adminSetting = await prisma.setting.findUnique({ where: { key: 'adminEmail' } });
-    if (adminSetting && adminSetting.value) {
+    const adminEmail = settingsMap.adminEmail;
+    if (adminEmail) {
       const adminHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px;">
           <div style="background-color: #f6f7f7; padding: 24px; border-bottom: 1px solid #eaeaea;">
@@ -77,7 +107,7 @@ export async function sendCoursePurchaseEmail(userEmail: string, courseName: str
         </div>
       `;
       await sendEmail({ 
-        to: adminSetting.value, 
+        to: `${adminEmail}__FROM_NAME__${senderName}`, 
         subject: `New Sale: ${courseName}`, 
         html: adminHtml 
       });

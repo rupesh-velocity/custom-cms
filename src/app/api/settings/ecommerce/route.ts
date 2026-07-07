@@ -5,14 +5,16 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const keys = [
+    const allowedKeys = [
       'stripeEnabled', 'stripePublicKey', 'stripeSecretKey',
       'paypalEnabled', 'paypalClientId', 'currency', 'adminEmail',
-      'storeAddress1', 'storeAddress2', 'storeCity'
+      'storeAddress1', 'storeAddress2', 'storeCity',
+      'emailSenderName', 'emailLogoUrl', 'emailTemplateSuccess',
+      'emailTemplateFailed', 'emailTemplateCancelled'
     ];
     
     const settings = await prisma.setting.findMany({
-      where: { key: { in: keys } }
+      where: { key: { in: allowedKeys } }
     });
     
     const result: any = {};
