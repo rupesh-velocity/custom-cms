@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Loader2, CreditCard, Truck, FileImage, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import MediaModal from '@/components/MediaModal';
 import Image from 'next/image';
 import { countries } from '@/lib/countries';
 import { currencies } from '@/lib/currencies';
