@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { countries } from '@/lib/countries';
 import { currencies } from '@/lib/currencies';
 import { X } from 'lucide-react';
+import ShippingZonesManager from './ShippingZonesManager';
 
 export default function EcommerceSettingsPage() {
   const [settings, setSettings] = useState({
@@ -339,14 +340,7 @@ export default function EcommerceSettingsPage() {
         )}
         
         {activeTab === 'shipping' && (
-          <div>
-            <h2 className="text-lg font-semibold mb-2">Shipping zones</h2>
-            <p className="text-[13px] text-gray-500 mb-6">A shipping zone is a geographic region where a certain set of shipping methods and rates apply.</p>
-            
-            <div className="border border-[#c3c4c7] rounded bg-[#f6f7f7] p-12 text-center text-gray-500 text-[14px]">
-              Shipping zones module will be implemented in the next step.
-            </div>
-          </div>
+          <ShippingZonesManager />
         )}
 
         {activeTab === 'emails' && (
