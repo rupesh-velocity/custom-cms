@@ -5,6 +5,7 @@ import { Save, Loader2, CreditCard, Truck, FileImage, Image as ImageIcon } from 
 import toast from 'react-hot-toast';
 import MediaModal from '@/components/MediaModal';
 import Image from 'next/image';
+import { countries } from '@/lib/countries';
 
 export default function EcommerceSettingsPage() {
   const [settings, setSettings] = useState({
@@ -24,6 +25,8 @@ export default function EcommerceSettingsPage() {
     storeState: '',
     storeZip: '',
     storeCountry: 'US',
+    sellingLocation: 'all',
+    specificSellingCountries: '[]',
     storePhone: '',
     storePublicEmail: '',
     enableTaxes: 'false',
@@ -169,14 +172,46 @@ export default function EcommerceSettingsPage() {
                 onChange={handleChange}
                 className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none"
               >
-                <option value="US">United States (US)</option>
-                <option value="CA">Canada</option>
-                <option value="GB">United Kingdom (UK)</option>
-                <option value="AU">Australia</option>
-                <option value="IN">India</option>
-                <option value="OTHER">Other</option>
+                {countries.map(c => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
               </select>
             </div>
+
+            <h2 className="text-lg font-semibold border-b border-gray-100 pb-2 mb-4 mt-8 pt-4">General Options</h2>
+
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-center mb-6">
+              <label className="text-[13px] font-semibold text-gray-700">Selling location(s)</label>
+              <select
+                name="sellingLocation"
+                value={(settings as any).sellingLocation || 'all'}
+                onChange={handleChange}
+                className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none"
+              >
+                <option value="all">Sell to all countries</option>
+                <option value="specific">Sell to specific countries</option>
+              </select>
+            </div>
+
+            {(settings as any).sellingLocation === 'specific' && (
+              <div className="grid grid-cols-[200px_1fr] gap-4 items-start mb-6">
+                <label className="text-[13px] font-semibold text-gray-700">Specific countries</label>
+                <select
+                  multiple
+                  value={JSON.parse((settings as any).specificSellingCountries || '[]')}
+                  onChange={(e) => {
+                    const selected = Array.from(e.target.selectedOptions, option => option.value);
+                    setSettings(s => ({ ...s, specificSellingCountries: JSON.stringify(selected) }));
+                  }}
+                  className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none min-h-[150px]"
+                >
+                  {countries.map(c => (
+                    <option key={c.code} value={c.code}>{c.name}</option>
+                  ))}
+                </select>
+                <div className="col-start-2 text-xs text-gray-500">Hold Ctrl (Windows) or Cmd (Mac) to select multiple countries.</div>
+              </div>
+            )}
 
             <h2 className="text-lg font-semibold border-b border-gray-100 pb-2 mb-4 mt-8 pt-4">Store Contact Info</h2>
             <p className="text-[13px] text-gray-500 mb-6">This information may be displayed to customers on receipts or your contact page.</p>
