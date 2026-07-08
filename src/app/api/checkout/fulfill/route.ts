@@ -88,7 +88,7 @@ export async function POST(req: Request) {
           data: {
             customerId: userId,
             customerEmail: userEmail,
-            orderNumber: `MOCK-${Date.now()}`,
+            orderNumber: `ORD-${Date.now()}`,
             status: 'COMPLETED',
             totalAmount: amountPaid,
             billingAddress: '{}',
