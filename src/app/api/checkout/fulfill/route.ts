@@ -18,6 +18,7 @@ export async function POST(req: Request) {
     
     let userId: number | null = null;
     let userEmail: string = email || '';
+    let userName: string = name || '';
     
     if (token) {
       try {
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (user) {
           userEmail = user.email;
+          userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || userEmail;
         }
       } catch (error) {
         // invalid token
@@ -82,7 +84,7 @@ export async function POST(req: Request) {
         });
         
         const amountPaid = course.salePrice || course.price || 0;
-        const generatedOrderNumber = `ORD-${Date.now()}`;
+        const generatedOrderNumber = `#${Math.floor(100000 + Math.random() * 900000)}`;
         
         // CREATE ORDER
         await prisma.order.create({
@@ -106,7 +108,7 @@ export async function POST(req: Request) {
         });
 
         // Send notification email asynchronously
-        sendCoursePurchaseEmail(userEmail, course.title, amountPaid > 0 ? amountPaid.toString() : "Free", generatedOrderNumber).catch(console.error);
+        sendCoursePurchaseEmail(userEmail, userName, course.title, amountPaid > 0 ? amountPaid.toString() : "Free", generatedOrderNumber).catch(console.error);
       }
       responseData.enrollmentId = course.id;
     } else {
@@ -115,11 +117,13 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Product not found' }, { status: 404 });
       }
 
+      const generatedOrderNumber = `#${Math.floor(100000 + Math.random() * 900000)}`;
+
       const order = await prisma.order.create({
         data: {
           customerId: userId,
           customerEmail: userEmail,
-          orderNumber: `ORD-${Date.now()}`,
+          orderNumber: generatedOrderNumber,
           status: 'COMPLETED',
           totalAmount: product.salePrice || product.price || 0,
           billingAddress: JSON.stringify(shippingAddress || {}),
@@ -148,7 +152,7 @@ export async function POST(req: Request) {
           
           const linkedCourse = await prisma.course.findUnique({ where: { id: product.linkedCourseId } });
           if (linkedCourse) {
-            sendCoursePurchaseEmail(userEmail, linkedCourse.title, (product.salePrice || product.price || 0).toString(), order.orderNumber).catch(console.error);
+            sendCoursePurchaseEmail(userEmail, userName, linkedCourse.title, (product.salePrice || product.price || 0).toString(), order.orderNumber).catch(console.error);
           }
         }
       }

@@ -43,7 +43,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
   }
 }
 
-export async function sendCoursePurchaseEmail(userEmail: string, courseName: string, amount: string, orderNumber: string) {
+export async function sendCoursePurchaseEmail(userEmail: string, userName: string, courseName: string, amount: string, orderNumber: string) {
   const settings = await prisma.setting.findMany({
     where: { key: { in: ['emailSenderName', 'emailLogoUrl', 'emailTemplateSuccess', 'adminEmail', 'emailPrimaryColor', 'emailSubjectSuccess'] } }
   });
@@ -99,15 +99,22 @@ export async function sendCoursePurchaseEmail(userEmail: string, courseName: str
     const adminEmail = settingsMap.adminEmail;
     if (adminEmail) {
       const adminHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px;">
-          <div style="background-color: #f6f7f7; padding: 24px; border-bottom: 1px solid #eaeaea;">
-            <h2 style="margin: 0; color: #111;">New Order! 🎉</h2>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px; overflow: hidden;">
+          ${logoUrl ? `<div style="text-align: center; padding: 20px; background: #fff; border-bottom: 1px solid #eaeaea;"><img src="${logoUrl}" alt="Logo" style="max-height: 60px; max-width: 100%;" /></div>` : ''}
+          <div style="background-color: ${primaryColor}; padding: 24px; text-align: center;">
+            <h2 style="margin: 0; color: white;">New Order! 🎉</h2>
           </div>
-          <div style="padding: 24px;">
-            <p><strong>Order Number:</strong> ${orderNumber}</p>
-            <p><strong>Customer:</strong> ${userEmail}</p>
-            <p><strong>Item:</strong> ${courseName}</p>
-            <p><strong>Amount Paid:</strong> $${amount}</p>
+          <div style="padding: 32px;">
+            <p style="font-size: 16px; color: #333; margin-bottom: 24px;">You’ve received a new order from <strong>${userName || userEmail}</strong>${userName && userName !== userEmail ? ` (${userEmail})` : ''}.</p>
+            
+            <div style="background-color: #f6f7f7; border: 1px solid #eaeaea; border-radius: 6px; padding: 16px;">
+              <h3 style="margin-top: 0; color: #111; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Order Details</h3>
+              <p style="margin: 8px 0; color: #555;"><strong>Order Number:</strong> ${orderNumber}</p>
+              <p style="margin: 8px 0; color: #555;"><strong>Item:</strong> ${courseName}</p>
+              <p style="margin: 8px 0 0; color: #555;"><strong>Total Paid:</strong> <span style="color: #28a745; font-weight: bold;">$${amount}</span></p>
+            </div>
+            
+            <p style="font-size: 14px; color: #777; margin-top: 24px; text-align: center;">You can view the full order details in your admin dashboard.</p>
           </div>
         </div>
       `;
