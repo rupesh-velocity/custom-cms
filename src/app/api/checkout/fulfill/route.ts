@@ -82,13 +82,14 @@ export async function POST(req: Request) {
         });
         
         const amountPaid = course.salePrice || course.price || 0;
+        const generatedOrderNumber = `ORD-${Date.now()}`;
         
         // CREATE ORDER
         await prisma.order.create({
           data: {
             customerId: userId,
             customerEmail: userEmail,
-            orderNumber: `ORD-${Date.now()}`,
+            orderNumber: generatedOrderNumber,
             status: 'COMPLETED',
             totalAmount: amountPaid,
             billingAddress: '{}',
@@ -105,7 +106,7 @@ export async function POST(req: Request) {
         });
 
         // Send notification email asynchronously
-        sendCoursePurchaseEmail(userEmail, course.title, amountPaid > 0 ? amountPaid.toString() : "Free").catch(console.error);
+        sendCoursePurchaseEmail(userEmail, course.title, amountPaid > 0 ? amountPaid.toString() : "Free", generatedOrderNumber).catch(console.error);
       }
       responseData.enrollmentId = course.id;
     } else {
@@ -147,7 +148,7 @@ export async function POST(req: Request) {
           
           const linkedCourse = await prisma.course.findUnique({ where: { id: product.linkedCourseId } });
           if (linkedCourse) {
-            sendCoursePurchaseEmail(userEmail, linkedCourse.title, (product.salePrice || product.price || 0).toString()).catch(console.error);
+            sendCoursePurchaseEmail(userEmail, linkedCourse.title, (product.salePrice || product.price || 0).toString(), order.orderNumber).catch(console.error);
           }
         }
       }

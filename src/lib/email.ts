@@ -43,7 +43,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
   }
 }
 
-export async function sendCoursePurchaseEmail(userEmail: string, courseName: string, amount: string) {
+export async function sendCoursePurchaseEmail(userEmail: string, courseName: string, amount: string, orderNumber: string) {
   const settings = await prisma.setting.findMany({
     where: { key: { in: ['emailSenderName', 'emailLogoUrl', 'emailTemplateSuccess', 'adminEmail', 'emailPrimaryColor', 'emailSubjectSuccess'] } }
   });
@@ -77,7 +77,8 @@ export async function sendCoursePurchaseEmail(userEmail: string, courseName: str
         </p>
         <div style="background-color: #f6f7f7; padding: 16px; border-radius: 6px; margin: 24px 0;">
           <h3 style="margin-top: 0; color: #111;">Order Details</h3>
-          <p style="margin: 0; color: #555;">Course: ${courseName}</p>
+          <p style="margin: 0; color: #555;">Order Number: <strong>${orderNumber}</strong></p>
+          <p style="margin: 8px 0 0 0; color: #555;">Item: ${courseName}</p>
           <p style="margin: 8px 0 0 0; color: #555;">Total Paid: <strong>$${amount}</strong></p>
         </div>
         <p style="font-size: 16px; color: #333; margin-top: 32px;">
@@ -100,18 +101,19 @@ export async function sendCoursePurchaseEmail(userEmail: string, courseName: str
       const adminHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 8px;">
           <div style="background-color: #f6f7f7; padding: 24px; border-bottom: 1px solid #eaeaea;">
-            <h2 style="margin: 0; color: #111;">New Course Sale! 🎉</h2>
+            <h2 style="margin: 0; color: #111;">New Order! 🎉</h2>
           </div>
           <div style="padding: 24px;">
+            <p><strong>Order Number:</strong> ${orderNumber}</p>
             <p><strong>Customer:</strong> ${userEmail}</p>
-            <p><strong>Course:</strong> ${courseName}</p>
+            <p><strong>Item:</strong> ${courseName}</p>
             <p><strong>Amount Paid:</strong> $${amount}</p>
           </div>
         </div>
       `;
       await sendEmail({ 
         to: `${adminEmail}__FROM_NAME__${senderName}`, 
-        subject: `New Sale: ${courseName}`, 
+        subject: `New Order: ${orderNumber}`, 
         html: adminHtml 
       });
     }
