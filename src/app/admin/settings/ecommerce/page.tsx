@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { Save, Loader2, CreditCard, Truck, FileImage, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
-import MediaModal from '@/components/MediaModal';
 import Image from 'next/image';
 import { countries } from '@/lib/countries';
+import { currencies } from '@/lib/currencies';
+import { X } from 'lucide-react';
 
 export default function EcommerceSettingsPage() {
   const [settings, setSettings] = useState({
@@ -196,20 +197,44 @@ export default function EcommerceSettingsPage() {
             {(settings as any).sellingLocation === 'specific' && (
               <div className="grid grid-cols-[200px_1fr] gap-4 items-start mb-6">
                 <label className="text-[13px] font-semibold text-gray-700">Specific countries</label>
-                <select
-                  multiple
-                  value={JSON.parse((settings as any).specificSellingCountries || '[]')}
-                  onChange={(e) => {
-                    const selected = Array.from(e.target.selectedOptions, option => option.value);
-                    setSettings(s => ({ ...s, specificSellingCountries: JSON.stringify(selected) }));
-                  }}
-                  className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none min-h-[150px]"
-                >
-                  {countries.map(c => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
-                </select>
-                <div className="col-start-2 text-xs text-gray-500">Hold Ctrl (Windows) or Cmd (Mac) to select multiple countries.</div>
+                <div className="flex flex-col gap-2 w-full max-w-md">
+                  <select
+                    multiple
+                    value={JSON.parse((settings as any).specificSellingCountries || '[]')}
+                    onChange={(e) => {
+                      const selected = Array.from(e.target.selectedOptions, option => option.value);
+                      setSettings(s => ({ ...s, specificSellingCountries: JSON.stringify(selected) }));
+                    }}
+                    className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full focus:border-[#5e3fde] outline-none min-h-[150px]"
+                  >
+                    {countries.map(c => (
+                      <option key={c.code} value={c.code}>{c.name}</option>
+                    ))}
+                  </select>
+                  <div className="text-xs text-gray-500">Hold Ctrl (Windows) or Cmd (Mac) to select multiple countries.</div>
+                  
+                  {/* Selected Countries Display */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {JSON.parse((settings as any).specificSellingCountries || '[]').map((code: string) => {
+                      const countryName = countries.find(c => c.code === code)?.name || code;
+                      return (
+                        <div key={code} className="inline-flex items-center gap-1 bg-[#5e3fde]/10 text-[#5e3fde] px-2 py-1 rounded text-xs font-medium">
+                          {countryName}
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              const current = JSON.parse((settings as any).specificSellingCountries || '[]');
+                              setSettings(s => ({ ...s, specificSellingCountries: JSON.stringify(current.filter((c: string) => c !== code)) }));
+                            }}
+                            className="hover:text-[#4b32b2] ml-1"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -235,21 +260,19 @@ export default function EcommerceSettingsPage() {
             </div>
 
             <div className="grid grid-cols-[200px_1fr] gap-4 items-start pt-4 border-t border-gray-100">
-              <label className="text-[13px] font-semibold text-gray-700">Currency options</label>
+              <label className="text-[13px] font-semibold text-gray-700">Currency</label>
               <div>
                 <select
                   name="currency"
                   value={settings.currency}
                   onChange={handleChange}
-                  className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-xs focus:border-[#5e3fde] outline-none mb-2 block"
+                  className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-xs focus:border-[#5e3fde] outline-none"
                 >
-                  <option value="USD">US Dollar ($)</option>
-                  <option value="EUR">Euro (€)</option>
-                  <option value="GBP">British Pound (£)</option>
-                  <option value="CAD">Canadian Dollar ($)</option>
-                  <option value="AUD">Australian Dollar ($)</option>
+                  {currencies.map(c => (
+                    <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+                  ))}
                 </select>
-                <p className="text-xs text-gray-500">This controls what currency prices are listed at in the catalog and which currency gateways will take payments in.</p>
+                <p className="text-[11px] text-gray-500 mt-1">This determines what currency your store operates in.</p>
               </div>
             </div>
           </div>
