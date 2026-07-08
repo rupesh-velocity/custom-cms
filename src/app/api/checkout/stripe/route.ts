@@ -64,9 +64,20 @@ export async function POST(req: Request) {
       },
     });
 
+    let allowedCountries: string[] | undefined = undefined;
+    if (settingsObj.sellingLocation === 'specific') {
+      try {
+        const parsed = JSON.parse(settingsObj.specificSellingCountries || '[]');
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          allowedCountries = parsed;
+        }
+      } catch (e) {}
+    }
+
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,
       publishableKey: publicKey,
+      allowedCountries,
     });
   } catch (error: any) {
     console.error('Stripe PaymentIntent Error:', error);

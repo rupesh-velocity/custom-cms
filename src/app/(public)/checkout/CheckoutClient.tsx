@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { loadStripe, Stripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, PaymentElement, AddressElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 interface ItemData {
   id: number;
@@ -21,11 +21,12 @@ interface CheckoutClientProps {
   initialName: string;
 }
 
-function CheckoutForm({ item, isAuthenticated, initialEmail, initialName, clientSecret }: CheckoutClientProps & { clientSecret: string }) {
+function CheckoutForm({ item, isAuthenticated, initialEmail, initialName, clientSecret, allowedCountries }: CheckoutClientProps & { clientSecret: string, allowedCountries?: string[] }) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     name: initialName,
@@ -68,7 +69,8 @@ function CheckoutForm({ item, isAuthenticated, initialEmail, initialName, client
             name: formData.name,
             email: formData.email,
             password: formData.password,
-            paymentIntentId: paymentIntent.id
+            paymentIntentId: paymentIntent.id,
+            shippingAddress: shippingAddress
           })
         });
 
@@ -137,6 +139,30 @@ function CheckoutForm({ item, isAuthenticated, initialEmail, initialName, client
 
           <hr className="border-gray-100" />
 
+          {item.type === 'product' && (
+            <>
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Shipping Address</h3>
+                <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                  <AddressElement 
+                    options={{ 
+                      mode: 'shipping', 
+                      allowedCountries: allowedCountries 
+                    }} 
+                    onChange={(event) => {
+                      if (event.complete) {
+                        setShippingAddress(event.value.address);
+                      } else {
+                        setShippingAddress(null);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+              <hr className="border-gray-100" />
+            </>
+          )}
+
           {/* Payment Details */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Payment Details</h3>
@@ -146,7 +172,7 @@ function CheckoutForm({ item, isAuthenticated, initialEmail, initialName, client
           </div>
 
           <button 
-            type="submit" disabled={isLoading || !stripe || !elements}
+            type="submit" disabled={isLoading || !stripe || !elements || (item.type === 'product' && !shippingAddress)}
             className="w-full py-3 px-6 bg-[#5e3fde] text-white font-bold rounded-lg hover:bg-[#4b32b2] transition-colors disabled:opacity-50"
           >
             {isLoading ? 'Processing...' : `Pay $${item.price} Now`}
@@ -188,6 +214,7 @@ function CheckoutForm({ item, isAuthenticated, initialEmail, initialName, client
 export default function CheckoutClient(props: CheckoutClientProps) {
   const [clientSecret, setClientSecret] = useState('');
   const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
+  const [allowedCountries, setAllowedCountries] = useState<string[] | undefined>(undefined);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -202,6 +229,7 @@ export default function CheckoutClient(props: CheckoutClientProps) {
           setError(data.error);
         } else {
           setClientSecret(data.clientSecret);
+          setAllowedCountries(data.allowedCountries);
           setStripePromise(loadStripe(data.publishableKey));
         }
       })
@@ -227,7 +255,7 @@ export default function CheckoutClient(props: CheckoutClientProps) {
 
   return (
     <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
-      <CheckoutForm {...props} clientSecret={clientSecret} />
+      <CheckoutForm {...props} clientSecret={clientSecret} allowedCountries={allowedCountries} />
     </Elements>
   );
 }

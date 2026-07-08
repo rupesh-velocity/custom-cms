@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { sendCoursePurchaseEmail } from '@/lib/email';
 export async function POST(req: Request) {
   try {
-    const { itemId, type, name, email, password } = await req.json();
+    const { itemId, type, name, email, password, paymentIntentId, shippingAddress } = await req.json();
 
     if (!itemId) {
       return NextResponse.json({ error: 'Item ID required' }, { status: 400 });
@@ -118,11 +118,11 @@ export async function POST(req: Request) {
         data: {
           customerId: userId,
           customerEmail: userEmail,
-          orderNumber: `MOCK-${Date.now()}`,
+          orderNumber: `ORD-${Date.now()}`,
           status: 'COMPLETED',
           totalAmount: product.salePrice || product.price || 0,
-          billingAddress: '{}',
-          shippingAddress: '{}',
+          billingAddress: JSON.stringify(shippingAddress || {}),
+          shippingAddress: JSON.stringify(shippingAddress || {}),
           items: {
             create: [{
               productId: product.id,
