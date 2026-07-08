@@ -9,8 +9,11 @@ import Image from 'next/image';
 export default function EcommerceSettingsPage() {
   const [settings, setSettings] = useState({
     stripeEnabled: 'false',
-    stripePublicKey: '',
-    stripeSecretKey: '',
+    stripeMode: 'test',
+    stripeTestPublicKey: '',
+    stripeTestSecretKey: '',
+    stripeLivePublicKey: '',
+    stripeLiveSecretKey: '',
     paypalEnabled: 'false',
     paypalClientId: '',
     currency: 'USD',
@@ -181,9 +184,31 @@ export default function EcommerceSettingsPage() {
                   <td className="py-4">
                     <input type="checkbox" name="stripeEnabled" checked={settings.stripeEnabled === 'true'} onChange={handleChange} className="w-4 h-4 rounded text-[#5e3fde] focus:ring-[#5e3fde]" />
                   </td>
-                  <td className="py-4 space-y-2">
-                    <input type="text" name="stripePublicKey" value={settings.stripePublicKey} onChange={handleChange} placeholder="Publishable Key" autoComplete="off" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-xs block focus:border-[#5e3fde] outline-none" />
-                    <input type="text" name="stripeSecretKey" value={settings.stripeSecretKey} onChange={handleChange} placeholder="Secret Key" autoComplete="off" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-xs block focus:border-[#5e3fde] outline-none" />
+                  <td className="py-4 space-y-4">
+                    {/* Stripe Mode Toggle */}
+                    <div className="flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                      <span className="font-semibold text-gray-700">Mode:</span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="stripeMode" value="test" checked={settings.stripeMode === 'test'} onChange={handleChange} className="text-[#5e3fde] focus:ring-[#5e3fde]" />
+                        <span>Test Mode</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="stripeMode" value="live" checked={settings.stripeMode === 'live'} onChange={handleChange} className="text-[#5e3fde] focus:ring-[#5e3fde]" />
+                        <span>Live Mode</span>
+                      </label>
+                    </div>
+
+                    <div className="space-y-2 pl-2 border-l-2 border-gray-200">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Test Credentials</p>
+                      <input type="text" name="stripeTestPublicKey" value={(settings as any).stripeTestPublicKey || ''} onChange={handleChange} placeholder="Test Publishable Key (pk_test_...)" autoComplete="off" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-sm block focus:border-[#5e3fde] outline-none font-mono text-xs" />
+                      <input type="text" name="stripeTestSecretKey" value={(settings as any).stripeTestSecretKey || ''} onChange={handleChange} placeholder="Test Secret Key (sk_test_...)" autoComplete="off" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-sm block focus:border-[#5e3fde] outline-none font-mono text-xs" />
+                    </div>
+
+                    <div className="space-y-2 pl-2 border-l-2 border-[#5e3fde]/30">
+                      <p className="text-xs font-semibold text-[#5e3fde] uppercase tracking-wider">Live Credentials</p>
+                      <input type="text" name="stripeLivePublicKey" value={(settings as any).stripeLivePublicKey || ''} onChange={handleChange} placeholder="Live Publishable Key (pk_live_...)" autoComplete="off" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-sm block focus:border-[#5e3fde] outline-none font-mono text-xs" />
+                      <input type="text" name="stripeLiveSecretKey" value={(settings as any).stripeLiveSecretKey || ''} onChange={handleChange} placeholder="Live Secret Key (sk_live_...)" autoComplete="off" className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 w-full max-w-sm block focus:border-[#5e3fde] outline-none font-mono text-xs" />
+                    </div>
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">
