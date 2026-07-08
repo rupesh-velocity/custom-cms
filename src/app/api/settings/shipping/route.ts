@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth';
 
 export async function GET() {
   try {
-    const auth = await verifyAuth(['Admin']);
-    if (!auth) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
 
     const zones = await prisma.shippingZone.findMany({
       include: {
@@ -27,11 +22,6 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const auth = await verifyAuth(['Admin']);
-    if (!auth) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { name, regions } = await req.json();
 
     if (!name) {
