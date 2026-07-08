@@ -325,3 +325,15 @@ model ShippingMethod {
   conditions String?      // JSON string for free shipping thresholds, etc.
   enabled    Boolean      @default(true)
 }
+
+model TaxRate {
+  id        Int      @id @default(autoincrement())
+  country   String   // e.g. "US"
+  state     String?  // e.g. "CA" or "*"
+  city      String?  // e.g. "Los Angeles" or "*"
+  zip       String?  // e.g. "90210" or "*"
+  rate      Float    // e.g. 7.25
+  name      String   // e.g. "State Tax"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

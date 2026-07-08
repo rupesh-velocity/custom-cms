@@ -9,6 +9,7 @@ import { countries } from '@/lib/countries';
 import { currencies } from '@/lib/currencies';
 import { X } from 'lucide-react';
 import ShippingZonesManager from './ShippingZonesManager';
+import TaxManager from './TaxManager';
 
 export default function EcommerceSettingsPage() {
   const [settings, setSettings] = useState({
@@ -115,7 +116,36 @@ export default function EcommerceSettingsPage() {
 
       {/* WooCommerce style horizontal tabs */}
       <div className="flex border-b border-[#c3c4c7] mb-6 overflow-x-auto scrollbar-hide">
-        {['General', 'Shipping', 'Payments', 'Emails'].map(tab => {
+        {['General', 'Shipping'].map(tab => (
+          <button
+            type="button"
+            key={tab.toLowerCase()}
+            onClick={() => setActiveTab(tab.toLowerCase())}
+            className={`px-4 py-2 text-[14px] font-medium whitespace-nowrap transition-colors ${
+              activeTab === tab.toLowerCase() 
+                ? 'text-[#5e3fde] border-b-2 border-[#5e3fde] -mb-[1px]' 
+                : 'text-gray-600 hover:text-[#5e3fde]'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+
+        {(settings as any).enableTaxes === 'true' && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('taxes')}
+            className={`px-4 py-2 text-[14px] font-medium whitespace-nowrap transition-colors ${
+              activeTab === 'taxes'
+                ? 'text-[#5e3fde] border-b-2 border-[#5e3fde] -mb-[1px]' 
+                : 'text-gray-600 hover:text-[#5e3fde]'
+            }`}
+          >
+            Taxes
+          </button>
+        )}
+
+        {['Payments', 'Emails'].map(tab => {
           const tabId = tab.toLowerCase();
           const displayActiveTab = activeTab === 'payments' ? 'payments' : activeTab;
           
@@ -341,6 +371,10 @@ export default function EcommerceSettingsPage() {
         
         {activeTab === 'shipping' && (
           <ShippingZonesManager />
+        )}
+
+        {activeTab === 'taxes' && (settings as any).enableTaxes === 'true' && (
+          <TaxManager />
         )}
 
         {activeTab === 'emails' && (
