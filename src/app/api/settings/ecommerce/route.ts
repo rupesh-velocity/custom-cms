@@ -6,11 +6,12 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const allowedKeys = [
-      'stripeEnabled', 'stripePublicKey', 'stripeSecretKey',
-      'paypalEnabled', 'paypalClientId', 'currency', 'adminEmail',
-      'storeAddress1', 'storeAddress2', 'storeCity',
-      'emailSenderName', 'emailLogoUrl', 'emailTemplateSuccess',
-      'emailTemplateFailed', 'emailTemplateCancelled',
+      'stripeEnabled', 'stripeMode', 'stripeTestPublicKey', 'stripeTestSecretKey',
+      'stripeLivePublicKey', 'stripeLiveSecretKey', 'paypalEnabled', 'paypalClientId',
+      'currency', 'adminEmail', 'storeAddress1', 'storeAddress2', 'storeCity',
+      'storeState', 'storeZip', 'storeCountry', 'sellingLocation', 'specificSellingCountries',
+      'storePhone', 'storePublicEmail', 'enableTaxes', 'emailSenderName', 'emailLogoUrl',
+      'emailTemplateSuccess', 'emailTemplateFailed', 'emailTemplateCancelled',
       'emailPrimaryColor', 'emailSubjectSuccess', 'emailSubjectFailed', 
       'emailSubjectCancelled'
     ];
