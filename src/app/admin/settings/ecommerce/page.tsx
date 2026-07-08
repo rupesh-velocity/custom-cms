@@ -21,6 +21,12 @@ export default function EcommerceSettingsPage() {
     storeAddress1: '',
     storeAddress2: '',
     storeCity: '',
+    storeState: '',
+    storeZip: '',
+    storeCountry: 'US',
+    storePhone: '',
+    storePublicEmail: '',
+    enableTaxes: 'false',
     emailSenderName: '',
     emailLogoUrl: '',
     emailPrimaryColor: '#5e3fde',
@@ -144,8 +150,56 @@ export default function EcommerceSettingsPage() {
               <label className="text-[13px] font-semibold text-gray-700">City</label>
               <input type="text" name="storeCity" value={(settings as any).storeCity || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" />
             </div>
+
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+              <label className="text-[13px] font-semibold text-gray-700">State / Province</label>
+              <input type="text" name="storeState" value={(settings as any).storeState || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" />
+            </div>
+
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+              <label className="text-[13px] font-semibold text-gray-700">ZIP / Postal Code</label>
+              <input type="text" name="storeZip" value={(settings as any).storeZip || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-[150px] focus:border-[#5e3fde] outline-none" />
+            </div>
+
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+              <label className="text-[13px] font-semibold text-gray-700">Country</label>
+              <select
+                name="storeCountry"
+                value={(settings as any).storeCountry || 'US'}
+                onChange={handleChange}
+                className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none"
+              >
+                <option value="US">United States (US)</option>
+                <option value="CA">Canada</option>
+                <option value="GB">United Kingdom (UK)</option>
+                <option value="AU">Australia</option>
+                <option value="IN">India</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+
+            <h2 className="text-lg font-semibold border-b border-gray-100 pb-2 mb-4 mt-8 pt-4">Store Contact Info</h2>
+            <p className="text-[13px] text-gray-500 mb-6">This information may be displayed to customers on receipts or your contact page.</p>
+
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+              <label className="text-[13px] font-semibold text-gray-700">Public Email Address</label>
+              <input type="email" name="storePublicEmail" value={(settings as any).storePublicEmail || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" placeholder="support@yourdomain.com" />
+            </div>
+
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
+              <label className="text-[13px] font-semibold text-gray-700">Phone Number</label>
+              <input type="text" name="storePhone" value={(settings as any).storePhone || ''} onChange={handleChange} className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-full max-w-md focus:border-[#5e3fde] outline-none" />
+            </div>
             
-            <div className="grid grid-cols-[200px_1fr] gap-4 items-center pt-8 border-t border-gray-100">
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-center pt-8 border-t border-gray-100 mt-4">
+              <label className="text-[13px] font-semibold text-gray-700">Taxes</label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="enableTaxes" checked={(settings as any).enableTaxes === 'true'} onChange={handleChange} className="w-4 h-4 rounded text-[#5e3fde] focus:ring-[#5e3fde]" />
+                <span className="text-[13px] text-gray-700">Enable taxes and tax calculations</span>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-[200px_1fr] gap-4 items-start pt-4 border-t border-gray-100">
               <label className="text-[13px] font-semibold text-gray-700">Currency options</label>
               <div>
                 <select
