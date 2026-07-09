@@ -23,7 +23,8 @@ export default function FormEditor({ form }: { form?: any }) {
       successAction: 'message',
       successMessage: 'Your submission has been received successfully.',
       redirectUrl: '',
-      enableSpamProtection: true
+      spamProtectionType: 'honeypot',
+      recaptchaSiteKey: ''
     }
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -323,16 +324,30 @@ export default function FormEditor({ form }: { form?: any }) {
                 )}
 
                 <div className="pt-4 border-t border-gray-100">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      checked={settings.enableSpamProtection}
-                      onChange={e => setSettings({...settings, enableSpamProtection: e.target.checked})}
-                      className="rounded text-[#5e3fde] focus:ring-[#5e3fde]"
-                    />
-                    <span className="text-sm font-medium text-gray-700">Enable Spam Protection (Honeypot)</span>
-                  </label>
-                  <p className="text-xs text-gray-500 mt-1 ml-6">Blocks automated bots from submitting the form.</p>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Spam Protection</label>
+                  <select 
+                    value={settings.spamProtectionType || (settings.enableSpamProtection ? 'honeypot' : 'none')}
+                    onChange={e => setSettings({...settings, spamProtectionType: e.target.value, enableSpamProtection: e.target.value === 'honeypot'})}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+                  >
+                    <option value="none">None</option>
+                    <option value="honeypot">Honeypot (Invisible Trap)</option>
+                    <option value="recaptcha">Google reCAPTCHA v2</option>
+                  </select>
+                  
+                  {settings.spamProtectionType === 'recaptcha' && (
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">reCAPTCHA Site Key</label>
+                      <input 
+                        type="text" 
+                        value={settings.recaptchaSiteKey || ''}
+                        onChange={e => setSettings({...settings, recaptchaSiteKey: e.target.value})}
+                        placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Get this from the Google reCAPTCHA admin console.</p>
+                    </div>
+                  )}
                 </div>
               </div>
 

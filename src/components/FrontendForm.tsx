@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function FrontendForm({ id }: { id: string }) {
   const [form, setForm] = useState<any>(null);
@@ -10,6 +11,7 @@ export default function FrontendForm({ id }: { id: string }) {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<any>({});
   const [honeypot, setHoneypot] = useState('');
+  const [captchaValue, setCaptchaValue] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/forms/${id}`)
@@ -41,8 +43,10 @@ export default function FrontendForm({ id }: { id: string }) {
     successAction: 'message',
     successMessage: 'Your submission has been received successfully.',
     redirectUrl: '',
-    enableSpamProtection: true
+    spamProtectionType: form.settings?.includes('enableSpamProtection') ? 'honeypot' : 'none'
   };
+
+  const spamType = settings.spamProtectionType || (settings.enableSpamProtection ? 'honeypot' : 'none');
 
   const visibleFields = fields.filter((field: any) => {
     if (!field.conditionalLogic?.enabled) return true;
@@ -58,8 +62,13 @@ export default function FrontendForm({ id }: { id: string }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (settings.enableSpamProtection && honeypot) {
+    if (spamType === 'honeypot' && honeypot) {
       setSuccess(true);
+      return;
+    }
+
+    if (spamType === 'recaptcha' && !captchaValue) {
+      setError('Please complete the CAPTCHA validation.');
       return;
     }
 
@@ -109,7 +118,7 @@ export default function FrontendForm({ id }: { id: string }) {
       {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm border border-red-100">{error}</div>}
       
       <form onSubmit={handleSubmit} className="space-y-6 relative">
-        {settings.enableSpamProtection && (
+        {spamType === 'honeypot' && (
           <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
             <input type="text" name="b_name" tabIndex={-1} value={honeypot} onChange={e => setHoneypot(e.target.value)} />
           </div>
@@ -227,6 +236,15 @@ export default function FrontendForm({ id }: { id: string }) {
           </div>
         ))}
         
+        {spamType === 'recaptcha' && settings.recaptchaSiteKey && (
+          <div className="pt-2">
+            <ReCAPTCHA
+              sitekey={settings.recaptchaSiteKey}
+              onChange={(val) => setCaptchaValue(val)}
+            />
+          </div>
+        )}
+
         <div className="pt-2">
           <button 
             type="submit" 
