@@ -57,9 +57,14 @@ export async function POST(req: Request) {
               auth: { user, pass }
             });
             
+            let fields = [];
+            try { fields = JSON.parse(form.fields || '[]'); } catch(e) {}
+
             let htmlContent = `<h2>New submission for ${form.title}</h2><table border="1" cellpadding="5" cellspacing="0">`;
             for (const key in data) {
-              htmlContent += `<tr><td><strong>${key}</strong></td><td>${Array.isArray(data[key]) ? data[key].join(', ') : data[key]}</td></tr>`;
+              const field = fields.find((f: any) => f.id === key);
+              const label = field ? field.label : key;
+              htmlContent += `<tr><td><strong>${label}</strong></td><td>${Array.isArray(data[key]) ? data[key].join(', ') : data[key]}</td></tr>`;
             }
             htmlContent += `</table>`;
             
