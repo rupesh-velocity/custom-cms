@@ -8,12 +8,15 @@ export const dynamic = 'force-dynamic';
 export default async function ViewEntryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
-  const deleteSubmission = async () => {
+  const trashSubmission = async () => {
     'use server';
-    const formSubmission = await prisma.formSubmission.findUnique({ where: { id: parseInt(id) } });
-    if (formSubmission) {
-      await prisma.formSubmission.delete({ where: { id: parseInt(id) } });
-    }
+    await prisma.formSubmission.update({ where: { id: parseInt(id) }, data: { status: 'Trash' } });
+    redirect('/admin/forms/entries');
+  };
+
+  const spamSubmission = async () => {
+    'use server';
+    await prisma.formSubmission.update({ where: { id: parseInt(id) }, data: { status: 'Spam' } });
     redirect('/admin/forms/entries');
   };
 
@@ -97,10 +100,10 @@ export default async function ViewEntryPage({ params }: { params: Promise<{ id: 
               <div>Edit Post: <Link href="/" className="text-[#0071a1] hover:underline">Contact Page</Link></div>
               
               <div className="pt-4 mt-4 border-t border-gray-100 flex justify-between items-center">
-                <form action={deleteSubmission} className="flex gap-2">
-                  <button type="submit" className="text-[#b32d2e] hover:underline">Move to Trash</button>
+                <form className="flex gap-2">
+                  <button formAction={trashSubmission} className="text-[#b32d2e] hover:underline">Move to Trash</button>
                   <span className="text-gray-300">|</span>
-                  <button type="submit" className="text-[#b32d2e] hover:underline">Mark as Spam</button>
+                  <button formAction={spamSubmission} className="text-[#b32d2e] hover:underline">Mark as Spam</button>
                 </form>
                 <button className="border border-[#0071a1] text-[#0071a1] px-3 py-1.5 rounded hover:bg-gray-50 transition-colors">Edit</button>
               </div>

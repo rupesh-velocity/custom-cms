@@ -4,8 +4,9 @@ import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AllEntriesPage({ searchParams }: { searchParams: Promise<{ form_id?: string }> }) {
+export default async function AllEntriesPage({ searchParams }: { searchParams: Promise<{ form_id?: string, status?: string }> }) {
   const params = await searchParams;
+  const statusFilter = params.status || 'All';
   
   // Fetch all forms for the switcher
   const forms = await prisma.form.findMany({
@@ -42,9 +43,24 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
     fields = JSON.parse(activeForm.fields || '[]');
   } catch (e) {}
 
+  const [allCount, unreadCount, starredCount, spamCount, trashCount] = await Promise.all([
+    prisma.formSubmission.count({ where: { formId: activeForm.id, status: 'Active' } }),
+    prisma.formSubmission.count({ where: { formId: activeForm.id, status: 'Active', isRead: false } }),
+    prisma.formSubmission.count({ where: { formId: activeForm.id, isStarred: true } }),
+    prisma.formSubmission.count({ where: { formId: activeForm.id, status: 'Spam' } }),
+    prisma.formSubmission.count({ where: { formId: activeForm.id, status: 'Trash' } }),
+  ]);
+
+  let whereClause: any = { formId: activeForm.id };
+  if (statusFilter === 'Unread') whereClause = { ...whereClause, status: 'Active', isRead: false };
+  else if (statusFilter === 'Starred') whereClause = { ...whereClause, isStarred: true };
+  else if (statusFilter === 'Spam') whereClause = { ...whereClause, status: 'Spam' };
+  else if (statusFilter === 'Trash') whereClause = { ...whereClause, status: 'Trash' };
+  else whereClause = { ...whereClause, status: 'Active' };
+
   // Fetch submissions for active form
   const submissions = await prisma.formSubmission.findMany({
-    where: { formId: activeForm.id },
+    where: whereClause,
     orderBy: { createdAt: 'desc' }
   });
 
@@ -81,6 +97,18 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
             />
           </div>
         </div>
+      </div>
+
+      <div className="flex text-[14px] mb-4 text-[#50575e]">
+        <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=All`} className={statusFilter === 'All' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>All <span className="text-gray-500 font-normal">({allCount})</span></Link>
+        <span className="mx-2 text-gray-300">|</span>
+        <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Unread`} className={statusFilter === 'Unread' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Unread <span className="text-gray-500 font-normal">({unreadCount})</span></Link>
+        <span className="mx-2 text-gray-300">|</span>
+        <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Starred`} className={statusFilter === 'Starred' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Starred <span className="text-gray-500 font-normal">({starredCount})</span></Link>
+        <span className="mx-2 text-gray-300">|</span>
+        <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Spam`} className={statusFilter === 'Spam' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Spam <span className="text-gray-500 font-normal">({spamCount})</span></Link>
+        <span className="mx-2 text-gray-300">|</span>
+        <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Trash`} className={statusFilter === 'Trash' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Trash <span className="text-gray-500 font-normal">({trashCount})</span></Link>
       </div>
       
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -141,11 +169,17 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
                               <span className="text-gray-300">|</span>
                               <form action={async () => {
                                 'use server';
-                                await prisma.formSubmission.delete({ where: { id: sub.id } });
-                                redirect('/admin/forms/entries');
+                                await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Spam' } });
+                                redirect(`/admin/forms/entries?form_id=${activeForm.id}`);
                               }} className="inline-flex items-center gap-1.5">
                                 <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Mark as Spam</button>
-                                <span className="text-gray-300">|</span>
+                              </form>
+                              <span className="text-gray-300">|</span>
+                              <form action={async () => {
+                                'use server';
+                                await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Trash' } });
+                                redirect(`/admin/forms/entries?form_id=${activeForm.id}`);
+                              }} className="inline-flex items-center gap-1.5">
                                 <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Trash</button>
                               </form>
                             </div>

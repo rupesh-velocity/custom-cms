@@ -367,5 +367,8 @@ model FormSubmission {
   formId    Int
   form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
   data      String   @db.Text // JSON string of submitted data
+  status    String   @default("Active") // Active, Spam, Trash
+  isRead    Boolean  @default(false)
+  isStarred Boolean  @default(false)
   createdAt DateTime @default(now())
 }
