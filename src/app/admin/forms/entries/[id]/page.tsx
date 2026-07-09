@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
