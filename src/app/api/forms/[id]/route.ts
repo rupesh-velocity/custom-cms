@@ -23,6 +23,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: {
         title: data.title,
         fields: typeof data.fields === 'string' ? data.fields : JSON.stringify(data.fields),
+        settings: typeof data.settings === 'string' ? data.settings : JSON.stringify(data.settings),
         notificationEmail: data.notificationEmail,
         status: data.status
       }

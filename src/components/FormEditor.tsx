@@ -17,7 +17,16 @@ export default function FormEditor({ form }: { form?: any }) {
     ]
   );
   const [status, setStatus] = useState(form?.status || 'Published');
+  const [settings, setSettings] = useState<any>(
+    form?.settings ? JSON.parse(form.settings) : {
+      submitText: 'Submit Form',
+      successAction: 'message',
+      successMessage: 'Your submission has been received successfully.',
+      redirectUrl: ''
+    }
+  );
   const [isSaving, setIsSaving] = useState(false);
+  const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
 
   const addField = (type: string) => {
     setFields([
@@ -48,7 +57,7 @@ export default function FormEditor({ form }: { form?: any }) {
     
     setIsSaving(true);
     try {
-      const payload = { title, notificationEmail, fields, status };
+      const payload = { title, notificationEmail, fields, settings, status };
       const url = form ? `/api/forms/${form.id}` : '/api/forms';
       const method = form ? 'PUT' : 'POST';
       
@@ -161,6 +170,27 @@ export default function FormEditor({ form }: { form?: any }) {
                     />
                     <span className="text-sm text-gray-700">Required field</span>
                   </label>
+
+                  <button onClick={() => setActiveFieldId(activeFieldId === field.id ? null : field.id)} className="text-[#5e3fde] hover:underline text-xs mt-3 block font-medium">
+                    {activeFieldId === field.id ? 'Hide Details' : 'Advanced Details'}
+                  </button>
+
+                  {activeFieldId === field.id && (
+                    <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-4">
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Placeholder Text</label>
+                        <input type="text" value={field.placeholder || ''} onChange={e => updateField(field.id, 'placeholder', e.target.value)} className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde] focus:border-[#5e3fde]" />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Default Value</label>
+                        <input type="text" value={field.defaultValue || ''} onChange={e => updateField(field.id, 'defaultValue', e.target.value)} className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde] focus:border-[#5e3fde]" />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Description / Help Text</label>
+                        <input type="text" value={field.description || ''} onChange={e => updateField(field.id, 'description', e.target.value)} className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde] focus:border-[#5e3fde]" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -206,6 +236,51 @@ export default function FormEditor({ form }: { form?: any }) {
                   placeholder="admin@example.com, sales@example.com"
                   className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
                 />
+              </div>
+
+              <div className="pt-4 border-t border-gray-100 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Submit Button Text</label>
+                  <input 
+                    type="text" 
+                    value={settings.submitText}
+                    onChange={e => setSettings({...settings, submitText: e.target.value})}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">On Success</label>
+                  <select 
+                    value={settings.successAction}
+                    onChange={e => setSettings({...settings, successAction: e.target.value})}
+                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+                  >
+                    <option value="message">Show Message</option>
+                    <option value="redirect">Redirect to URL</option>
+                  </select>
+                </div>
+                {settings.successAction === 'message' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Success Message</label>
+                    <textarea 
+                      value={settings.successMessage}
+                      onChange={e => setSettings({...settings, successMessage: e.target.value})}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+                      rows={3}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Redirect URL</label>
+                    <input 
+                      type="url" 
+                      value={settings.redirectUrl}
+                      onChange={e => setSettings({...settings, redirectUrl: e.target.value})}
+                      placeholder="https://example.com/thank-you"
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+                    />
+                  </div>
+                )}
               </div>
 
               {form && (

@@ -19,7 +19,11 @@ export default function FrontendForm({ id }: { id: string }) {
           const fields = data.fields ? JSON.parse(data.fields) : [];
           const initialData: any = {};
           fields.forEach((f: any) => {
-            initialData[f.id] = f.type === 'checkbox' ? [] : '';
+            if (f.type === 'checkbox') {
+              initialData[f.id] = f.defaultValue ? f.defaultValue.split(',').map((s: string) => s.trim()) : [];
+            } else {
+              initialData[f.id] = f.defaultValue || '';
+            }
           });
           setFormData(initialData);
         }
@@ -31,6 +35,12 @@ export default function FrontendForm({ id }: { id: string }) {
   if (!form) return null;
 
   const fields = form.fields ? JSON.parse(form.fields) : [];
+  const settings = form.settings ? JSON.parse(form.settings) : {
+    submitText: 'Submit Form',
+    successAction: 'message',
+    successMessage: 'Your submission has been received successfully.',
+    redirectUrl: ''
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +56,11 @@ export default function FrontendForm({ id }: { id: string }) {
       const data = await res.json();
       
       if (res.ok) {
-        setSuccess(true);
+        if (settings.successAction === 'redirect' && settings.redirectUrl) {
+          window.location.href = settings.redirectUrl;
+        } else {
+          setSuccess(true);
+        }
       } else {
         setError(data.error || 'Something went wrong');
       }
@@ -64,7 +78,7 @@ export default function FrontendForm({ id }: { id: string }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         <h3 className="text-2xl font-bold mb-2">Thank You!</h3>
-        <p className="text-[#15803d]">Your submission has been received successfully.</p>
+        <p className="text-[#15803d] whitespace-pre-wrap">{settings.successMessage}</p>
       </div>
     );
   }
@@ -78,14 +92,17 @@ export default function FrontendForm({ id }: { id: string }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         {fields.map((field: any) => (
           <div key={field.id}>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
               {field.label} {field.required && <span className="text-red-500">*</span>}
             </label>
+            {field.description && <p className="text-xs text-gray-500 mb-3">{field.description}</p>}
+            
             {field.type === 'textarea' ? (
               <textarea 
                 required={field.required}
                 value={formData[field.id] || ''}
                 onChange={e => setFormData({...formData, [field.id]: e.target.value})}
+                placeholder={field.placeholder || ''}
                 className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] transition-all outline-none resize-y"
                 rows={4}
               />
@@ -148,6 +165,7 @@ export default function FrontendForm({ id }: { id: string }) {
                 required={field.required}
                 value={formData[field.id] || ''}
                 onChange={e => setFormData({...formData, [field.id]: e.target.value})}
+                placeholder={field.placeholder || ''}
                 className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] transition-all outline-none"
               />
             )}
@@ -168,7 +186,7 @@ export default function FrontendForm({ id }: { id: string }) {
                 </svg>
                 Submitting...
               </>
-            ) : 'Submit Form'}
+            ) : settings.submitText}
           </button>
         </div>
       </form>

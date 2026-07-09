@@ -37,6 +37,7 @@ export async function POST(req: Request) {
         title: data.title || 'Untitled Form',
         shortcode: `[form id="TEMP"]`,
         fields: typeof data.fields === 'string' ? data.fields : JSON.stringify(data.fields || []),
+        settings: typeof data.settings === 'string' ? data.settings : JSON.stringify(data.settings || {}),
         notificationEmail: data.notificationEmail || null,
         status: data.status || 'Published',
         authorId

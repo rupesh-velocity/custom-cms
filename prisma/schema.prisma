@@ -352,6 +352,7 @@ model Form {
   title             String
   shortcode         String           @unique
   fields            String           @db.Text // JSON string representing fields
+  settings          String?          @db.Text // JSON string for form-level settings
   notificationEmail String?
   status            String           @default("Published")
   createdAt         DateTime         @default(now())
