@@ -1,7 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ReCAPTCHA from "react-google-recaptcha";
+
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
 
 export default function FrontendForm({ id }: { id: string }) {
   const [form, setForm] = useState<any>(null);
@@ -11,7 +16,6 @@ export default function FrontendForm({ id }: { id: string }) {
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<any>({});
   const [honeypot, setHoneypot] = useState('');
-  const [captchaValue, setCaptchaValue] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(`/api/forms/${id}`)
@@ -43,10 +47,21 @@ export default function FrontendForm({ id }: { id: string }) {
     successAction: 'message',
     successMessage: 'Your submission has been received successfully.',
     redirectUrl: '',
-    spamProtectionType: form.settings?.includes('enableSpamProtection') ? 'honeypot' : 'none'
+    enableHoneypot: form.settings?.includes('enableSpamProtection') || form.settings?.includes('"spamProtectionType":"honeypot"') ? true : false,
+    enableRecaptchaV3: false,
+    recaptchaSiteKey: ''
   };
 
-  const spamType = settings.spamProtectionType || (settings.enableSpamProtection ? 'honeypot' : 'none');
+  useEffect(() => {
+    if (settings.enableRecaptchaV3 && settings.recaptchaSiteKey) {
+      if (!document.getElementById('recaptcha-script')) {
+        const script = document.createElement('script');
+        script.id = 'recaptcha-script';
+        script.src = `https://www.google.com/recaptcha/api.js?render=${settings.recaptchaSiteKey}`;
+        document.head.appendChild(script);
+      }
+    }
+  }, [settings.enableRecaptchaV3, settings.recaptchaSiteKey]);
 
   const visibleFields = fields.filter((field: any) => {
     if (!field.conditionalLogic?.enabled) return true;
@@ -62,24 +77,37 @@ export default function FrontendForm({ id }: { id: string }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (spamType === 'honeypot' && honeypot) {
+    // Honeypot check
+    if (settings.enableHoneypot && honeypot) {
       setSuccess(true);
-      return;
-    }
-
-    if (spamType === 'recaptcha' && !captchaValue) {
-      setError('Please complete the CAPTCHA validation.');
       return;
     }
 
     setSubmitting(true);
     setError('');
-    
+
+    if (settings.enableRecaptchaV3 && settings.recaptchaSiteKey) {
+      if (window.grecaptcha) {
+        window.grecaptcha.ready(function() {
+          window.grecaptcha.execute(settings.recaptchaSiteKey, {action: 'submit'}).then(function(token: string) {
+            submitData(token);
+          });
+        });
+      } else {
+        setError("reCAPTCHA couldn't be loaded. Please check your connection.");
+        setSubmitting(false);
+      }
+    } else {
+      submitData();
+    }
+  };
+
+  const submitData = async (recaptchaToken?: string) => {
     try {
       const res = await fetch('/api/forms/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formId: id, data: formData })
+        body: JSON.stringify({ formId: id, data: formData, recaptchaToken })
       });
       const data = await res.json();
       
@@ -118,7 +146,7 @@ export default function FrontendForm({ id }: { id: string }) {
       {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm border border-red-100">{error}</div>}
       
       <form onSubmit={handleSubmit} className="space-y-6 relative">
-        {spamType === 'honeypot' && (
+        {settings.enableHoneypot && (
           <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
             <input type="text" name="b_name" tabIndex={-1} value={honeypot} onChange={e => setHoneypot(e.target.value)} />
           </div>
@@ -235,14 +263,11 @@ export default function FrontendForm({ id }: { id: string }) {
             )}
           </div>
         ))}
-        
-        {spamType === 'recaptcha' && settings.recaptchaSiteKey && (
-          <div className="pt-2">
-            <ReCAPTCHA
-              sitekey={settings.recaptchaSiteKey}
-              onChange={(val) => setCaptchaValue(val)}
-            />
-          </div>
+
+        {settings.enableRecaptchaV3 && (
+          <p className="text-[11px] text-gray-500 leading-tight">
+            This site is protected by reCAPTCHA and the Google <a href="https://policies.google.com/privacy" className="text-[#5e3fde] hover:underline" target="_blank" rel="noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/terms" className="text-[#5e3fde] hover:underline" target="_blank" rel="noreferrer">Terms of Service</a> apply.
+          </p>
         )}
 
         <div className="pt-2">

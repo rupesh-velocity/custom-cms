@@ -23,8 +23,10 @@ export default function FormEditor({ form }: { form?: any }) {
       successAction: 'message',
       successMessage: 'Your submission has been received successfully.',
       redirectUrl: '',
-      spamProtectionType: 'honeypot',
-      recaptchaSiteKey: ''
+      enableHoneypot: form?.settings?.includes('enableSpamProtection') ? true : true,
+      enableRecaptchaV3: false,
+      recaptchaSiteKey: '',
+      recaptchaSecretKey: ''
     }
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -324,28 +326,57 @@ export default function FormEditor({ form }: { form?: any }) {
                 )}
 
                 <div className="pt-4 border-t border-gray-100">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Spam Protection</label>
-                  <select 
-                    value={settings.spamProtectionType || (settings.enableSpamProtection ? 'honeypot' : 'none')}
-                    onChange={e => setSettings({...settings, spamProtectionType: e.target.value, enableSpamProtection: e.target.value === 'honeypot'})}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                  >
-                    <option value="none">None</option>
-                    <option value="honeypot">Honeypot (Invisible Trap)</option>
-                    <option value="recaptcha">Google reCAPTCHA v2</option>
-                  </select>
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Spam Protection</h4>
                   
-                  {settings.spamProtectionType === 'recaptcha' && (
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">reCAPTCHA Site Key</label>
-                      <input 
-                        type="text" 
-                        value={settings.recaptchaSiteKey || ''}
-                        onChange={e => setSettings({...settings, recaptchaSiteKey: e.target.value})}
-                        placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-                        className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Get this from the Google reCAPTCHA admin console.</p>
+                  <label className="flex items-start gap-3 cursor-pointer mb-4">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.enableHoneypot}
+                      onChange={e => setSettings({...settings, enableHoneypot: e.target.checked})}
+                      className="rounded text-[#5e3fde] focus:ring-[#5e3fde] mt-1"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 block">Honeypot (Invisible Trap)</span>
+                      <p className="text-xs text-gray-500">Injects a hidden field. If filled by a bot, submission is silently rejected.</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer mb-2">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.enableRecaptchaV3}
+                      onChange={e => setSettings({...settings, enableRecaptchaV3: e.target.checked})}
+                      className="rounded text-[#5e3fde] focus:ring-[#5e3fde] mt-1"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 block">Google reCAPTCHA v3</span>
+                      <p className="text-xs text-gray-500">Invisible score-based bot protection. Requires backend verification.</p>
+                    </div>
+                  </label>
+                  
+                  {settings.enableRecaptchaV3 && (
+                    <div className="mt-3 ml-7 space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Site Key</label>
+                        <input 
+                          type="text" 
+                          value={settings.recaptchaSiteKey || ''}
+                          onChange={e => setSettings({...settings, recaptchaSiteKey: e.target.value})}
+                          placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                          className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-[#5e3fde]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Secret Key</label>
+                        <input 
+                          type="password" 
+                          value={settings.recaptchaSecretKey || ''}
+                          onChange={e => setSettings({...settings, recaptchaSecretKey: e.target.value})}
+                          placeholder="••••••••••••••••••••••••••••••••••••••••"
+                          className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-[#5e3fde]"
+                        />
+                        <p className="text-[11px] text-gray-500 mt-1">Required to verify the v3 token securely on the server.</p>
+                      </div>
                     </div>
                   )}
                 </div>
