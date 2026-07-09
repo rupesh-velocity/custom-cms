@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import nodemailer from 'nodemailer';
 
 export async function POST(req: Request) {
   try {
@@ -25,12 +26,59 @@ export async function POST(req: Request) {
       }
     }
 
-    await prisma.formSubmission.create({
+    const submission = await prisma.formSubmission.create({
       data: {
         formId: parseInt(formId),
         data: JSON.stringify(data)
       }
     });
+
+    if (form.settings) {
+      const settings = JSON.parse(form.settings);
+      if (settings.emailNotifications) {
+        const emails = settings.emailNotifications.split(',').map((e: string) => e.trim()).filter(Boolean);
+        
+        if (emails.length > 0) {
+          // Fetch SMTP settings
+          const smtpSettings = await prisma.setting.findMany({
+            where: { key: { in: ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'from_email'] } }
+          });
+          const smtpMap = smtpSettings.reduce((acc: any, s: any) => ({ ...acc, [s.key]: s.value }), {});
+          
+          const host = smtpMap.smtp_host || process.env.SMTP_HOST;
+          const port = parseInt(smtpMap.smtp_port || process.env.SMTP_PORT || '587');
+          const user = smtpMap.smtp_user || process.env.SMTP_USER;
+          const pass = smtpMap.smtp_pass || process.env.SMTP_PASS;
+          const from = smtpMap.from_email || process.env.SMTP_FROM || user || 'noreply@example.com';
+          
+          if (host && user && pass) {
+            const transporter = nodemailer.createTransport({
+              host,
+              port,
+              secure: port === 465,
+              auth: { user, pass }
+            });
+            
+            let htmlContent = `<h2>New submission for ${form.title}</h2><table border="1" cellpadding="5" cellspacing="0">`;
+            for (const key in data) {
+              htmlContent += `<tr><td><strong>${key}</strong></td><td>${Array.isArray(data[key]) ? data[key].join(', ') : data[key]}</td></tr>`;
+            }
+            htmlContent += `</table>`;
+            
+            try {
+              await transporter.sendMail({
+                from: `"${form.title}" <${from}>`,
+                to: emails.join(', '),
+                subject: `New submission: ${form.title}`,
+                html: htmlContent
+              });
+            } catch (err) {
+              console.error("Failed to send email notification", err);
+            }
+          }
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, message: 'Thank you for your submission!' });
   } catch (error) {

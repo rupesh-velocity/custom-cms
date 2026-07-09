@@ -221,7 +221,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <Link 
-                        href={type === 'courses' ? `/admin/courses/${item.id}/edit` : `/admin/${type}/${item.id}`} 
+                        href={(type === 'courses' || type === 'forms') ? `/admin/${type}/${item.id}/edit` : `/admin/${type}/${item.id}`} 
                         className="font-medium text-gray-900 hover:text-[#5e3fde] text-[15px]"
                       >
                         {item.title || '(no title)'}
@@ -301,7 +301,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Link 
-                      href={type === 'courses' ? `/admin/courses/${item.id}/edit` : `/admin/${type}/${item.id}`} 
+                      href={(type === 'courses' || type === 'forms') ? `/admin/${type}/${item.id}/edit` : `/admin/${type}/${item.id}`} 
                       className="p-2 text-gray-400 hover:text-[#5e3fde] hover:bg-[#5e3fde]/10 rounded-lg transition-colors"
                       title="Edit"
                     >

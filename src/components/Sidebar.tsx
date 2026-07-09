@@ -67,9 +67,37 @@ export default function Sidebar({ enableProducts = false }: { enableProducts?: b
           <Files size={20} /> Pages
         </Link>
 
-        <Link href="/admin/forms" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/forms') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
-          <FormInput size={20} /> Forms
-        </Link>
+        <div className="space-y-1">
+          <Link 
+            href="/admin/forms" 
+            className={clsx(
+              "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
+              pathname.startsWith('/admin/forms') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <FormInput size={20} /> Forms
+            </div>
+            {pathname.startsWith('/admin/forms') ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+          </Link>
+          
+          <div className={clsx(
+            "overflow-hidden transition-all duration-300 ease-in-out",
+            pathname.startsWith('/admin/forms') ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+          )}>
+            <div className="pl-3 py-1 space-y-1 border-l-2 border-gray-100 ml-8 mt-1">
+              <Link href="/admin/forms" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/forms' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                All Forms
+              </Link>
+              <Link href="/admin/forms/new" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/forms/new' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Add New
+              </Link>
+              <Link href="/admin/forms/entries" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/forms/entries' || pathname.includes('/submissions') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Entries
+              </Link>
+            </div>
+          </div>
+        </div>
 
         <Link href="/admin/courses" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/courses') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg> Courses
