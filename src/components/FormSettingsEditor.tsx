@@ -79,7 +79,8 @@ export default function FormSettingsEditor({ form }: { form: any }) {
               <option value="Draft">Draft</option>
             </select>
             <p className="text-xs text-gray-500 mt-1">Draft forms will not accept submissions.</p>
-      </div>
+          </div>
+        </div>
 
         <div className="border-t border-gray-100 pt-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Spam Protection</h3>
