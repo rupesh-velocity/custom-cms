@@ -9,7 +9,14 @@ import { Search, Edit2, Trash2, ExternalLink } from 'lucide-react';
 export default function AdminListClient({ items, type }: { items: any[], type: 'pages' | 'posts' | 'courses' }) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentUserName, setCurrentUserName] = useState<string>('Admin User');
+  const [search, setSearch] = useState('');
   const router = useRouter();
+
+  const filteredItems = items.filter(item => 
+    item.title?.toLowerCase().includes(search.toLowerCase()) || 
+    item.author?.firstName?.toLowerCase().includes(search.toLowerCase()) || 
+    item.author?.username?.toLowerCase().includes(search.toLowerCase())
+  );
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -83,6 +90,8 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
           <input
             type="text"
             placeholder={`Search ${type}...`}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] transition-all"
           />
         </div>
@@ -109,7 +118,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {items.map(item => (
+            {filteredItems.map(item => (
               <tr key={item.id} className="hover:bg-gray-50/50 transition-colors group">
                 <td className="py-4 px-6 text-center">
                   <input 
@@ -201,7 +210,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                 </td>
               </tr>
             ))}
-            {items.length === 0 && (
+            {filteredItems.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-12 text-center text-gray-500">
                   No {type} found.

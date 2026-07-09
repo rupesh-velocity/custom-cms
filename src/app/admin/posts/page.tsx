@@ -32,7 +32,7 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
         </div>
         <Link 
           href="/admin/posts/new"
-          className="bg-[#5e3fde] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#4b32b2] transition-colors flex items-center gap-2"
+          className="bg-[#5e3fde] !text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#4b32b2] transition-colors flex items-center gap-2"
         >
           <Plus size={18} />
           Add New

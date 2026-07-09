@@ -24,19 +24,29 @@ export default function ProductsPage() {
         }
       })
       .catch(() => {});
-  }, [search]);
+  }, []);
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch(`/api/products?search=${search}`);
+      const res = await fetch('/api/products');
       const data = await res.json();
       setProducts(data);
     } catch (error) {
-      toast.error('Failed to fetch products');
+      toast.error('Failed to load products');
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter(product => 
+    product.title?.toLowerCase().includes(search.toLowerCase()) || 
+    product.sku?.toLowerCase().includes(search.toLowerCase()) || 
+    product.author?.firstName?.toLowerCase().includes(search.toLowerCase())
+  );
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
@@ -62,7 +72,7 @@ export default function ProductsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Products</h1>
         <Link 
           href="/admin/products/new"
-          className="bg-[#5e3fde] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#4b32b2] transition-colors flex items-center gap-2"
+          className="bg-[#5e3fde] !text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#4b32b2] transition-colors flex items-center gap-2"
         >
           <Plus size={18} />
           Add Product
@@ -111,7 +121,7 @@ export default function ProductsPage() {
                     </div>
                   </td>
                 </tr>
-              ) : products.length === 0 ? (
+              ) : filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-gray-500">
                     <div className="flex flex-col items-center gap-3">
@@ -121,7 +131,7 @@ export default function ProductsPage() {
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
+                filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50/50 transition-colors group">
                     <td className="py-4 px-6">
                       <input type="checkbox" className="rounded text-[#5e3fde] focus:ring-[#5e3fde]" />
