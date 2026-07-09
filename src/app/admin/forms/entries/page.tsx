@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import FormSwitcher from './FormSwitcher';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,25 +77,9 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
           <label className="text-sm font-medium text-gray-700">Select Form:</label>
           {/* Note: In a real app we might use a Client Component for the select onChange router.push, but for now we can just use a simple form auto-submit or Next Link list, or client-side JS */}
           <div className="relative">
-            <select 
-              defaultValue={activeForm.id}
-              key={activeForm.id} // force re-render if activeForm changes
-              id="form-switcher"
-              className="bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none text-sm font-medium text-gray-700 min-w-[200px] focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-            >
-              {forms.map(f => (
-                <option key={f.id} value={f.id}>{f.title}</option>
-              ))}
-            </select>
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  document.getElementById('form-switcher').addEventListener('change', function(e) {
-                    window.location.href = '/admin/forms/entries?form_id=' + e.target.value;
-                  });
-                `
-              }}
-            />
+          <div className="relative">
+            <FormSwitcher forms={forms} activeFormId={activeForm.id} status={statusFilter} />
+          </div>
           </div>
         </div>
       </div>
