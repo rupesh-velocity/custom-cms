@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Save, Plus, Trash2, Settings2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import FormNav from './FormNav';
 
 export default function FormEditor({ form }: { form?: any }) {
   const router = useRouter();
@@ -73,9 +74,14 @@ export default function FormEditor({ form }: { form?: any }) {
       
       if (!res.ok) throw new Error('Failed to save');
       
+      const savedForm = await res.json();
       toast.success(form ? 'Form updated' : 'Form created');
-      router.push('/admin/forms');
-      router.refresh();
+      
+      if (!form && savedForm.id) {
+        router.push(`/admin/forms/${savedForm.id}/edit`);
+      } else {
+        router.refresh();
+      }
     } catch (error) {
       toast.error('Error saving form');
     } finally {
@@ -101,9 +107,11 @@ export default function FormEditor({ form }: { form?: any }) {
           </button>
         </div>
       </div>
+      
+      {form && <FormNav formId={form.id} title={form.title} />}
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-6">
+      <div className="grid grid-cols-1 gap-6">
+        <div className="col-span-1 space-y-6">
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
             <input 
               type="text" 
@@ -263,155 +271,6 @@ export default function FormEditor({ form }: { form?: any }) {
               <button onClick={() => addField('file')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add File Upload</button>
             </div>
           </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><Settings2 size={18} /> Form Settings</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <select 
-                  value={status}
-                  onChange={e => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                >
-                  <option value="Published">Published</option>
-                  <option value="Draft">Draft</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notification Emails</label>
-                <p className="text-xs text-gray-500 mb-2">Send submissions to these addresses (comma separated).</p>
-                <input 
-                  type="text" 
-                  value={notificationEmail}
-                  onChange={e => setNotificationEmail(e.target.value)}
-                  placeholder="admin@example.com, sales@example.com"
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                />
-              </div>
-
-              <div className="pt-4 border-t border-gray-100 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Submit Button Text</label>
-                  <input 
-                    type="text" 
-                    value={settings.submitText}
-                    onChange={e => setSettings({...settings, submitText: e.target.value})}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">On Success</label>
-                  <select 
-                    value={settings.successAction}
-                    onChange={e => setSettings({...settings, successAction: e.target.value})}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                  >
-                    <option value="message">Show Message</option>
-                    <option value="redirect">Redirect to URL</option>
-                  </select>
-                </div>
-                {settings.successAction === 'message' ? (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Success Message</label>
-                    <textarea 
-                      value={settings.successMessage}
-                      onChange={e => setSettings({...settings, successMessage: e.target.value})}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                      rows={3}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Redirect URL</label>
-                    <input 
-                      type="url" 
-                      value={settings.redirectUrl}
-                      onChange={e => setSettings({...settings, redirectUrl: e.target.value})}
-                      placeholder="https://example.com/thank-you"
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                    />
-                  </div>
-                )}
-
-                <div className="pt-4 border-t border-gray-100">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Spam Protection</h4>
-                  
-                  <label className="flex items-start gap-3 cursor-pointer mb-4">
-                    <input 
-                      type="checkbox" 
-                      checked={settings.enableHoneypot}
-                      onChange={e => setSettings({...settings, enableHoneypot: e.target.checked})}
-                      className="rounded text-[#5e3fde] focus:ring-[#5e3fde] mt-1"
-                    />
-                    <div>
-                      <span className="text-sm font-medium text-gray-700 block">Honeypot (Invisible Trap)</span>
-                      <p className="text-xs text-gray-500">Injects a hidden field. If filled by a bot, submission is silently rejected.</p>
-                    </div>
-                  </label>
-
-                  <label className="flex items-start gap-3 cursor-pointer mb-2">
-                    <input 
-                      type="checkbox" 
-                      checked={settings.enableRecaptchaV3}
-                      onChange={e => setSettings({...settings, enableRecaptchaV3: e.target.checked})}
-                      className="rounded text-[#5e3fde] focus:ring-[#5e3fde] mt-1"
-                    />
-                    <div>
-                      <span className="text-sm font-medium text-gray-700 block">Google reCAPTCHA v3</span>
-                      <p className="text-xs text-gray-500">Invisible score-based bot protection. Requires backend verification.</p>
-                    </div>
-                  </label>
-                  
-                  {settings.enableRecaptchaV3 && (
-                    <div className="mt-3 ml-7 space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Site Key</label>
-                        <input 
-                          type="text" 
-                          autoComplete="off"
-                          data-lpignore="true"
-                          data-1p-ignore="true"
-                          value={settings.recaptchaSiteKey || ''}
-                          onChange={e => setSettings({...settings, recaptchaSiteKey: e.target.value})}
-                          placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-                          className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-[#5e3fde]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Secret Key</label>
-                        <input 
-                          type="password" 
-                          autoComplete="new-password"
-                          data-lpignore="true"
-                          data-1p-ignore="true"
-                          value={settings.recaptchaSecretKey || ''}
-                          onChange={e => setSettings({...settings, recaptchaSecretKey: e.target.value})}
-                          placeholder="••••••••••••••••••••••••••••••••••••••••"
-                          className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-[#5e3fde]"
-                        />
-                        <p className="text-[11px] text-gray-500 mt-1">Required to verify the v3 token securely on the server.</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {form && (
-                <div className="pt-4 border-t border-gray-100">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Shortcode</label>
-                  <code className="block bg-gray-50 text-[#5e3fde] px-3 py-2 rounded text-sm font-mono border border-gray-200 break-all">
-                    {form.shortcode}
-                  </code>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
