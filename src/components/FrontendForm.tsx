@@ -143,12 +143,16 @@ export default function FrontendForm({ id }: { id: string }) {
 
   if (success) {
     return (
-      <div className="bg-[#f0fdf4] border border-[#bbf7d0] text-[#166534] rounded-2xl p-8 text-center my-8 max-w-2xl mx-auto shadow-sm">
-        <svg className="w-16 h-16 text-[#22c55e] mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-        <h3 className="text-2xl font-bold mb-2">Thank You!</h3>
-        <p className="text-[#15803d] whitespace-pre-wrap">{settings.successMessage}</p>
+      <div className="bg-white border border-gray-100 shadow-[0_20px_50px_rgb(0,0,0,0.07)] rounded-3xl p-10 sm:p-14 text-center my-8 max-w-2xl mx-auto transform transition-all duration-500 hover:scale-[1.01]">
+        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 className="text-3xl font-extrabold text-gray-900 mb-4 tracking-tight">Success!</h3>
+        <p className="text-gray-500 text-lg leading-relaxed whitespace-pre-wrap max-w-md mx-auto">
+          {settings.successMessage}
+        </p>
       </div>
     );
   }
