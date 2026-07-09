@@ -40,28 +40,41 @@ export async function POST(req: Request) {
       counter++;
     }
 
-    // Upload directly to Cloudinary using a stream
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { 
-          folder: 'custom-cms',
-          public_id: publicId
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      uploadStream.end(buffer);
-    });
+    // Upload directly to Cloudinary using a stream if configured
+    let finalUrl = '';
 
-    const result = uploadResult as any;
+    if (process.env.CLOUDINARY_URL) {
+      try {
+        const uploadResult = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { 
+              folder: 'custom-cms',
+              public_id: publicId
+            },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          uploadStream.end(buffer);
+        });
+
+        const result = uploadResult as any;
+        finalUrl = result.secure_url;
+      } catch (err) {
+        console.error('Cloudinary upload failed, falling back to base64', err);
+        finalUrl = `data:${file.type || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
+      }
+    } else {
+      // Fallback: store as base64 data URI if no external storage is configured
+      finalUrl = `data:${file.type || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
+    }
     
-    // Create Media record in the database using the secure Cloudinary URL
+    // Create Media record in the database
     const media = await prisma.media.create({
       data: {
         filename: finalFileName,
-        url: result.secure_url,
+        url: finalUrl,
         mimeType: file.type || 'application/octet-stream',
         size: buffer.length,
       }
@@ -69,7 +82,7 @@ export async function POST(req: Request) {
     
     return NextResponse.json(media);
   } catch (error) {
-    console.error('Error uploading file to Cloudinary:', error);
+    console.error('Error uploading file:', error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
   }
 }
