@@ -22,7 +22,8 @@ export default function FormEditor({ form }: { form?: any }) {
       submitText: 'Submit Form',
       successAction: 'message',
       successMessage: 'Your submission has been received successfully.',
-      redirectUrl: ''
+      redirectUrl: '',
+      enableSpamProtection: true
     }
   );
   const [isSaving, setIsSaving] = useState(false);
@@ -144,6 +145,7 @@ export default function FormEditor({ form }: { form?: any }) {
                         <option value="number">Number</option>
                         <option value="tel">Phone</option>
                         <option value="date">Date</option>
+                        <option value="file">File Upload</option>
                       </select>
                     </div>
                   </div>
@@ -189,6 +191,43 @@ export default function FormEditor({ form }: { form?: any }) {
                         <label className="block text-xs font-medium text-gray-500 mb-1">Description / Help Text</label>
                         <input type="text" value={field.description || ''} onChange={e => updateField(field.id, 'description', e.target.value)} className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde] focus:border-[#5e3fde]" />
                       </div>
+                      
+                      {/* Conditional Logic */}
+                      <div className="col-span-2 border-t border-gray-200 pt-3 mt-1">
+                        <label className="flex items-center gap-2 cursor-pointer mb-3">
+                          <input 
+                            type="checkbox" 
+                            checked={field.conditionalLogic?.enabled || false}
+                            onChange={e => updateField(field.id, 'conditionalLogic', { ...field.conditionalLogic, enabled: e.target.checked })}
+                            className="rounded text-[#5e3fde] focus:ring-[#5e3fde]"
+                          />
+                          <span className="text-sm font-medium text-gray-700">Enable Conditional Logic</span>
+                        </label>
+                        {field.conditionalLogic?.enabled && (
+                          <div className="flex items-wrap items-center gap-2 bg-gray-100 p-3 rounded-lg overflow-hidden">
+                            <span className="text-sm text-gray-600 shrink-0">Show if</span>
+                            <select 
+                              value={field.conditionalLogic.fieldId || ''}
+                              onChange={e => updateField(field.id, 'conditionalLogic', { ...field.conditionalLogic, fieldId: e.target.value })}
+                              className="px-2 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde] focus:border-[#5e3fde] flex-1 min-w-[120px]"
+                            >
+                              <option value="">Select a field...</option>
+                              {fields.filter((f: any) => f.id !== field.id).map((f: any) => (
+                                <option key={f.id} value={f.id}>{f.label || f.id}</option>
+                              ))}
+                            </select>
+                            <span className="text-sm text-gray-600 shrink-0">equals</span>
+                            <input 
+                              type="text"
+                              value={field.conditionalLogic.equals || ''}
+                              onChange={e => updateField(field.id, 'conditionalLogic', { ...field.conditionalLogic, equals: e.target.value })}
+                              placeholder="Value..."
+                              className="px-2 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde] focus:border-[#5e3fde] flex-1 min-w-[120px]"
+                            />
+                          </div>
+                        )}
+                      </div>
+
                     </div>
                   )}
                 </div>
@@ -205,6 +244,7 @@ export default function FormEditor({ form }: { form?: any }) {
               <button onClick={() => addField('number')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Number</button>
               <button onClick={() => addField('tel')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Phone</button>
               <button onClick={() => addField('date')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Date</button>
+              <button onClick={() => addField('file')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add File Upload</button>
             </div>
           </div>
         </div>
@@ -281,6 +321,19 @@ export default function FormEditor({ form }: { form?: any }) {
                     />
                   </div>
                 )}
+
+                <div className="pt-4 border-t border-gray-100">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={settings.enableSpamProtection}
+                      onChange={e => setSettings({...settings, enableSpamProtection: e.target.checked})}
+                      className="rounded text-[#5e3fde] focus:ring-[#5e3fde]"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Enable Spam Protection (Honeypot)</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1 ml-6">Blocks automated bots from submitting the form.</p>
+                </div>
               </div>
 
               {form && (

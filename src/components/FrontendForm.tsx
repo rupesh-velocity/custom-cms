@@ -9,6 +9,7 @@ export default function FrontendForm({ id }: { id: string }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState<any>({});
+  const [honeypot, setHoneypot] = useState('');
 
   useEffect(() => {
     fetch(`/api/forms/${id}`)
@@ -39,11 +40,29 @@ export default function FrontendForm({ id }: { id: string }) {
     submitText: 'Submit Form',
     successAction: 'message',
     successMessage: 'Your submission has been received successfully.',
-    redirectUrl: ''
+    redirectUrl: '',
+    enableSpamProtection: true
   };
+
+  const visibleFields = fields.filter((field: any) => {
+    if (!field.conditionalLogic?.enabled) return true;
+    const targetValue = formData[field.conditionalLogic.fieldId];
+    const expectedValue = field.conditionalLogic.equals;
+    
+    if (Array.isArray(targetValue)) {
+      return targetValue.includes(expectedValue);
+    }
+    return targetValue === expectedValue;
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (settings.enableSpamProtection && honeypot) {
+      setSuccess(true);
+      return;
+    }
+
     setSubmitting(true);
     setError('');
     
@@ -89,8 +108,14 @@ export default function FrontendForm({ id }: { id: string }) {
       
       {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm border border-red-100">{error}</div>}
       
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {fields.map((field: any) => (
+      <form onSubmit={handleSubmit} className="space-y-6 relative">
+        {settings.enableSpamProtection && (
+          <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
+            <input type="text" name="b_name" tabIndex={-1} value={honeypot} onChange={e => setHoneypot(e.target.value)} />
+          </div>
+        )}
+
+        {visibleFields.map((field: any) => (
           <div key={field.id}>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               {field.label} {field.required && <span className="text-red-500">*</span>}
@@ -159,8 +184,38 @@ export default function FrontendForm({ id }: { id: string }) {
                   );
                 })}
               </div>
+            ) : field.type === 'file' ? (
+              <div>
+                <input 
+                  type="file" 
+                  required={field.required && !formData[field.id]}
+                  onChange={async e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const uploadData = new FormData();
+                    uploadData.append('file', file);
+                    try {
+                      const res = await fetch('/api/upload', { method: 'POST', body: uploadData });
+                      const data = await res.json();
+                      if (data.url) {
+                         setFormData({...formData, [field.id]: data.url});
+                      }
+                    } catch (err) {
+                      console.error("Upload failed", err);
+                      alert("File upload failed. Please try again.");
+                    }
+                  }}
+                  className="w-full px-4 py-2 bg-gray-50/50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] transition-all outline-none"
+                />
+                {formData[field.id] && (
+                  <p className="text-xs text-[#166534] mt-2 font-medium flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    File uploaded successfully
+                  </p>
+                )}
+              </div>
             ) : (
-              <input 
+              <input  
                 type={field.type} // Supports 'text', 'email', 'number', 'tel', 'date' automatically
                 required={field.required}
                 value={formData[field.id] || ''}
