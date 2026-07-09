@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import AdminListClient from '@/components/AdminListClient';
+import { Plus } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,25 +25,28 @@ export default async function PostsPage({ searchParams }: { searchParams: Promis
   });
 
   return (
-    <div className="font-sans text-[13px] text-[#3c434a]">
-      <div className="flex items-center gap-4 mb-2 pt-2">
-        <h1 className="text-[23px] text-[#1d2327] font-normal">Posts</h1>
+    <div className="max-w-[1200px]">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-900">Posts</h1>
+        </div>
         <Link 
           href="/admin/posts/new"
-          className="border border-[#5e3fde] text-[#5e3fde] bg-[#f6f7f7] px-2.5 py-1 rounded-[3px] hover:bg-[#f0f0f1] transition-colors"
+          className="bg-[#5e3fde] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#4b32b2] transition-colors flex items-center gap-2"
         >
+          <Plus size={18} />
           Add New
         </Link>
       </div>
 
-      <div className="flex text-[13px] mb-2 text-[#50575e]">
-        <Link href="/admin/posts" className={statusFilter === 'All' ? 'font-semibold text-black' : 'text-[#5e3fde] hover:underline'}>All <span className="text-gray-500 font-normal">({allCount})</span></Link>
-        <span className="mx-1 text-gray-300">|</span>
-        <Link href="/admin/posts?status=Published" className={statusFilter === 'Published' ? 'font-semibold text-black' : 'text-[#5e3fde] hover:underline'}>Published <span className="text-gray-500 font-normal">({publishedCount})</span></Link>
-        <span className="mx-1 text-gray-300">|</span>
-        <Link href="/admin/posts?status=Draft" className={statusFilter === 'Draft' ? 'font-semibold text-black' : 'text-[#5e3fde] hover:underline'}>Draft <span className="text-gray-500 font-normal">({draftCount})</span></Link>
-        <span className="mx-1 text-gray-300">|</span>
-        <Link href="/admin/posts?status=Trash" className={statusFilter === 'Trash' ? 'font-semibold text-black' : 'text-[#5e3fde] hover:underline'}>Trash <span className="text-gray-500 font-normal">({trashCount})</span></Link>
+      <div className="flex text-[14px] mb-4 text-[#50575e]">
+        <Link href="/admin/posts" className={statusFilter === 'All' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>All <span className="text-gray-500 font-normal">({allCount})</span></Link>
+        <span className="mx-2 text-gray-300">|</span>
+        <Link href="/admin/posts?status=Published" className={statusFilter === 'Published' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Published <span className="text-gray-500 font-normal">({publishedCount})</span></Link>
+        <span className="mx-2 text-gray-300">|</span>
+        <Link href="/admin/posts?status=Draft" className={statusFilter === 'Draft' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Draft <span className="text-gray-500 font-normal">({draftCount})</span></Link>
+        <span className="mx-2 text-gray-300">|</span>
+        <Link href="/admin/posts?status=Trash" className={statusFilter === 'Trash' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Trash <span className="text-gray-500 font-normal">({trashCount})</span></Link>
       </div>
 
       <AdminListClient items={posts} type="posts" />
