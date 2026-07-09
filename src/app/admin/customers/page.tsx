@@ -1,10 +1,14 @@
 import { Users, Search, Filter, ExternalLink } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import SearchFilterClient from '@/components/SearchFilterClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function CustomersPage() {
+export default async function CustomersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const resolvedParams = await searchParams;
+  const q = resolvedParams.q || '';
+
   // Fetch all orders to compute unique customers
   const allOrders = await prisma.order.findMany({
     include: { customer: true },
@@ -52,9 +56,17 @@ export default async function CustomersPage() {
     }
   });
 
-  const customers = Array.from(customersMap.values());
+  let customers = Array.from(customersMap.values());
   // Sort by most recent order
   customers.sort((a, b) => new Date(b.lastOrderDate).getTime() - new Date(a.lastOrderDate).getTime());
+
+  if (q) {
+    const lowerQ = q.toLowerCase();
+    customers = customers.filter(c => 
+      c.name.toLowerCase().includes(lowerQ) || 
+      c.email.toLowerCase().includes(lowerQ)
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-8 text-[#2c3338]">
@@ -67,14 +79,7 @@ export default async function CustomersPage() {
 
       <div className="bg-white border border-[#c3c4c7] shadow-sm mb-6 flex items-center justify-between p-3">
         <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search customers..." 
-              className="pl-9 pr-4 py-1.5 border border-[#8c8f94] rounded-[3px] text-[13px] focus:border-[#5e3fde] outline-none w-64"
-            />
-          </div>
+          <SearchFilterClient placeholder="Search customers..." />
           <button className="flex items-center gap-2 px-3 py-1.5 border border-[#8c8f94] rounded-[3px] text-[13px] hover:bg-gray-50">
             <Filter size={14} /> Filter
           </button>

@@ -1,11 +1,24 @@
 import { ShoppingCart, Eye, Search, Filter } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import SearchFilterClient from '@/components/SearchFilterClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function OrdersPage() {
+export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const resolvedParams = await searchParams;
+  const q = resolvedParams.q || '';
+  
+  const where: any = q ? {
+    OR: [
+      { orderNumber: { contains: q, mode: 'insensitive' } },
+      { customerEmail: { contains: q, mode: 'insensitive' } },
+      { billingAddress: { contains: q, mode: 'insensitive' } }
+    ]
+  } : {};
+
   const orders = await prisma.order.findMany({
+    where,
     orderBy: { createdAt: 'desc' },
     include: {
       customer: true,
@@ -24,14 +37,7 @@ export default async function OrdersPage() {
 
       <div className="bg-white border border-[#c3c4c7] shadow-sm mb-6 flex items-center justify-between p-3">
         <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Search orders..." 
-              className="pl-9 pr-4 py-1.5 border border-[#8c8f94] rounded-[3px] text-[13px] focus:border-[#5e3fde] outline-none w-64"
-            />
-          </div>
+          <SearchFilterClient placeholder="Search orders..." />
           <button className="flex items-center gap-2 px-3 py-1.5 border border-[#8c8f94] rounded-[3px] text-[13px] hover:bg-gray-50">
             <Filter size={14} /> Filter
           </button>
