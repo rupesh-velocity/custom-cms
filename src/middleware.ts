@@ -48,9 +48,33 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Dynamic Redirects
+  if (!path.startsWith('/_next') && !path.startsWith('/api') && !path.startsWith('/admin') && !path.match(/\.(.*)$/)) {
+    try {
+      const redirectRes = await fetch(new URL(`/api/redirections/check?path=${encodeURIComponent(path)}`, request.url), {
+        cache: 'no-store'
+      });
+      if (redirectRes.ok) {
+        const data = await redirectRes.json();
+        if (data.destinationUrl) {
+          const type = data.redirectType === '301' || data.redirectType === '308' ? 308 : 307;
+          
+          // Handle absolute vs relative destination
+          const dest = data.destinationUrl.startsWith('http') 
+            ? data.destinationUrl 
+            : new URL(data.destinationUrl, request.url);
+            
+          return NextResponse.redirect(dest, type);
+        }
+      }
+    } catch (error) {
+      // Ignore errors to not block the request
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/login'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

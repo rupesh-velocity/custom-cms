@@ -79,18 +79,6 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
   const searchParams = await props.searchParams;
   const slug = params.slug;
   
-  // 1. Check for global redirection first
-  const redirection = await prisma.redirection.findFirst({
-    where: {
-      sourceUrl: `/${slug}`,
-      status: true
-    }
-  });
-
-  if (redirection) {
-    redirect(redirection.destinationUrl);
-  }
-
   const data = await getPageOrPost(slug);
   
   if (!data) {
