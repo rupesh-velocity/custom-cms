@@ -149,7 +149,7 @@ export default function ProductsPage() {
                       {product.sku || <span className="text-gray-400 italic">No SKU</span>}
                     </td>
                     <td className="py-4 px-6 text-sm text-[#5e3fde] hover:underline cursor-pointer">
-                      {currentUserName}
+                      {product.author ? (product.author.firstName ? `${product.author.firstName} ${product.author.lastName || ''}`.trim() : product.author.username) : currentUserName}
                     </td>
                     <td className="py-4 px-6">
                       {product.manageStock ? (

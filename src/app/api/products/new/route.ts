@@ -1,10 +1,28 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import slugify from 'slugify';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 
 export async function POST(req: Request) {
   try {
     const data = await req.json();
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get('cms_session')?.value;
+    let authorId = null;
+
+    if (token) {
+      try {
+        const secret = new TextEncoder().encode(
+          process.env.JWT_SECRET || 'fallback_super_secret_key_change_in_production'
+        );
+        const { payload } = await jwtVerify(token, secret);
+        if (payload && payload.id) {
+          authorId = payload.id;
+        }
+      } catch (e) {}
+    }
 
     const product = await prisma.product.create({
       data: {
@@ -21,6 +39,7 @@ export async function POST(req: Request) {
         createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
         linkedCourseId: data.linkedCourseId ? parseInt(data.linkedCourseId) : undefined,
         featuredImage: data.featuredImage || null,
+        authorId: authorId ? Number(authorId) : undefined,
         attributes: data.attributes && data.attributes.length > 0 ? {
           create: data.attributes.map((attr: any) => ({
             name: attr.name,

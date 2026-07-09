@@ -18,6 +18,7 @@ export async function GET(req: Request) {
       },
       include: {
         categories: true,
+        author: true,
       },
     });
 

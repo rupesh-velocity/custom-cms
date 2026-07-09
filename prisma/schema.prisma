@@ -7,9 +7,9 @@ datasource db {
 }
 
 model Post {
-  id              Int      @id @default(autoincrement())
+  id              Int        @id @default(autoincrement())
   title           String
-  slug            String   @unique
+  slug            String     @unique
   contentHtml     String
   contentText     String
   metaDescription String
@@ -17,12 +17,12 @@ model Post {
   seoTitle        String?
   redirectUrl     String?
   redirectType    String?
-  noIndex         Boolean  @default(false)
-  status          String   @default("Draft")
-  visibility      String   @default("Public")
+  noIndex         Boolean    @default(false)
+  status          String     @default("Draft")
+  visibility      String     @default("Public")
   password        String?
   schemaJson      String?
-  seoScore        Int      @default(0)
+  seoScore        Int        @default(0)
   authorId        Int?
   author          User?      @relation(fields: [authorId], references: [id])
   categories      Category[]
@@ -33,9 +33,9 @@ model Post {
 }
 
 model Page {
-  id              Int      @id @default(autoincrement())
+  id              Int       @id @default(autoincrement())
   title           String
-  slug            String   @unique
+  slug            String    @unique
   contentHtml     String
   contentText     String
   metaDescription String
@@ -43,52 +43,56 @@ model Page {
   seoTitle        String?
   redirectUrl     String?
   redirectType    String?
-  noIndex         Boolean  @default(false)
-  status          String   @default("Draft")
-  visibility      String   @default("Public")
+  noIndex         Boolean   @default(false)
+  status          String    @default("Draft")
+  visibility      String    @default("Public")
   password        String?
-  hideTitle       Boolean  @default(false)
+  hideTitle       Boolean   @default(false)
   schemaJson      String?
-  seoScore        Int      @default(0)
+  seoScore        Int       @default(0)
   authorId        Int?
-  author          User?    @relation(fields: [authorId], references: [id])
+  author          User?     @relation(fields: [authorId], references: [id])
   featuredImage   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   publishedAt     DateTime?
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  email     String   @unique
-  password  String
-  firstName String?
-  lastName  String?
-  role      String   @default("Subscriber")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  posts     Post[]
-  pages     Page[]
-  orders    Order[]
-  courses   UserCourseAccess[]
+  id              Int                @id @default(autoincrement())
+  username        String             @unique
+  email           String             @unique
+  password        String
+  firstName       String?
+  lastName        String?
+  role            String             @default("Subscriber")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  posts           Post[]
+  pages           Page[]
+  orders          Order[]
+  courses         UserCourseAccess[]
+  createdCourses  Course[]
+  createdProducts Product[]
 }
 
 model Course {
-  id              Int      @id @default(autoincrement())
+  id              Int                @id @default(autoincrement())
   title           String
-  slug            String   @unique
+  slug            String             @unique
   contentHtml     String?
   contentText     String?
-  videos          Json?    @default("[]")
+  videos          Json?              @default("[]")
   metaDescription String?
   focusKeyword    String?
-  status          String   @default("Draft")
-  price           Float    @default(0)
+  status          String             @default("Draft")
+  price           Float              @default(0)
   salePrice       Float?
   featuredImage   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  authorId        Int?
+  author          User?              @relation(fields: [authorId], references: [id])
   products        Product[]
   userAccess      UserCourseAccess[]
 }
@@ -100,7 +104,7 @@ model UserCourseAccess {
   courseId  Int
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  
+
   @@unique([userId, courseId])
 }
 
@@ -150,7 +154,7 @@ model Redirection {
   ignoreCase     Boolean  @default(false)
   destinationUrl String
   redirectType   String   @default("301") // 301, 302, 307, 410, 451
-  status         Boolean  @default(true)  // Active (true) or Deactivated (false)
+  status         Boolean  @default(true) // Active (true) or Deactivated (false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -171,29 +175,31 @@ model Category {
 // --- E-COMMERCE MODELS ---
 
 model Product {
-  id               Int                @id @default(autoincrement())
+  id               Int      @id @default(autoincrement())
   title            String
-  slug             String             @unique
-  description      String?            @db.Text
-  shortDescription String?            @db.Text
-  type             String             @default("SIMPLE") // SIMPLE or VARIABLE
-  price            Float              @default(0)
+  slug             String   @unique
+  description      String?  @db.Text
+  shortDescription String?  @db.Text
+  type             String   @default("SIMPLE") // SIMPLE or VARIABLE
+  price            Float    @default(0)
   salePrice        Float?
-  sku              String?            @unique
-  manageStock      Boolean            @default(false)
-  stockQuantity    Int                @default(0)
-  status           String             @default("Draft") // Draft, Published
+  sku              String?  @unique
+  manageStock      Boolean  @default(false)
+  stockQuantity    Int      @default(0)
+  status           String   @default("Draft") // Draft, Published
   featuredImage    String?
-  galleryImages    String?            // JSON string of image URLs
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  galleryImages    String? // JSON string of image URLs
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  authorId         Int?
+  author           User?    @relation(fields: [authorId], references: [id])
 
-  attributes       ProductAttribute[]
-  variations       ProductVariation[]
-  orderItems       OrderItem[]
-  categories       ProductCategory[]
-  linkedCourseId   Int?
-  linkedCourse     Course?            @relation(fields: [linkedCourseId], references: [id], onDelete: SetNull)
+  attributes     ProductAttribute[]
+  variations     ProductVariation[]
+  orderItems     OrderItem[]
+  categories     ProductCategory[]
+  linkedCourseId Int?
+  linkedCourse   Course?            @relation(fields: [linkedCourseId], references: [id], onDelete: SetNull)
 }
 
 model ProductCategory {
@@ -210,14 +216,14 @@ model ProductCategory {
 }
 
 model ProductAttribute {
-  id        Int      @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   productId Int
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  name      String   // e.g., "Size", "Color"
-  options   String   // JSON string array of options e.g. ["Small", "Medium", "Large"]
-  visible   Boolean  @default(true) // Visible on the product page
-  variation Boolean  @default(false) // Used for variations
-  isGlobal  Boolean  @default(false) // Whether this was imported from a Global Attribute
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String // e.g., "Size", "Color"
+  options   String // JSON string array of options e.g. ["Small", "Medium", "Large"]
+  visible   Boolean @default(true) // Visible on the product page
+  variation Boolean @default(false) // Used for variations
+  isGlobal  Boolean @default(false) // Whether this was imported from a Global Attribute
 }
 
 model GlobalAttribute {
@@ -230,21 +236,21 @@ model GlobalAttribute {
 }
 
 model GlobalAttributeTerm {
-  id           Int             @id @default(autoincrement())
-  attributeId  Int
-  attribute    GlobalAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
-  name         String
-  slug         String          @unique
-  description  String?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id          Int             @id @default(autoincrement())
+  attributeId Int
+  attribute   GlobalAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String          @unique
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 model ProductVariation {
   id            Int         @id @default(autoincrement())
   productId     Int
   product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  attributes    String      // JSON string mapping attribute names to selected options e.g. {"Size": "Large", "Color": "Red"}
+  attributes    String // JSON string mapping attribute names to selected options e.g. {"Size": "Large", "Color": "Red"}
   price         Float
   salePrice     Float?
   sku           String?     @unique
@@ -254,47 +260,47 @@ model ProductVariation {
 }
 
 model Order {
-  id              Int         @id @default(autoincrement())
-  orderNumber     String      @unique
-  status          String      @default("PENDING") // PENDING, PROCESSING, COMPLETED, CANCELLED
-  totalAmount     Float
-  currency        String      @default("USD")
-  
-  customerEmail   String
-  customerId      Int?
-  customer        User?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  
-  billingAddress  String      // JSON string
-  shippingAddress String      // JSON string
-  
-  paymentMethod   String?     // "STRIPE", "PAYPAL", "COD"
-  paymentId       String?     // Transaction ID from gateway
-  
-  shippingMethod  String?
-  shippingCost    Float       @default(0)
-  
-  items           OrderItem[]
-  notes           OrderNote[]
-  
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  id          Int    @id @default(autoincrement())
+  orderNumber String @unique
+  status      String @default("PENDING") // PENDING, PROCESSING, COMPLETED, CANCELLED
+  totalAmount Float
+  currency    String @default("USD")
+
+  customerEmail String
+  customerId    Int?
+  customer      User?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  billingAddress  String // JSON string
+  shippingAddress String // JSON string
+
+  paymentMethod String? // "STRIPE", "PAYPAL", "COD"
+  paymentId     String? // Transaction ID from gateway
+
+  shippingMethod String?
+  shippingCost   Float   @default(0)
+
+  items OrderItem[]
+  notes OrderNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrderItem {
-  id           Int               @id @default(autoincrement())
-  orderId      Int
-  order        Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  productId    Int?
-  product      Product?          @relation(fields: [productId], references: [id], onDelete: SetNull)
-  
-  variationId  Int?
-  variation    ProductVariation? @relation(fields: [variationId], references: [id], onDelete: SetNull)
-  
-  name         String            // Snapshot of product name at purchase
-  quantity     Int
-  price        Float             // Snapshot of price at purchase
-  total        Float
+  id      Int   @id @default(autoincrement())
+  orderId Int
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  variationId Int?
+  variation   ProductVariation? @relation(fields: [variationId], references: [id], onDelete: SetNull)
+
+  name     String // Snapshot of product name at purchase
+  quantity Int
+  price    Float // Snapshot of price at purchase
+  total    Float
 }
 
 model OrderNote {
@@ -309,7 +315,7 @@ model OrderNote {
 model ShippingZone {
   id        Int              @id @default(autoincrement())
   name      String
-  regions   String           // JSON string of country/state codes
+  regions   String // JSON string of country/state codes
   methods   ShippingMethod[]
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
@@ -319,21 +325,21 @@ model ShippingMethod {
   id         Int          @id @default(autoincrement())
   zoneId     Int
   zone       ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-  name       String       // "Flat Rate", "Free Shipping"
-  type       String       // "FLAT_RATE", "FREE_SHIPPING"
+  name       String // "Flat Rate", "Free Shipping"
+  type       String // "FLAT_RATE", "FREE_SHIPPING"
   cost       Float        @default(0)
-  conditions String?      // JSON string for free shipping thresholds, etc.
+  conditions String? // JSON string for free shipping thresholds, etc.
   enabled    Boolean      @default(true)
 }
 
 model TaxRate {
   id        Int      @id @default(autoincrement())
-  country   String   // e.g. "US"
-  state     String?  // e.g. "CA" or "*"
-  city      String?  // e.g. "Los Angeles" or "*"
-  zip       String?  // e.g. "90210" or "*"
-  rate      Float    // e.g. 7.25
-  name      String   // e.g. "State Tax"
+  country   String // e.g. "US"
+  state     String? // e.g. "CA" or "*"
+  city      String? // e.g. "Los Angeles" or "*"
+  zip       String? // e.g. "90210" or "*"
+  rate      Float // e.g. 7.25
+  name      String // e.g. "State Tax"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

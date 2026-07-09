@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import slugify from 'slugify';
+import { cookies } from 'next/headers';
+import { jwtVerify } from 'jose';
 
 export async function GET() {
   try {
@@ -18,6 +20,22 @@ export async function POST(req: Request) {
     const { title, contentHtml, contentText, videos, metaDescription, focusKeyword, slug, status, featuredImage, createdAt, price, salePrice } = await req.json();
     
     let generatedSlug = slug || slugify(title, { lower: true, strict: true });
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get('cms_session')?.value;
+    let authorId = null;
+
+    if (token) {
+      try {
+        const secret = new TextEncoder().encode(
+          process.env.JWT_SECRET || 'fallback_super_secret_key_change_in_production'
+        );
+        const { payload } = await jwtVerify(token, secret);
+        if (payload && payload.id) {
+          authorId = payload.id;
+        }
+      } catch (e) {}
+    }
     
     // Ensure unique slug
     let uniqueSlug = generatedSlug;
@@ -41,6 +59,7 @@ export async function POST(req: Request) {
         salePrice: salePrice || null,
         featuredImage: featuredImage || null,
         createdAt: createdAt ? new Date(createdAt) : undefined,
+        authorId: authorId ? Number(authorId) : undefined,
       }
     });
 

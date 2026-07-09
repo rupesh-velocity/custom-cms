@@ -21,6 +21,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
   const courses = await prisma.course.findMany({
     where: whereClause,
     orderBy: { createdAt: 'desc' },
+    include: { author: true }
   });
 
   return (
