@@ -99,12 +99,12 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-gray-100 bg-white">
+            <thead className="bg-white">
+              <tr className="border-b border-gray-100">
                 <th className="py-3 px-4 text-xs font-semibold text-[#0071a1] w-12 text-center">
                   <input type="checkbox" className="rounded border-gray-300 text-[#5e3fde] focus:ring-[#5e3fde]" />
                 </th>
-                {fields.map((field, index) => (
+                {fields.slice(0, 2).map((field, index) => (
                   <th key={field.id} className="py-3 px-4 text-xs font-semibold text-[#0071a1] whitespace-nowrap">
                     {field.label}
                   </th>
@@ -124,7 +124,7 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
                     <td className="py-4 px-4 text-center align-top">
                       <input type="checkbox" className="rounded border-gray-300 text-[#5e3fde] focus:ring-[#5e3fde]" />
                     </td>
-                    {fields.map((field, index) => {
+                    {fields.slice(0, 2).map((field, index) => {
                       const value = parsedData[field.id] ? (Array.isArray(parsedData[field.id]) ? parsedData[field.id].join(', ') : String(parsedData[field.id])) : '';
                       return (
                         <td key={field.id} className="py-4 px-4 text-sm text-gray-900 align-top">
@@ -139,9 +139,15 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
                               <span className="text-gray-300">|</span>
                               <button className="text-[#0071a1] hover:text-[#005a82]">Mark read</button>
                               <span className="text-gray-300">|</span>
-                              <button className="text-[#b32d2e] hover:text-[#8a2425]">Mark as Spam</button>
-                              <span className="text-gray-300">|</span>
-                              <button className="text-[#b32d2e] hover:text-[#8a2425]">Trash</button>
+                              <form action={async () => {
+                                'use server';
+                                await prisma.formSubmission.delete({ where: { id: sub.id } });
+                                redirect('/admin/forms/entries');
+                              }} className="inline-flex items-center gap-1.5">
+                                <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Mark as Spam</button>
+                                <span className="text-gray-300">|</span>
+                                <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Trash</button>
+                              </form>
                             </div>
                           )}
                         </td>
