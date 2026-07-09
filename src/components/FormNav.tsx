@@ -35,12 +35,6 @@ export default function FormNav({ formId, title }: { formId: string | number, ti
               Settings
             </Link>
             
-            <Link 
-              href={`/admin/forms/entries?form_id=${formId}`}
-              className={`px-3 py-2 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-50`}
-            >
-              Entries
-            </Link>
           </nav>
         </div>
       </div>

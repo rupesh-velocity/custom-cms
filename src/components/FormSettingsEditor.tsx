@@ -1,0 +1,214 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import { Save } from 'lucide-react';
+
+export default function FormSettingsEditor({ form }: { form: any }) {
+  const router = useRouter();
+  const [status, setStatus] = useState(form.status || 'Published');
+  const [notificationEmail, setNotificationEmail] = useState(form.notificationEmail || '');
+  const [settings, setSettings] = useState<any>(
+    form.settings ? (typeof form.settings === 'string' ? JSON.parse(form.settings) : form.settings) : {
+      submitText: 'Submit Form',
+      successAction: 'message',
+      successMessage: 'Your submission has been received successfully.',
+      redirectUrl: '',
+      enableHoneypot: true,
+      enableRecaptchaV3: false,
+      recaptchaSiteKey: '',
+      recaptchaSecretKey: ''
+    }
+  );
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // Preserve existing fields
+      const payload = { 
+        status, 
+        notificationEmail, 
+        settings,
+        fields: typeof form.fields === 'string' ? JSON.parse(form.fields || '[]') : form.fields,
+        title: form.title
+      };
+      
+      const res = await fetch(`/api/forms/${form.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (!res.ok) throw new Error('Failed to save settings');
+      
+      toast.success('Settings saved');
+      router.refresh();
+    } catch (error) {
+      toast.error('Error saving settings');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm max-w-3xl">
+      <div className="flex justify-between items-center border-b border-gray-100 pb-5 mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">General Settings</h2>
+        <button 
+          onClick={handleSave}
+          disabled={isSaving}
+          className="bg-[#5e3fde] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#4b32b2] transition-colors flex items-center gap-2 disabled:opacity-50"
+        >
+          <Save size={18} />
+          {isSaving ? 'Saving...' : 'Save Settings'}
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select 
+              value={status}
+              onChange={e => setStatus(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+            >
+              <option value="Published">Published</option>
+              <option value="Draft">Draft</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Draft forms will not accept submissions.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notification Emails</label>
+            <input 
+              type="text" 
+              value={notificationEmail}
+              onChange={e => setNotificationEmail(e.target.value)}
+              placeholder="admin@example.com, sales@example.com"
+              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+            />
+            <p className="text-xs text-gray-500 mt-1">Send submissions to these addresses (comma separated).</p>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-100 pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Confirmation Settings</h3>
+          
+          <div className="space-y-4 max-w-xl">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Submit Button Text</label>
+              <input 
+                type="text" 
+                value={settings.submitText}
+                onChange={e => setSettings({...settings, submitText: e.target.value})}
+                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">On Success</label>
+              <select 
+                value={settings.successAction}
+                onChange={e => setSettings({...settings, successAction: e.target.value})}
+                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+              >
+                <option value="message">Show Message</option>
+                <option value="redirect">Redirect to URL</option>
+              </select>
+            </div>
+            {settings.successAction === 'message' ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Success Message</label>
+                <textarea 
+                  value={settings.successMessage}
+                  onChange={e => setSettings({...settings, successMessage: e.target.value})}
+                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+                  rows={3}
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Redirect URL</label>
+                <input 
+                  type="url" 
+                  value={settings.redirectUrl}
+                  onChange={e => setSettings({...settings, redirectUrl: e.target.value})}
+                  placeholder="https://example.com/thank-you"
+                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="border-t border-gray-100 pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Spam Protection</h3>
+          
+          <div className="space-y-4 max-w-xl">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={settings.enableHoneypot}
+                onChange={e => setSettings({...settings, enableHoneypot: e.target.checked})}
+                className="rounded text-[#5e3fde] focus:ring-[#5e3fde] mt-1"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-700 block">Honeypot (Invisible Trap)</span>
+                <p className="text-xs text-gray-500">Injects a hidden field. If filled by a bot, submission is silently rejected.</p>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer mt-4">
+              <input 
+                type="checkbox" 
+                checked={settings.enableRecaptchaV3}
+                onChange={e => setSettings({...settings, enableRecaptchaV3: e.target.checked})}
+                className="rounded text-[#5e3fde] focus:ring-[#5e3fde] mt-1"
+              />
+              <div>
+                <span className="text-sm font-medium text-gray-700 block">Google reCAPTCHA v3</span>
+                <p className="text-xs text-gray-500">Invisible score-based bot protection. Requires backend verification.</p>
+              </div>
+            </label>
+            
+            {settings.enableRecaptchaV3 && (
+              <div className="mt-3 ml-7 space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Site Key</label>
+                  <input 
+                    type="text" 
+                    value={settings.recaptchaSiteKey || ''}
+                    onChange={e => setSettings({...settings, recaptchaSiteKey: e.target.value})}
+                    placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                    className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-[#5e3fde]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Secret Key</label>
+                  <input 
+                    type="password" 
+                    value={settings.recaptchaSecretKey || ''}
+                    onChange={e => setSettings({...settings, recaptchaSecretKey: e.target.value})}
+                    placeholder="••••••••••••••••••••••••••••••••••••••••"
+                    className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-[#5e3fde]"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="border-t border-gray-100 pt-6 max-w-xl">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Form Shortcode</label>
+          <code className="block bg-gray-50 text-[#5e3fde] px-4 py-3 rounded-lg text-sm font-mono border border-gray-200 break-all select-all">
+            {form.shortcode}
+          </code>
+          <p className="text-xs text-gray-500 mt-2">Use this shortcode to embed the form into any page or post.</p>
+        </div>
+
+      </div>
+    </div>
+  );
+}

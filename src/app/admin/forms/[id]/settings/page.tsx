@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import FormNav from '@/components/FormNav';
+import FormSettingsEditor from '@/components/FormSettingsEditor';
 
 export default async function SettingsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -18,10 +19,7 @@ export default async function SettingsPage(props: { params: Promise<{ id: string
       
       <FormNav formId={form.id} title={form.title} />
 
-      <div className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm text-center">
-        <h2 className="text-xl font-semibold mb-2">Settings Area</h2>
-        <p className="text-gray-500">The settings, notifications, and confirmations are currently being migrated here.</p>
-      </div>
+      <FormSettingsEditor form={form} />
     </div>
   );
 }
