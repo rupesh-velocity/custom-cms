@@ -63,9 +63,6 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
             <select 
               defaultValue={activeForm.id}
               key={activeForm.id} // force re-render if activeForm changes
-              onChange={(e) => {
-                // simple hack for server components without client component wrapper
-              }}
               id="form-switcher"
               className="bg-white border border-gray-200 rounded-lg px-3 py-2 outline-none text-sm font-medium text-gray-700 min-w-[200px] focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
             >
