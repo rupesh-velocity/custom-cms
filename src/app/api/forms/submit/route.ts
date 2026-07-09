@@ -33,14 +33,12 @@ export async function POST(req: Request) {
       }
     });
 
-    if (form.settings) {
-      const settings = JSON.parse(form.settings);
-      if (settings.emailNotifications) {
-        const emails = settings.emailNotifications.split(',').map((e: string) => e.trim()).filter(Boolean);
-        
-        if (emails.length > 0) {
-          // Fetch SMTP settings
-          const smtpSettings = await prisma.setting.findMany({
+    if (form.notificationEmail) {
+      const emails = form.notificationEmail.split(',').map((e: string) => e.trim()).filter(Boolean);
+      
+      if (emails.length > 0) {
+        // Fetch SMTP settings
+        const smtpSettings = await prisma.setting.findMany({
             where: { key: { in: ['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'from_email'] } }
           });
           const smtpMap = smtpSettings.reduce((acc: any, s: any) => ({ ...acc, [s.key]: s.value }), {});
@@ -78,7 +76,6 @@ export async function POST(req: Request) {
           }
         }
       }
-    }
 
     return NextResponse.json({ success: true, message: 'Thank you for your submission!' });
   } catch (error) {

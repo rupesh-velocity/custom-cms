@@ -23,7 +23,6 @@ export default function FormEditor({ form }: { form?: any }) {
       successAction: 'message',
       successMessage: 'Your submission has been received successfully.',
       redirectUrl: '',
-      emailNotifications: '',
       enableHoneypot: true,
       enableRecaptchaV3: false,
       recaptchaSiteKey: '',
@@ -325,27 +324,6 @@ export default function FormEditor({ form }: { form?: any }) {
                     />
                   </div>
                 )}
-
-                <div className="pt-4 border-t border-gray-100">
-                    <h4 className="font-medium text-gray-900 mb-4 flex items-center gap-2">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                      Email Notifications
-                    </h4>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Send Submissions To (comma separated)</label>
-                        <input 
-                          type="text" 
-                          value={settings.emailNotifications || ''}
-                          onChange={e => setSettings({...settings, emailNotifications: e.target.value})}
-                          placeholder="admin@example.com, sales@example.com"
-                          className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded text-sm outline-none focus:ring-1 focus:ring-[#5e3fde]"
-                        />
-                        <p className="text-[11px] text-gray-500 mt-1">Leave blank to disable email notifications for this form.</p>
-                      </div>
-                    </div>
-                  </div>
 
                 <div className="pt-4 border-t border-gray-100">
                   <h4 className="text-sm font-medium text-gray-900 mb-3">Spam Protection</h4>
