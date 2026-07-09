@@ -102,10 +102,6 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
       <div className="flex text-[14px] mb-4 text-[#50575e]">
         <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=All`} className={statusFilter === 'All' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>All <span className="text-gray-500 font-normal">({allCount})</span></Link>
         <span className="mx-2 text-gray-300">|</span>
-        <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Unread`} className={statusFilter === 'Unread' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Unread <span className="text-gray-500 font-normal">({unreadCount})</span></Link>
-        <span className="mx-2 text-gray-300">|</span>
-        <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Starred`} className={statusFilter === 'Starred' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Starred <span className="text-gray-500 font-normal">({starredCount})</span></Link>
-        <span className="mx-2 text-gray-300">|</span>
         <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Spam`} className={statusFilter === 'Spam' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Spam <span className="text-gray-500 font-normal">({spamCount})</span></Link>
         <span className="mx-2 text-gray-300">|</span>
         <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Trash`} className={statusFilter === 'Trash' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Trash <span className="text-gray-500 font-normal">({trashCount})</span></Link>
@@ -162,26 +158,73 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
                           {index === 0 && (
                             <div className="text-[12px] mt-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 whitespace-nowrap">
                               <Link href={`/admin/forms/entries/${sub.id}`} className="text-[#0071a1] hover:text-[#005a82]">View</Link>
-                              <span className="text-gray-300">|</span>
-                              <Link href={`/admin/forms/entries/${sub.id}`} className="text-[#0071a1] hover:text-[#005a82]">Edit</Link>
-                              <span className="text-gray-300">|</span>
-                              <button className="text-[#0071a1] hover:text-[#005a82]">Mark read</button>
-                              <span className="text-gray-300">|</span>
-                              <form action={async () => {
-                                'use server';
-                                await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Spam' } });
-                                redirect(`/admin/forms/entries?form_id=${activeForm.id}`);
-                              }} className="inline-flex items-center gap-1.5">
-                                <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Mark as Spam</button>
-                              </form>
-                              <span className="text-gray-300">|</span>
-                              <form action={async () => {
-                                'use server';
-                                await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Trash' } });
-                                redirect(`/admin/forms/entries?form_id=${activeForm.id}`);
-                              }} className="inline-flex items-center gap-1.5">
-                                <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Trash</button>
-                              </form>
+                              
+                              {sub.status === 'Active' && (
+                                <>
+                                  <span className="text-gray-300">|</span>
+                                  <Link href={`/admin/forms/entries/${sub.id}`} className="text-[#0071a1] hover:text-[#005a82]">Edit</Link>
+                                  <span className="text-gray-300">|</span>
+                                  <button className="text-[#0071a1] hover:text-[#005a82]">Mark read</button>
+                                  <span className="text-gray-300">|</span>
+                                  <form action={async () => {
+                                    'use server';
+                                    await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Spam' } });
+                                    redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
+                                  }} className="inline-flex items-center gap-1.5">
+                                    <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Mark as Spam</button>
+                                  </form>
+                                  <span className="text-gray-300">|</span>
+                                  <form action={async () => {
+                                    'use server';
+                                    await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Trash' } });
+                                    redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
+                                  }} className="inline-flex items-center gap-1.5">
+                                    <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Trash</button>
+                                  </form>
+                                </>
+                              )}
+
+                              {sub.status === 'Spam' && (
+                                <>
+                                  <span className="text-gray-300">|</span>
+                                  <form action={async () => {
+                                    'use server';
+                                    await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Active' } });
+                                    redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
+                                  }} className="inline-flex items-center gap-1.5">
+                                    <button type="submit" className="text-[#0071a1] hover:text-[#005a82]">Not Spam</button>
+                                  </form>
+                                  <span className="text-gray-300">|</span>
+                                  <form action={async () => {
+                                    'use server';
+                                    await prisma.formSubmission.delete({ where: { id: sub.id } });
+                                    redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
+                                  }} className="inline-flex items-center gap-1.5">
+                                    <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Delete Permanently</button>
+                                  </form>
+                                </>
+                              )}
+
+                              {sub.status === 'Trash' && (
+                                <>
+                                  <span className="text-gray-300">|</span>
+                                  <form action={async () => {
+                                    'use server';
+                                    await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Active' } });
+                                    redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
+                                  }} className="inline-flex items-center gap-1.5">
+                                    <button type="submit" className="text-[#0071a1] hover:text-[#005a82]">Restore</button>
+                                  </form>
+                                  <span className="text-gray-300">|</span>
+                                  <form action={async () => {
+                                    'use server';
+                                    await prisma.formSubmission.delete({ where: { id: sub.id } });
+                                    redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
+                                  }} className="inline-flex items-center gap-1.5">
+                                    <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Delete Permanently</button>
+                                  </form>
+                                </>
+                              )}
                             </div>
                           )}
                         </td>
