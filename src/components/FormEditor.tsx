@@ -231,9 +231,17 @@ export default function FormEditor({ form }: { form?: any }) {
             )}
 
             <div className="mt-8 pt-6 border-t border-gray-100 px-6">
-              <button className="bg-[#5e3fde] text-white font-semibold py-3 px-6 rounded-xl text-[15px] opacity-80 cursor-default">
-                {settings.submitText || 'Submit Form'}
-              </button>
+              <div 
+                onClick={() => {
+                  setActiveFieldId('submit');
+                  setSidebarTab('settings');
+                }}
+                className={`inline-block relative group p-2 rounded-xl border-2 transition-all cursor-pointer ${activeFieldId === 'submit' ? 'border-[#5e3fde] bg-blue-50/30' : 'border-transparent hover:border-gray-200 hover:bg-gray-50'}`}
+              >
+                <button className="bg-[#5e3fde] text-white font-semibold py-3 px-6 rounded-xl text-[15px] opacity-80 pointer-events-none">
+                  {settings.submitText || 'Submit Form'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -272,22 +280,24 @@ export default function FormEditor({ form }: { form?: any }) {
                       </span>
                     </button>
                   ))}
-                  
-                  <div className="col-span-2 mt-4 pt-4 border-t border-gray-100">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Submit Button Text</label>
-                    <input 
-                      type="text" 
-                      value={settings.submitText || 'Submit Form'}
-                      onChange={e => setSettings({...settings, submitText: e.target.value})}
-                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                    />
-                  </div>
                 </div>
               )}
 
               {sidebarTab === 'settings' && (
                 <div>
-                  {!activeField ? (
+                  {activeFieldId === 'submit' ? (
+                    <div className="space-y-5 pb-8">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Submit Button Text</label>
+                        <input 
+                          type="text" 
+                          value={settings.submitText || 'Submit Form'}
+                          onChange={e => setSettings({...settings, submitText: e.target.value})}
+                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-[#5e3fde] focus:border-[#5e3fde] outline-none transition-shadow"
+                        />
+                      </div>
+                    </div>
+                  ) : !activeField ? (
                     <div className="text-center py-12 text-gray-500">
                       <Settings size={32} className="mx-auto mb-3 opacity-30" />
                       <p className="text-sm">Click a field on the canvas to edit its settings.</p>
