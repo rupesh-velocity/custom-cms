@@ -146,15 +146,21 @@ export default function FrontendForm({ id }: { id: string }) {
       
       {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm border border-red-100">{error}</div>}
       
-      <form onSubmit={handleSubmit} className="space-y-6 relative">
+      <form onSubmit={handleSubmit} className="flex flex-wrap -mx-3 relative">
         {settings.enableHoneypot && (
           <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
             <input type="text" name="b_name" tabIndex={-1} value={honeypot} onChange={e => setHoneypot(e.target.value)} />
           </div>
         )}
 
-        {visibleFields.map((field: any) => (
-          <div key={field.id}>
+        {visibleFields.map((field: any) => {
+          let widthClass = "w-full";
+          if (field.width === '50') widthClass = "w-full sm:w-1/2";
+          else if (field.width === '33') widthClass = "w-full sm:w-1/3";
+          else if (field.width === '25') widthClass = "w-full sm:w-1/4";
+          
+          return (
+          <div key={field.id} className={`${widthClass} px-3 mb-6`}>
             <label className="block text-sm font-semibold text-gray-700 mb-1">
               {field.label} {field.required && <span className="text-red-500">*</span>}
             </label>
@@ -263,7 +269,7 @@ export default function FrontendForm({ id }: { id: string }) {
               />
             )}
           </div>
-        ))}
+        )})}
 
         {settings.enableRecaptchaV3 && (
           <p className="text-[11px] text-gray-500 leading-tight">
@@ -271,7 +277,7 @@ export default function FrontendForm({ id }: { id: string }) {
           </p>
         )}
 
-        <div className="pt-2">
+        <div className="w-full px-3 pt-2">
           <button 
             type="submit" 
             disabled={submitting}

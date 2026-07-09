@@ -122,7 +122,7 @@ export default function FormEditor({ form }: { form?: any }) {
                     </button>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
                     <div>
                       <label className="block text-xs font-medium text-gray-500 mb-1">Field Label</label>
                       <input 
@@ -149,6 +149,19 @@ export default function FormEditor({ form }: { form?: any }) {
                         <option value="tel">Phone</option>
                         <option value="date">Date</option>
                         <option value="file">File Upload</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Column Width</label>
+                      <select 
+                        value={field.width || '100'}
+                        onChange={e => updateField(field.id, 'width', e.target.value)}
+                        className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde] focus:border-[#5e3fde]"
+                      >
+                        <option value="100">100% (Full Width)</option>
+                        <option value="50">50% (Half Width)</option>
+                        <option value="33">33% (One Third)</option>
+                        <option value="25">25% (One Quarter)</option>
                       </select>
                     </div>
                   </div>
