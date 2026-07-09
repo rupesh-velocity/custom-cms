@@ -38,16 +38,12 @@ export default function FrontendForm({ id }: { id: string }) {
       });
   }, [id]);
 
-  if (loading) return <div className="animate-pulse h-32 bg-gray-100 rounded-lg max-w-2xl mx-auto my-8"></div>;
-  if (!form) return null;
-
-  const fields = form.fields ? JSON.parse(form.fields) : [];
-  const settings = form.settings ? JSON.parse(form.settings) : {
+  const settings = form?.settings ? JSON.parse(form.settings) : {
     submitText: 'Submit Form',
     successAction: 'message',
     successMessage: 'Your submission has been received successfully.',
     redirectUrl: '',
-    enableHoneypot: form.settings?.includes('enableSpamProtection') || form.settings?.includes('"spamProtectionType":"honeypot"') ? true : false,
+    enableHoneypot: form?.settings?.includes('enableSpamProtection') || form?.settings?.includes('"spamProtectionType":"honeypot"') ? true : false,
     enableRecaptchaV3: false,
     recaptchaSiteKey: ''
   };
@@ -62,6 +58,11 @@ export default function FrontendForm({ id }: { id: string }) {
       }
     }
   }, [settings.enableRecaptchaV3, settings.recaptchaSiteKey]);
+
+  if (loading) return <div className="animate-pulse h-32 bg-gray-100 rounded-lg max-w-2xl mx-auto my-8"></div>;
+  if (!form) return null;
+
+  const fields = form.fields ? JSON.parse(form.fields) : [];
 
   const visibleFields = fields.filter((field: any) => {
     if (!field.conditionalLogic?.enabled) return true;
