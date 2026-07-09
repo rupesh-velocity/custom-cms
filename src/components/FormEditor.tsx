@@ -271,6 +271,7 @@ export default function FormEditor({ form }: { form?: any }) {
               <button onClick={() => addField('file')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add File Upload</button>
             </div>
           </div>
+        </div>
       </div>
     </div>
   );
