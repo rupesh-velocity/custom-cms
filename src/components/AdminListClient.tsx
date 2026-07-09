@@ -200,7 +200,9 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                 />
               </th>
               <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
-              <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Author</th>
+              {type !== 'forms' && (
+                <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Author</th>
+              )}
               <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Date</th>
               <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">{type === 'forms' ? 'Shortcode' : 'SEO Details'}</th>
               <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[12%] text-right">Actions</th>
@@ -246,11 +248,13 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                     )}
                   </div>
                 </td>
-                <td className="py-4 px-6">
-                  <span className="text-sm font-medium text-[#5e3fde] hover:underline cursor-pointer">
-                    {item.author ? (item.author.firstName ? `${item.author.firstName} ${item.author.lastName || ''}`.trim() : item.author.username) : currentUserName}
-                  </span>
-                </td>
+                {type !== 'forms' && (
+                  <td className="py-4 px-6">
+                    <span className="text-sm font-medium text-[#5e3fde] hover:underline cursor-pointer">
+                      {item.author ? (item.author.firstName ? `${item.author.firstName} ${item.author.lastName || ''}`.trim() : item.author.username) : currentUserName}
+                    </span>
+                  </td>
+                )}
                 <td className="py-4 px-6">
                   <div className="text-sm font-medium text-gray-900">
                     {item.status === 'Published' ? 'Published' : (item.status === 'Draft' ? 'Modified' : item.status)}
