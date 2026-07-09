@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Search, Edit2, Trash2, ExternalLink } from 'lucide-react';
 
-export default function AdminListClient({ items, type }: { items: any[], type: 'pages' | 'posts' | 'courses' }) {
+export default function AdminListClient({ items, type }: { items: any[], type: 'pages' | 'posts' | 'courses' | 'forms' }) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentUserName, setCurrentUserName] = useState<string>('Admin User');
   const [search, setSearch] = useState('');
@@ -202,7 +202,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
               <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Title</th>
               <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Author</th>
               <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Date</th>
-              <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">SEO Details</th>
+              <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">{type === 'forms' ? 'Shortcode' : 'SEO Details'}</th>
               <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[12%] text-right">Actions</th>
             </tr>
           </thead>
@@ -239,6 +239,11 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                         <button onClick={() => handlePermanentDelete(item.id)} className="text-[#b32d2e] hover:underline font-medium">Delete Permanently</button>
                       </div>
                     )}
+                    {type === 'forms' && item.status !== 'Trash' && (
+                       <div className="text-[12px] mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link href={`/admin/forms/${item.id}/submissions`} className="text-[#0071a1] hover:underline font-medium">View Submissions</Link>
+                       </div>
+                    )}
                   </div>
                 </td>
                 <td className="py-4 px-6">
@@ -255,28 +260,43 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                   </div>
                 </td>
                 <td className="py-4 px-6">
-                  <div className="flex gap-2 items-center mb-1.5">
-                    {item.seoScore > 0 ? (
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        item.seoScore >= 80 ? 'bg-green-100 text-green-800' : 
-                        item.seoScore >= 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {item.seoScore} / 100
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                        N/A
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-[11px] text-gray-500">
-                    {item.focusKeyword ? (
-                      <div className="truncate max-w-[120px]" title={item.focusKeyword}>Keyword: <span className="font-medium text-gray-700">{item.focusKeyword}</span></div>
-                    ) : (
-                      <div>No Index</div>
-                    )}
-                    <div>Schema: <span className="font-medium text-gray-700">{item.schemaJson ? 'Custom' : 'N/A'}</span></div>
-                  </div>
+                  {type === 'forms' ? (
+                    <div className="flex items-center gap-2">
+                      <code className="bg-gray-100 text-[#5e3fde] px-2 py-1 rounded text-sm font-mono border border-gray-200">{item.shortcode}</code>
+                      <button 
+                        onClick={() => { navigator.clipboard.writeText(item.shortcode); toast.success('Copied!'); }}
+                        className="text-gray-400 hover:text-gray-700"
+                        title="Copy Shortcode"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2 items-center mb-1.5">
+                        {item.seoScore > 0 ? (
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                            item.seoScore >= 80 ? 'bg-green-100 text-green-800' : 
+                            item.seoScore >= 50 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {item.seoScore} / 100
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                            N/A
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-gray-500">
+                        {item.focusKeyword ? (
+                          <div className="truncate max-w-[120px]" title={item.focusKeyword}>Keyword: <span className="font-medium text-gray-700">{item.focusKeyword}</span></div>
+                        ) : (
+                          <div>No Index</div>
+                        )}
+                        <div>Schema: <span className="font-medium text-gray-700">{item.schemaJson ? 'Custom' : 'N/A'}</span></div>
+                      </div>
+                    </>
+                  )}
                 </td>
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -287,14 +307,16 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                     >
                       <Edit2 size={16} />
                     </Link>
-                    <Link 
-                      href={type === 'courses' ? `/courses/${item.slug}` : `/${item.slug}`} 
-                      target="_blank"
-                      className="p-2 text-gray-400 hover:text-[#5e3fde] hover:bg-[#5e3fde]/10 rounded-lg transition-colors"
-                      title="View"
-                    >
-                      <ExternalLink size={16} />
-                    </Link>
+                    {type !== 'forms' && (
+                      <Link 
+                        href={type === 'courses' ? `/courses/${item.slug}` : `/${item.slug}`} 
+                        target="_blank"
+                        className="p-2 text-gray-400 hover:text-[#5e3fde] hover:bg-[#5e3fde]/10 rounded-lg transition-colors"
+                        title="View"
+                      >
+                        <ExternalLink size={16} />
+                      </Link>
+                    )}
                     {item.status !== 'Trash' && (
                       <button 
                         onClick={() => handleTrash(item.id)} 

@@ -11,6 +11,7 @@ import { Link as LinkIcon, User } from 'lucide-react';
 import { generateToc } from '@/lib/toc';
 import TableOfContents from '@/components/TableOfContents';
 import ShopClient from '@/components/shop/ShopClient';
+import ContentRenderer from '@/components/ContentRenderer';
 
 const TwitterIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -381,7 +382,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
                   return (
                     <>
                       <TableOfContents headings={headings} />
-                      <div className="prose prose-lg md:prose-xl prose-blue mx-auto text-gray-800" dangerouslySetInnerHTML={{ __html: processedHtml }} />
+                      <ContentRenderer html={processedHtml} className="prose prose-lg md:prose-xl prose-blue mx-auto text-gray-800" />
                     </>
                   );
                 })()}
@@ -434,9 +435,9 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
                 {data.title}
               </h1>
               {data.contentHtml && data.contentHtml.trim() !== '<p></p>' && (
-                <div 
-                  className="text-xl text-gray-300 max-w-3xl font-medium leading-relaxed prose prose-invert prose-p:mb-0"
-                  dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} 
+                <ContentRenderer 
+                  html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} 
+                  className="text-xl text-gray-300 max-w-3xl font-medium leading-relaxed prose prose-invert prose-p:mb-0 text-left w-full"
                 />
               )}
             </div>
@@ -455,7 +456,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight font-outfit">{data.title}</h1>
             </div>
           )}
-          <div className="mt-12 max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24" dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(data.contentHtml, seoSettings, data.title) }} />
+          <ContentRenderer html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} className="mt-12 max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24" />
         </main>
       )}
     </>

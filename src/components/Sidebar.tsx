@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Files, Users, Settings, ChevronDown, ChevronRight, Menu as MenuIcon, Image as ImageIcon, BarChart2, ShoppingCart, Package } from 'lucide-react';
+import { LayoutDashboard, FileText, Files, Users, Settings, ChevronDown, ChevronRight, Menu as MenuIcon, Image as ImageIcon, BarChart2, ShoppingCart, Package, FormInput } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function Sidebar({ enableProducts = false }: { enableProducts?: boolean }) {
@@ -65,6 +65,10 @@ export default function Sidebar({ enableProducts = false }: { enableProducts?: b
         
         <Link href="/admin/pages" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/pages') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
           <Files size={20} /> Pages
+        </Link>
+
+        <Link href="/admin/forms" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/forms') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
+          <FormInput size={20} /> Forms
         </Link>
 
         <Link href="/admin/courses" className={clsx("flex items-center gap-3 px-4 py-3 rounded-lg transition-colors", pathname.startsWith('/admin/courses') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900")}>
