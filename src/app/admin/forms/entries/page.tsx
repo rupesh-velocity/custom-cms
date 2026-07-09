@@ -84,16 +84,34 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
       </div>
       
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <div className="flex items-center gap-2">
+            <select className="border border-gray-200 rounded-lg px-3 py-1.5 outline-none text-sm bg-white text-gray-700">
+              <option>Bulk actions</option>
+              <option>Trash</option>
+            </select>
+            <button className="bg-white border border-gray-200 text-gray-700 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors font-medium">
+              Apply
+            </button>
+          </div>
+          <div className="text-sm text-gray-500">{submissions.length} items</div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-[180px]">Date Submitted</th>
-                {fields.map((field) => (
-                  <th key={field.id} className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+              <tr className="border-b border-gray-100 bg-white">
+                <th className="py-3 px-4 text-xs font-semibold text-[#0071a1] w-12 text-center">
+                  <input type="checkbox" className="rounded border-gray-300 text-[#5e3fde] focus:ring-[#5e3fde]" />
+                </th>
+                {fields.map((field, index) => (
+                  <th key={field.id} className="py-3 px-4 text-xs font-semibold text-[#0071a1] whitespace-nowrap">
                     {field.label}
                   </th>
                 ))}
+                <th className="py-3 px-4 text-xs font-semibold text-[#0071a1] whitespace-nowrap">
+                  Date
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -102,21 +120,42 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
                 try { parsedData = JSON.parse(sub.data); } catch(e) {}
                 
                 return (
-                  <tr key={sub.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4 px-6 text-sm text-gray-500 whitespace-nowrap">
-                      {new Date(sub.createdAt).toLocaleString()}
+                  <tr key={sub.id} className="hover:bg-gray-50 transition-colors group bg-white">
+                    <td className="py-4 px-4 text-center align-top">
+                      <input type="checkbox" className="rounded border-gray-300 text-[#5e3fde] focus:ring-[#5e3fde]" />
                     </td>
-                    {fields.map((field) => (
-                      <td key={field.id} className="py-4 px-6 text-sm text-gray-900">
-                        {parsedData[field.id] ? (Array.isArray(parsedData[field.id]) ? parsedData[field.id].join(', ') : String(parsedData[field.id])) : '-'}
-                      </td>
-                    ))}
+                    {fields.map((field, index) => {
+                      const value = parsedData[field.id] ? (Array.isArray(parsedData[field.id]) ? parsedData[field.id].join(', ') : String(parsedData[field.id])) : '';
+                      return (
+                        <td key={field.id} className="py-4 px-4 text-sm text-gray-900 align-top">
+                          <div className={index === 0 ? "font-medium" : ""}>
+                            {value || '-'}
+                          </div>
+                          {index === 0 && (
+                            <div className="text-[12px] mt-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 whitespace-nowrap">
+                              <Link href={`/admin/forms/entries/${sub.id}`} className="text-[#0071a1] hover:text-[#005a82]">View</Link>
+                              <span className="text-gray-300">|</span>
+                              <Link href={`/admin/forms/entries/${sub.id}`} className="text-[#0071a1] hover:text-[#005a82]">Edit</Link>
+                              <span className="text-gray-300">|</span>
+                              <button className="text-[#0071a1] hover:text-[#005a82]">Mark read</button>
+                              <span className="text-gray-300">|</span>
+                              <button className="text-[#b32d2e] hover:text-[#8a2425]">Mark as Spam</button>
+                              <span className="text-gray-300">|</span>
+                              <button className="text-[#b32d2e] hover:text-[#8a2425]">Trash</button>
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+                    <td className="py-4 px-4 text-sm text-gray-500 whitespace-nowrap align-top">
+                      {new Date(sub.createdAt).toLocaleDateString()}
+                    </td>
                   </tr>
                 );
               })}
               {submissions.length === 0 && (
                 <tr>
-                  <td colSpan={fields.length + 1} className="py-12 text-center text-gray-500">
+                  <td colSpan={fields.length + 2} className="py-12 text-center text-gray-500">
                     No submissions found for this form.
                   </td>
                 </tr>
