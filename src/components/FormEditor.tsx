@@ -360,6 +360,9 @@ export default function FormEditor({ form }: { form?: any }) {
                         <label className="block text-xs font-medium text-gray-700 mb-1">Site Key</label>
                         <input 
                           type="text" 
+                          autoComplete="off"
+                          data-lpignore="true"
+                          data-1p-ignore="true"
                           value={settings.recaptchaSiteKey || ''}
                           onChange={e => setSettings({...settings, recaptchaSiteKey: e.target.value})}
                           placeholder="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
@@ -370,6 +373,9 @@ export default function FormEditor({ form }: { form?: any }) {
                         <label className="block text-xs font-medium text-gray-700 mb-1">Secret Key</label>
                         <input 
                           type="password" 
+                          autoComplete="new-password"
+                          data-lpignore="true"
+                          data-1p-ignore="true"
                           value={settings.recaptchaSecretKey || ''}
                           onChange={e => setSettings({...settings, recaptchaSecretKey: e.target.value})}
                           placeholder="••••••••••••••••••••••••••••••••••••••••"
