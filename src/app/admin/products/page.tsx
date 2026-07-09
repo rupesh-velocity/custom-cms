@@ -50,18 +50,46 @@ export default function ProductsPage() {
     product.author?.firstName?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
-    
+  const handleTrash = async (id: string) => {
     try {
       const res = await fetch(`/api/products/${id}`, {
-        method: 'DELETE',
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Trash' })
       });
       if (res.ok) {
-        toast.success('Product deleted');
+        toast.success('Product moved to Trash');
         fetchProducts();
-      } else {
-        throw new Error('Failed to delete');
+      }
+    } catch (error) {
+      toast.error('Error moving to trash');
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Draft' })
+      });
+      if (res.ok) {
+        toast.success('Product restored');
+        fetchProducts();
+      }
+    } catch (error) {
+      toast.error('Error restoring');
+    }
+  };
+
+  const handlePermanentDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to permanently delete this product?')) return;
+    
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success('Product deleted permanently');
+        fetchProducts();
       }
     } catch (error) {
       toast.error('Error deleting product');
@@ -81,9 +109,26 @@ export default function ProductsPage() {
   };
 
   const handleBulkApply = async () => {
-    if (bulkAction === 'trash' && selectedIds.length > 0) {
-      if (!window.confirm(`Are you sure you want to delete ${selectedIds.length} products?`)) return;
-      
+    if (selectedIds.length === 0) return;
+
+    if (bulkAction === 'trash') {
+      if (!window.confirm(`Are you sure you want to move ${selectedIds.length} products to Trash?`)) return;
+      try {
+        await Promise.all(selectedIds.map(id => 
+          fetch(`/api/products/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Trash' })
+          })
+        ));
+        toast.success(`Moved ${selectedIds.length} products to Trash`);
+        setSelectedIds([]);
+        fetchProducts();
+      } catch (error) {
+        toast.error('Error moving products to trash');
+      }
+    } else if (bulkAction === 'delete') {
+      if (!window.confirm(`Are you sure you want to permanently delete ${selectedIds.length} products?`)) return;
       try {
         await Promise.all(selectedIds.map(id => 
           fetch(`/api/products/${id}`, { method: 'DELETE' })
@@ -120,7 +165,8 @@ export default function ProductsPage() {
               className="border border-gray-200 rounded-lg px-3 py-2 outline-none text-sm bg-white text-gray-700 focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] transition-all"
             >
               <option value="">Bulk actions</option>
-              <option value="trash">Move to Trash / Delete</option>
+              <option value="trash">Move to Trash</option>
+              <option value="delete">Delete Permanently</option>
             </select>
             <button 
               onClick={handleBulkApply}
@@ -206,11 +252,27 @@ export default function ProductsPage() {
                       )}
                     </td>
                     <td className="py-4 px-6">
-                      <Link href={`/admin/products/${product.id}/edit`} className="font-medium text-gray-900 hover:text-[#5e3fde]">
-                        {product.title}
-                      </Link>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {product.type === 'SIMPLE' ? 'Simple Product' : 'Variable Product'}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/admin/products/${product.id}/edit`} className="font-medium text-gray-900 hover:text-[#5e3fde]">
+                            {product.title}
+                          </Link>
+                          {product.status !== 'Published' && product.status !== 'Trash' && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                              {product.status}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {product.type === 'SIMPLE' ? 'Simple Product' : 'Variable Product'}
+                        </div>
+                        {product.status === 'Trash' && (
+                          <div className="flex items-center gap-2 text-[12px] opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                            <button onClick={() => handleRestore(product.id)} className="text-[#0071a1] hover:underline font-medium">Restore</button>
+                            <span className="text-gray-300">|</span>
+                            <button onClick={() => handlePermanentDelete(product.id)} className="text-[#b32d2e] hover:underline font-medium">Delete Permanently</button>
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-600">
@@ -244,13 +306,15 @@ export default function ProductsPage() {
                         >
                           <Edit2 size={16} />
                         </Link>
-                        <button 
-                          onClick={() => handleDelete(product.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {product.status !== 'Trash' && (
+                          <button 
+                            onClick={() => handleTrash(product.id)}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Trash"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

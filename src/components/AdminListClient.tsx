@@ -61,6 +61,35 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
     }
   };
 
+  const handleRestore = async (id: number) => {
+    try {
+      const res = await fetch(`/api/${type}/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Draft' })
+      });
+      if (res.ok) {
+        toast.success('Restored from Trash');
+        router.refresh();
+      }
+    } catch (e) {
+      toast.error('Error restoring');
+    }
+  };
+
+  const handlePermanentDelete = async (id: number) => {
+    if (!window.confirm('Are you sure you want to permanently delete this item?')) return;
+    try {
+      const res = await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success('Permanently deleted');
+        router.refresh();
+      }
+    } catch (e) {
+      toast.error('Error deleting');
+    }
+  };
+
   const handleBulkApply = async () => {
     if (bulkAction === 'trash' && selectedIds.length > 0) {
       if (!window.confirm(`Are you sure you want to move ${selectedIds.length} items to Trash?`)) return;
@@ -159,17 +188,26 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
                   />
                 </td>
                 <td className="py-4 px-6">
-                  <div className="flex items-center gap-2">
-                    <Link 
-                      href={type === 'courses' ? `/admin/courses/${item.id}/edit` : `/admin/${type}/${item.id}`} 
-                      className="font-medium text-gray-900 hover:text-[#5e3fde] text-[15px]"
-                    >
-                      {item.title || '(no title)'}
-                    </Link>
-                    {item.status !== 'Published' && item.status !== 'Trash' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                        {item.status}
-                      </span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <Link 
+                        href={type === 'courses' ? `/admin/courses/${item.id}/edit` : `/admin/${type}/${item.id}`} 
+                        className="font-medium text-gray-900 hover:text-[#5e3fde] text-[15px]"
+                      >
+                        {item.title || '(no title)'}
+                      </Link>
+                      {item.status !== 'Published' && item.status !== 'Trash' && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                          {item.status}
+                        </span>
+                      )}
+                    </div>
+                    {item.status === 'Trash' && (
+                      <div className="flex items-center gap-2 text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleRestore(item.id)} className="text-[#0071a1] hover:underline font-medium">Restore</button>
+                        <span className="text-gray-300">|</span>
+                        <button onClick={() => handlePermanentDelete(item.id)} className="text-[#b32d2e] hover:underline font-medium">Delete Permanently</button>
+                      </div>
                     )}
                   </div>
                 </td>

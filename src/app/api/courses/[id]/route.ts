@@ -46,6 +46,20 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const resolvedParams = await params;
+    const data = await req.json();
+    const course = await prisma.course.update({
+      where: { id: parseInt(resolvedParams.id) },
+      data: { status: data.status }
+    });
+    return NextResponse.json(course);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update course status' }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
