@@ -121,7 +121,7 @@ export default function FrontendForm({ id }: { id: string }) {
       const res = await fetch('/api/forms/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ formId: id, data: formData, recaptchaToken })
+        body: JSON.stringify({ formId: id, data: formData, recaptchaToken, pageUrl: window.location.href })
       });
       const data = await res.json();
       
