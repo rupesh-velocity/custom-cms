@@ -82,66 +82,15 @@ export default function FormSettingsEditor({ form }: { form: any }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notification Emails</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Submit Button Text</label>
             <input 
               type="text" 
-              value={notificationEmail}
-              onChange={e => setNotificationEmail(e.target.value)}
-              placeholder="admin@example.com, sales@example.com"
+              value={settings.submitText}
+              onChange={e => setSettings({...settings, submitText: e.target.value})}
               className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
             />
-            <p className="text-xs text-gray-500 mt-1">Send submissions to these addresses (comma separated).</p>
           </div>
-        </div>
-
-        <div className="border-t border-gray-100 pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Confirmation Settings</h3>
-          
-          <div className="space-y-4 max-w-xl">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Submit Button Text</label>
-              <input 
-                type="text" 
-                value={settings.submitText}
-                onChange={e => setSettings({...settings, submitText: e.target.value})}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">On Success</label>
-              <select 
-                value={settings.successAction}
-                onChange={e => setSettings({...settings, successAction: e.target.value})}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-              >
-                <option value="message">Show Message</option>
-                <option value="redirect">Redirect to URL</option>
-              </select>
-            </div>
-            {settings.successAction === 'message' ? (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Success Message</label>
-                <textarea 
-                  value={settings.successMessage}
-                  onChange={e => setSettings({...settings, successMessage: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                  rows={3}
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Redirect URL</label>
-                <input 
-                  type="url" 
-                  value={settings.redirectUrl}
-                  onChange={e => setSettings({...settings, redirectUrl: e.target.value})}
-                  placeholder="https://example.com/thank-you"
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-                />
-              </div>
-            )}
-          </div>
-        </div>
+      </div>
 
         <div className="border-t border-gray-100 pt-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Spam Protection</h3>
