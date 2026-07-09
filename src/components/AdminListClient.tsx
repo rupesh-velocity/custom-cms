@@ -10,6 +10,7 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentUserName, setCurrentUserName] = useState<string>('Admin User');
   const [search, setSearch] = useState('');
+  const [bulkAction, setBulkAction] = useState('');
   const router = useRouter();
 
   const filteredItems = items.filter(item => 
@@ -60,15 +61,44 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
     }
   };
 
+  const handleBulkApply = async () => {
+    if (bulkAction === 'trash' && selectedIds.length > 0) {
+      if (!window.confirm(`Are you sure you want to move ${selectedIds.length} items to Trash?`)) return;
+      
+      try {
+        await Promise.all(selectedIds.map(id => 
+          fetch(`/api/${type}/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Trash' })
+          })
+        ));
+        toast.success(`Moved ${selectedIds.length} items to Trash`);
+        setSelectedIds([]);
+        router.refresh();
+      } catch (error) {
+        toast.error('Error moving items to trash');
+      }
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Toolbar */}
       <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <select className="border border-gray-200 rounded-lg px-3 py-2 outline-none text-sm bg-white text-gray-700 focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] transition-all">
-            <option>Bulk actions</option>
+          <select 
+            value={bulkAction}
+            onChange={(e) => setBulkAction(e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 outline-none text-sm bg-white text-gray-700 focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] transition-all"
+          >
+            <option value="">Bulk actions</option>
+            <option value="trash">Move to Trash</option>
           </select>
-          <button className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors font-medium">
+          <button 
+            onClick={handleBulkApply}
+            className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors font-medium"
+          >
             Apply
           </button>
           

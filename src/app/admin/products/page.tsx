@@ -10,6 +10,8 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [currentUserName, setCurrentUserName] = useState('Admin User');
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkAction, setBulkAction] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -66,6 +68,35 @@ export default function ProductsPage() {
     }
   };
 
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredProducts.map(p => p.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelect = (id: number) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const handleBulkApply = async () => {
+    if (bulkAction === 'trash' && selectedIds.length > 0) {
+      if (!window.confirm(`Are you sure you want to delete ${selectedIds.length} products?`)) return;
+      
+      try {
+        await Promise.all(selectedIds.map(id => 
+          fetch(`/api/products/${id}`, { method: 'DELETE' })
+        ));
+        toast.success(`Deleted ${selectedIds.length} products`);
+        setSelectedIds([]);
+        fetchProducts();
+      } catch (error) {
+        toast.error('Error deleting products');
+      }
+    }
+  };
+
   return (
     <div className="max-w-[1200px]">
       <div className="flex justify-between items-center mb-6">
@@ -82,6 +113,23 @@ export default function ProductsPage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Toolbar */}
         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+          <div className="flex items-center gap-3">
+            <select 
+              value={bulkAction}
+              onChange={(e) => setBulkAction(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-2 outline-none text-sm bg-white text-gray-700 focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] transition-all"
+            >
+              <option value="">Bulk actions</option>
+              <option value="trash">Move to Trash / Delete</option>
+            </select>
+            <button 
+              onClick={handleBulkApply}
+              className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors font-medium"
+            >
+              Apply
+            </button>
+          </div>
+          
           <div className="relative w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
@@ -99,8 +147,13 @@ export default function ProductsPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">
-                  <input type="checkbox" className="rounded text-[#5e3fde] focus:ring-[#5e3fde]" />
+                <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-12 text-center">
+                  <input 
+                    type="checkbox" 
+                    onChange={handleSelectAll} 
+                    checked={filteredProducts.length > 0 && selectedIds.length === filteredProducts.length}
+                    className="rounded text-[#5e3fde] focus:ring-[#5e3fde]" 
+                  />
                 </th>
                 <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">Image</th>
                 <th className="py-3 px-6 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
@@ -133,8 +186,13 @@ export default function ProductsPage() {
               ) : (
                 filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50/50 transition-colors group">
-                    <td className="py-4 px-6">
-                      <input type="checkbox" className="rounded text-[#5e3fde] focus:ring-[#5e3fde]" />
+                    <td className="py-4 px-6 text-center">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIds.includes(product.id)}
+                        onChange={() => handleSelect(product.id)}
+                        className="rounded text-[#5e3fde] focus:ring-[#5e3fde]" 
+                      />
                     </td>
                     <td className="py-4 px-6">
                       {product.featuredImage ? (
