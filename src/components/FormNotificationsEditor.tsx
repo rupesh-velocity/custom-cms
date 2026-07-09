@@ -7,18 +7,19 @@ import { Save } from 'lucide-react';
 
 export default function FormNotificationsEditor({ form }: { form: any }) {
   const router = useRouter();
-  const [notificationEmail, setNotificationEmail] = useState(form.notificationEmail || '');
+  const settingsObj = typeof form.settings === 'string' ? JSON.parse(form.settings || '{}') : (form.settings || {});
+  const [notifications, setNotifications] = useState<any[]>(settingsObj.notifications || [{ name: 'Admin Notification', to: form.notificationEmail || '', subject: 'New Submission', message: '{all_fields}' }]);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const payload = { 
-        notificationEmail, 
-        settings: typeof form.settings === 'string' ? JSON.parse(form.settings || '{}') : form.settings,
+        settings: { ...settingsObj, notifications },
         status: form.status,
         fields: typeof form.fields === 'string' ? JSON.parse(form.fields || '[]') : form.fields,
-        title: form.title
+        title: form.title,
+        notificationEmail: notifications[0]?.to || ''
       };
       
       const res = await fetch(`/api/forms/${form.id}`, {
@@ -53,20 +54,83 @@ export default function FormNotificationsEditor({ form }: { form: any }) {
       </div>
 
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notification Emails</label>
-          <input 
-            type="text" 
-            value={notificationEmail}
-            onChange={e => setNotificationEmail(e.target.value)}
-            placeholder="admin@example.com, sales@example.com"
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-          />
-          <p className="text-xs text-gray-500 mt-1">Send submissions to these addresses (comma separated).</p>
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-medium text-gray-900">Configured Notifications</h3>
+          <button 
+            onClick={() => setNotifications([...notifications, { name: 'New Notification', to: '{email}', subject: 'New Submission', message: 'All fields: {all_fields}' }])}
+            className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition"
+          >
+            + Add Notification
+          </button>
         </div>
-        <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-sm border border-blue-100">
-          <strong>Note:</strong> Multiple dynamic notifications and user auto-responders logic will be added here in the future as per the architecture plan.
-        </div>
+
+        {notifications.map((notif: any, index: number) => (
+          <div key={index} className="border border-gray-200 rounded-lg p-5 relative group">
+            <button 
+              onClick={() => setNotifications(notifications.filter((_: any, i: number) => i !== index))}
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
+            >
+              Delete
+            </button>
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Notification Name</label>
+                <input 
+                  type="text" 
+                  value={notif.name}
+                  onChange={e => {
+                    const newN = [...notifications];
+                    newN[index].name = e.target.value;
+                    setNotifications(newN);
+                  }}
+                  className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Send To Email</label>
+                  <input 
+                    type="text" 
+                    value={notif.to}
+                    onChange={e => {
+                      const newN = [...notifications];
+                      newN[index].to = e.target.value;
+                      setNotifications(newN);
+                    }}
+                    placeholder="admin@example.com or {email}"
+                    className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Email Subject</label>
+                  <input 
+                    type="text" 
+                    value={notif.subject}
+                    onChange={e => {
+                      const newN = [...notifications];
+                      newN[index].subject = e.target.value;
+                      setNotifications(newN);
+                    }}
+                    className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Message Body</label>
+                <textarea 
+                  value={notif.message}
+                  onChange={e => {
+                    const newN = [...notifications];
+                    newN[index].message = e.target.value;
+                    setNotifications(newN);
+                  }}
+                  rows={4}
+                  className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] outline-none"
+                />
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

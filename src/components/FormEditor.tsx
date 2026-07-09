@@ -270,6 +270,16 @@ export default function FormEditor({ form }: { form?: any }) {
               <button onClick={() => addField('date')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Date</button>
               <button onClick={() => addField('file')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add File Upload</button>
             </div>
+            
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Submit Button Text</label>
+              <input 
+                type="text" 
+                value={settings.submitText || 'Submit Form'}
+                onChange={e => setSettings({...settings, submitText: e.target.value})}
+                className="w-full max-w-sm px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+              />
+            </div>
           </div>
         </div>
       </div>

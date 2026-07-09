@@ -22,6 +22,11 @@ export default function FrontendForm({ id }: { id: string }) {
       .then(res => res.json())
       .then(data => {
         if (!data.error) {
+          if (data.status !== 'Published') {
+            setError('This form is currently unavailable.');
+            setLoading(false);
+            return;
+          }
           setForm(data);
           const fields = data.fields ? JSON.parse(data.fields) : [];
           const initialData: any = {};
@@ -60,7 +65,15 @@ export default function FrontendForm({ id }: { id: string }) {
   }, [settings.enableRecaptchaV3, settings.recaptchaSiteKey]);
 
   if (loading) return <div className="animate-pulse h-32 bg-gray-100 rounded-lg max-w-2xl mx-auto my-8"></div>;
-  if (!form) return null;
+  if (!form && !error) return null;
+
+  if (error && !form) {
+    return (
+      <div className="bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-8 sm:p-10 my-8 max-w-2xl mx-auto text-center">
+        <p className="text-gray-500">{error}</p>
+      </div>
+    );
+  }
 
   const fields = form.fields ? JSON.parse(form.fields) : [];
 

@@ -7,20 +7,21 @@ import { Save } from 'lucide-react';
 
 export default function FormConfirmationsEditor({ form }: { form: any }) {
   const router = useRouter();
-  const [settings, setSettings] = useState<any>(
-    form.settings ? (typeof form.settings === 'string' ? JSON.parse(form.settings) : form.settings) : {
-      successAction: 'message',
-      successMessage: 'Your submission has been received successfully.',
-      redirectUrl: ''
-    }
-  );
+  const settingsObj = typeof form.settings === 'string' ? JSON.parse(form.settings || '{}') : (form.settings || {});
+  const [confirmations, setConfirmations] = useState<any[]>(settingsObj.confirmations || [{ 
+    name: 'Default Confirmation', 
+    action: settingsObj.successAction || 'message', 
+    message: settingsObj.successMessage || 'Your submission has been received successfully.', 
+    redirectUrl: settingsObj.redirectUrl || '' 
+  }]);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const payload = { 
-        settings,
+        settings: { ...settingsObj, confirmations, successAction: confirmations[0]?.action, successMessage: confirmations[0]?.message, redirectUrl: confirmations[0]?.redirectUrl },
+
         status: form.status,
         notificationEmail: form.notificationEmail,
         fields: typeof form.fields === 'string' ? JSON.parse(form.fields || '[]') : form.fields,
@@ -59,43 +60,89 @@ export default function FormConfirmationsEditor({ form }: { form: any }) {
       </div>
 
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">On Success</label>
-          <select 
-            value={settings.successAction}
-            onChange={e => setSettings({...settings, successAction: e.target.value})}
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-medium text-gray-900">Configured Confirmations</h3>
+          <button 
+            onClick={() => setConfirmations([...confirmations, { name: 'New Confirmation', action: 'message', message: 'Success' }])}
+            className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition"
           >
-            <option value="message">Show Message</option>
-            <option value="redirect">Redirect to URL</option>
-          </select>
+            + Add Confirmation
+          </button>
         </div>
-        {settings.successAction === 'message' ? (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Success Message</label>
-            <textarea 
-              value={settings.successMessage}
-              onChange={e => setSettings({...settings, successMessage: e.target.value})}
-              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-              rows={4}
-            />
+
+        {confirmations.map((conf: any, index: number) => (
+          <div key={index} className="border border-gray-200 rounded-lg p-5 relative group">
+            {index !== 0 && (
+              <button 
+                onClick={() => setConfirmations(confirmations.filter((_: any, i: number) => i !== index))}
+                className="absolute top-4 right-4 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
+              >
+                Delete
+              </button>
+            )}
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">Confirmation Name</label>
+                <input 
+                  type="text" 
+                  value={conf.name}
+                  disabled={index === 0}
+                  onChange={e => {
+                    const newC = [...confirmations];
+                    newC[index].name = e.target.value;
+                    setConfirmations(newC);
+                  }}
+                  className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] outline-none disabled:bg-gray-50 disabled:text-gray-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">On Success</label>
+                <select 
+                  value={conf.action}
+                  onChange={e => {
+                    const newC = [...confirmations];
+                    newC[index].action = e.target.value;
+                    setConfirmations(newC);
+                  }}
+                  className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] outline-none"
+                >
+                  <option value="message">Show Message</option>
+                  <option value="redirect">Redirect to URL</option>
+                </select>
+              </div>
+              {conf.action === 'message' ? (
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Success Message</label>
+                  <textarea 
+                    value={conf.message}
+                    onChange={e => {
+                      const newC = [...confirmations];
+                      newC[index].message = e.target.value;
+                      setConfirmations(newC);
+                    }}
+                    rows={3}
+                    className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] outline-none"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Redirect URL</label>
+                  <input 
+                    type="url" 
+                    value={conf.redirectUrl || ''}
+                    onChange={e => {
+                      const newC = [...confirmations];
+                      newC[index].redirectUrl = e.target.value;
+                      setConfirmations(newC);
+                    }}
+                    placeholder="https://example.com/thank-you"
+                    className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-sm focus:ring-[#5e3fde]/20 focus:border-[#5e3fde] outline-none"
+                  />
+                </div>
+              )}
+            </div>
           </div>
-        ) : (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Redirect URL</label>
-            <input 
-              type="url" 
-              value={settings.redirectUrl}
-              onChange={e => setSettings({...settings, redirectUrl: e.target.value})}
-              placeholder="https://example.com/thank-you"
-              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-            />
-          </div>
-        )}
-        
-        <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-sm border border-blue-100">
-          <strong>Note:</strong> Multiple conditional confirmations logic will be added here in the future as per the architecture plan.
-        </div>
+        ))}
       </div>
     </div>
   );

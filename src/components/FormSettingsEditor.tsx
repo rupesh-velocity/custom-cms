@@ -79,17 +79,6 @@ export default function FormSettingsEditor({ form }: { form: any }) {
               <option value="Draft">Draft</option>
             </select>
             <p className="text-xs text-gray-500 mt-1">Draft forms will not accept submissions.</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Submit Button Text</label>
-            <input 
-              type="text" 
-              value={settings.submitText}
-              onChange={e => setSettings({...settings, submitText: e.target.value})}
-              className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
-            />
-          </div>
       </div>
 
         <div className="border-t border-gray-100 pt-6">
