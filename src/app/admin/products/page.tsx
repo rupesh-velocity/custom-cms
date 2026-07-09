@@ -127,6 +127,21 @@ export default function ProductsPage() {
       } catch (error) {
         toast.error('Error moving products to trash');
       }
+    } else if (bulkAction === 'restore') {
+      try {
+        await Promise.all(selectedIds.map(id => 
+          fetch(`/api/products/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Draft' })
+          })
+        ));
+        toast.success(`Restored ${selectedIds.length} products`);
+        setSelectedIds([]);
+        fetchProducts();
+      } catch (error) {
+        toast.error('Error restoring products');
+      }
     } else if (bulkAction === 'delete') {
       if (!window.confirm(`Are you sure you want to permanently delete ${selectedIds.length} products?`)) return;
       try {
@@ -166,6 +181,7 @@ export default function ProductsPage() {
             >
               <option value="">Bulk actions</option>
               <option value="trash">Move to Trash</option>
+              <option value="restore">Restore</option>
               <option value="delete">Delete Permanently</option>
             </select>
             <button 

@@ -91,9 +91,10 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
   };
 
   const handleBulkApply = async () => {
-    if (bulkAction === 'trash' && selectedIds.length > 0) {
+    if (selectedIds.length === 0) return;
+
+    if (bulkAction === 'trash') {
       if (!window.confirm(`Are you sure you want to move ${selectedIds.length} items to Trash?`)) return;
-      
       try {
         await Promise.all(selectedIds.map(id => 
           fetch(`/api/${type}/${id}`, {
@@ -107,6 +108,33 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
         router.refresh();
       } catch (error) {
         toast.error('Error moving items to trash');
+      }
+    } else if (bulkAction === 'restore') {
+      try {
+        await Promise.all(selectedIds.map(id => 
+          fetch(`/api/${type}/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Draft' })
+          })
+        ));
+        toast.success(`Restored ${selectedIds.length} items`);
+        setSelectedIds([]);
+        router.refresh();
+      } catch (error) {
+        toast.error('Error restoring items');
+      }
+    } else if (bulkAction === 'delete') {
+      if (!window.confirm(`Are you sure you want to permanently delete ${selectedIds.length} items?`)) return;
+      try {
+        await Promise.all(selectedIds.map(id => 
+          fetch(`/api/${type}/${id}`, { method: 'DELETE' })
+        ));
+        toast.success(`Permanently deleted ${selectedIds.length} items`);
+        setSelectedIds([]);
+        router.refresh();
+      } catch (error) {
+        toast.error('Error deleting items');
       }
     }
   };
@@ -123,6 +151,8 @@ export default function AdminListClient({ items, type }: { items: any[], type: '
           >
             <option value="">Bulk actions</option>
             <option value="trash">Move to Trash</option>
+            <option value="restore">Restore</option>
+            <option value="delete">Delete Permanently</option>
           </select>
           <button 
             onClick={handleBulkApply}
