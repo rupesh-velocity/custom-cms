@@ -87,7 +87,7 @@ export default async function OrdersPage() {
                   return (
                     <tr key={order.id} className="hover:bg-[#f6f7f7] transition-colors group">
                       <td className="px-4 py-3 font-medium text-[#5e3fde]">
-                        #{order.orderNumber}
+                        {order.orderNumber}
                       </td>
                       <td className="px-4 py-3 text-gray-600">
                         {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

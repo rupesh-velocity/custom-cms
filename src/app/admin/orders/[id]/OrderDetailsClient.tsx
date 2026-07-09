@@ -55,7 +55,7 @@ export default function OrderDetailsClient({ order }: { order: any }) {
         </Link>
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-normal flex items-center gap-3">
-            Order #{order.orderNumber}
+            Order {order.orderNumber}
             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusColors[order.status] || 'bg-gray-100'}`}>
               {order.status}
             </span>
