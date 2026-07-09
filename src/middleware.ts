@@ -51,7 +51,8 @@ export async function middleware(request: NextRequest) {
   // Dynamic Redirects
   if (!path.startsWith('/_next') && !path.startsWith('/api') && !path.startsWith('/admin') && !path.match(/\.(.*)$/)) {
     try {
-      const redirectRes = await fetch(new URL(`/api/redirections/check?path=${encodeURIComponent(path)}`, request.url), {
+      const fullUrl = request.url;
+      const redirectRes = await fetch(new URL(`/api/redirections/check?path=${encodeURIComponent(path)}&fullUrl=${encodeURIComponent(fullUrl)}`, request.url), {
         cache: 'no-store'
       });
       if (redirectRes.ok) {

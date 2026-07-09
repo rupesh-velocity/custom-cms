@@ -5,20 +5,24 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const path = searchParams.get('path');
+    const fullUrl = searchParams.get('fullUrl');
 
     if (!path) {
       return NextResponse.json({ error: 'Path is required' }, { status: 400 });
     }
 
-    // Try exact match first
+    // Try exact match first (both relative path and absolute fullUrl)
     let redirection = await prisma.redirection.findFirst({
       where: {
-        sourceUrl: path,
+        OR: [
+          { sourceUrl: path },
+          ...(fullUrl ? [{ sourceUrl: fullUrl }] : [])
+        ],
         status: true
       }
     });
 
-    // If no exact match, try case-insensitive match (since ignoreCase is a boolean flag, we have to fetch those and check in memory, or use mode: 'insensitive' but that applies to all)
+    // If no exact match, try case-insensitive match
     if (!redirection) {
       const caseInsensitiveRedirects = await prisma.redirection.findMany({
         where: {
@@ -28,7 +32,12 @@ export async function GET(request: Request) {
       });
       
       const lowerPath = path.toLowerCase();
-      redirection = caseInsensitiveRedirects.find(r => r.sourceUrl.toLowerCase() === lowerPath) || null;
+      const lowerFullUrl = fullUrl ? fullUrl.toLowerCase() : '';
+      
+      redirection = caseInsensitiveRedirects.find(r => 
+        r.sourceUrl.toLowerCase() === lowerPath || 
+        (lowerFullUrl && r.sourceUrl.toLowerCase() === lowerFullUrl)
+      ) || null;
     }
 
     if (redirection) {
