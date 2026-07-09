@@ -130,11 +130,16 @@ export default function FormEditor({ form }: { form?: any }) {
                         <option value="email">Email</option>
                         <option value="textarea">Textarea (Multi Line)</option>
                         <option value="select">Dropdown Select</option>
+                        <option value="radio">Radio Buttons</option>
+                        <option value="checkbox">Checkboxes</option>
+                        <option value="number">Number</option>
+                        <option value="tel">Phone</option>
+                        <option value="date">Date</option>
                       </select>
                     </div>
                   </div>
                   
-                  {field.type === 'select' && (
+                  {['select', 'radio', 'checkbox'].includes(field.type) && (
                     <div className="mb-3">
                       <label className="block text-xs font-medium text-gray-500 mb-1">Options (comma separated)</label>
                       <input 
@@ -165,6 +170,11 @@ export default function FormEditor({ form }: { form?: any }) {
               <button onClick={() => addField('email')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Email</button>
               <button onClick={() => addField('textarea')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Textarea</button>
               <button onClick={() => addField('select')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Dropdown</button>
+              <button onClick={() => addField('radio')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Radio</button>
+              <button onClick={() => addField('checkbox')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Checkbox</button>
+              <button onClick={() => addField('number')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Number</button>
+              <button onClick={() => addField('tel')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Phone</button>
+              <button onClick={() => addField('date')} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors flex items-center gap-1"><Plus size={14} /> Add Date</button>
             </div>
           </div>
         </div>
@@ -187,13 +197,13 @@ export default function FormEditor({ form }: { form?: any }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notification Email</label>
-                <p className="text-xs text-gray-500 mb-2">Send submissions to this address.</p>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notification Emails</label>
+                <p className="text-xs text-gray-500 mb-2">Send submissions to these addresses (comma separated).</p>
                 <input 
-                  type="email" 
+                  type="text" 
                   value={notificationEmail}
                   onChange={e => setNotificationEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="admin@example.com, sales@example.com"
                   className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#5e3fde]/20 focus:border-[#5e3fde]"
                 />
               </div>

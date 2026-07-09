@@ -18,7 +18,9 @@ export default function FrontendForm({ id }: { id: string }) {
           setForm(data);
           const fields = data.fields ? JSON.parse(data.fields) : [];
           const initialData: any = {};
-          fields.forEach((f: any) => initialData[f.id] = '');
+          fields.forEach((f: any) => {
+            initialData[f.id] = f.type === 'checkbox' ? [] : '';
+          });
           setFormData(initialData);
         }
         setLoading(false);
@@ -99,9 +101,50 @@ export default function FrontendForm({ id }: { id: string }) {
                   <option key={i} value={opt.trim()}>{opt.trim()}</option>
                 ))}
               </select>
+            ) : field.type === 'radio' ? (
+              <div className="space-y-2">
+                {field.options?.split(',').map((opt: string, i: number) => (
+                  <label key={i} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                    <input 
+                      type="radio" 
+                      name={field.id}
+                      required={field.required && !formData[field.id]}
+                      value={opt.trim()}
+                      checked={formData[field.id] === opt.trim()}
+                      onChange={e => setFormData({...formData, [field.id]: e.target.value})}
+                      className="text-[#5e3fde] focus:ring-[#5e3fde]"
+                    />
+                    {opt.trim()}
+                  </label>
+                ))}
+              </div>
+            ) : field.type === 'checkbox' ? (
+              <div className="space-y-2">
+                {field.options?.split(',').map((opt: string, i: number) => {
+                  const currentValues = Array.isArray(formData[field.id]) ? formData[field.id] : [];
+                  return (
+                    <label key={i} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                      <input 
+                        type="checkbox" 
+                        value={opt.trim()}
+                        checked={currentValues.includes(opt.trim())}
+                        onChange={e => {
+                          if (e.target.checked) {
+                            setFormData({...formData, [field.id]: [...currentValues, opt.trim()]});
+                          } else {
+                            setFormData({...formData, [field.id]: currentValues.filter((v: string) => v !== opt.trim())});
+                          }
+                        }}
+                        className="rounded text-[#5e3fde] focus:ring-[#5e3fde]"
+                      />
+                      {opt.trim()}
+                    </label>
+                  );
+                })}
+              </div>
             ) : (
               <input 
-                type={field.type === 'email' ? 'email' : 'text'}
+                type={field.type} // Supports 'text', 'email', 'number', 'tel', 'date' automatically
                 required={field.required}
                 value={formData[field.id] || ''}
                 onChange={e => setFormData({...formData, [field.id]: e.target.value})}
