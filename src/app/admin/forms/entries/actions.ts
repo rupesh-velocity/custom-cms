@@ -2,7 +2,7 @@
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 
-export async function handleBulkAction(formData: FormData, activeFormId: number, statusFilter: string) {
+export async function handleBulkAction(activeFormId: number, statusFilter: string, formData: FormData) {
   const action = formData.get('action');
   const ids = formData.getAll('submissionIds').map(id => parseInt(String(id), 10));
   
