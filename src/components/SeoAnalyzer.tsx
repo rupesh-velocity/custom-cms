@@ -7,7 +7,7 @@ import {
   XCircle, CheckCircle2, HelpCircle, TrendingUp, X, Star,
   Book, GraduationCap, Database, Calendar, List, CheckSquare, 
   Film, Music, User, Mic, ShoppingCart, Utensils, UtensilsCrossed, 
-  Settings, LayoutGrid, Video, PlusCircle, Info, Search
+  Settings, LayoutGrid, Video, PlusCircle, Info, Search, Eye, Trash2, Edit2
 } from 'lucide-react';
 
 interface SeoAnalyzerProps {
@@ -762,45 +762,108 @@ export default function SeoAnalyzer({
              </div>
              <div className="flex-1 overflow-y-auto p-6 bg-white">
                {schemaModalTab === 'templates' && (
-                 <div>
-                   <h3 className="text-[13px] font-bold text-[#1d2327] mb-4">Available Schema Types</h3>
-                   <div className="grid grid-cols-2 gap-4">
-                     {schemaTypes.map((schema) => {
-                       const isSelected = selectedSchema === schema.name;
-                       return (
-                         <div key={schema.name} className={`flex items-center justify-between p-3 border rounded-[3px] transition-colors cursor-default ${isSelected ? 'border-[#0085ba] bg-blue-50/30' : 'border-[#e2e4e7] hover:border-gray-300'}`}>
-                           <div className="flex items-center gap-3">
-                             <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-[#0085ba]' : 'border-gray-300'}`}>
-                               {isSelected && <div className="w-2 h-2 rounded-full bg-[#0085ba]" />}
-                             </div>
-                             <schema.icon className={`w-4 h-4 ${isSelected ? 'text-[#0085ba]' : 'text-gray-400'}`} />
-                             <span className={`text-[13px] ${isSelected ? 'text-[#0085ba] font-medium' : 'text-[#50575e]'}`}>{schema.name}</span>
-                             {schema.pro && <span className="bg-[#22c55e] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] ml-1">PRO</span>}
-                           </div>
-                           <button onClick={() => { 
-                             setSelectedSchema(schema.name); 
-                             setIsSchemaModalOpen(false); 
-                             
-                             // Pre-populate only radio buttons, leave placeholders empty so they render as HTML placeholders
-                             const initialData: Record<string, string> = {};
-                             if (schemaFieldDefinitions[schema.name]) {
-                               schemaFieldDefinitions[schema.name].forEach(f => {
-                                 if (f.type === 'radio' && f.options && f.options.length > 0) {
-                                   initialData[`${schema.name}_${f.label}`] = f.options[0];
-                                 }
-                               });
-                             }
-                             setSchemaData(initialData);
-                             setIsSchemaBuilderOpen(true); 
-                           }} className={`flex items-center gap-1 text-[12px] font-medium px-2 py-1 rounded-[3px] border ${isSelected ? 'text-[#0085ba] border-[#0085ba] bg-white' : 'text-gray-500 border-gray-300 hover:bg-gray-50'}`}>
-                             <PlusCircle className="w-3.5 h-3.5" /> Use
-                           </button>
-                         </div>
-                       );
-                     })}
-                   </div>
-                 </div>
-               )}
+                  <div>
+                    {schemas.length > 0 && (
+                      <div className="mb-8">
+                        <h3 className="text-[14px] font-semibold text-[#1d2327] mb-3">Schema in Use</h3>
+                        <div className="space-y-2">
+                          {schemas.map((s, i) => (
+                            <div key={i} className="border border-[#0085ba] rounded-[3px] p-3 flex items-center justify-between bg-white">
+                              <div className="flex items-center gap-3">
+                                 <div className="w-4 h-4 rounded-full border-2 border-[#0085ba] flex items-center justify-center">
+                                   <div className="w-2 h-2 rounded-full bg-[#0085ba]" />
+                                 </div>
+                                 <FileText className="w-4 h-4 text-gray-500" />
+                                 <span className="text-[13px] text-[#50575e]">{s['@type'] || s['@graph']?.['@type'] || 'Custom Schema'}</span>
+                              </div>
+                              <div className="flex items-center gap-3 text-[12px] text-gray-500">
+                                 <button type="button" onClick={() => { 
+                                   setEditingSchemaIndex(i); 
+                                   const type = s['@type'] || s['@graph']?.['@type'];
+                                   if (type && schemaFieldDefinitions[type]) {
+                                     setSelectedSchema(type);
+                                     const newData: Record<string, string> = {};
+                                     const data = s['@graph'] || s;
+                                     Object.keys(data).forEach(k => {
+                                       if (k !== '@context' && k !== '@type' && k !== '@graph') {
+                                         const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
+                                         if (fieldDef) {
+                                           newData[`${type}_${fieldDef.label}`] = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
+                                         }
+                                       }
+                                     });
+                                     setSchemaData(newData);
+                                     setIsSchemaBuilderOpen(true);
+                                   }
+                                 }} className="flex items-center gap-1 hover:text-[#0085ba] transition-colors"><Edit2 className="w-3.5 h-3.5" /> Edit</button>
+                                 <span className="text-gray-300">|</span>
+                                 <button type="button" className="flex items-center gap-1 hover:text-[#0085ba] transition-colors"><Eye className="w-3.5 h-3.5" /> Preview</button>
+                                 <span className="text-gray-300">|</span>
+                                 <button type="button" onClick={() => {
+                                   const newSchemas = [...schemas];
+                                   newSchemas.splice(i, 1);
+                                   updateSchemas(newSchemas);
+                                 }} className="flex items-center gap-1 hover:text-red-600 transition-colors"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-[14px] font-semibold text-[#1d2327] mb-3">Available Schema Types</h3>
+                        <div className="flex flex-col gap-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <div className="w-4 h-4 rounded-full border-2 border-[#0085ba] flex items-center justify-center">
+                              <div className="w-2 h-2 rounded-full bg-[#0085ba]" />
+                            </div>
+                            <span className="text-[13px] text-[#1d2327]">Schema Catalog</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center"></div>
+                            <span className="text-[13px] text-[#1d2327]">Your Templates</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div className="relative">
+                        <input type="text" placeholder="Search..." className="border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] w-56 outline-none focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba]" />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                      {schemaTypes.map((schema) => {
+                        return (
+                          <div key={schema.name} className="flex items-center justify-between p-3 border border-[#e2e4e7] rounded-[3px] transition-colors hover:border-gray-300 bg-white">
+                            <div className="flex items-center gap-3">
+                              <schema.icon className="w-4 h-4 text-gray-400" />
+                              <span className="text-[13px] text-[#50575e]">{schema.name}</span>
+                              {schema.pro && <span className="bg-[#22c55e] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] ml-1">PRO</span>}
+                            </div>
+                            <button onClick={() => { 
+                              setSelectedSchema(schema.name); 
+                              setIsSchemaModalOpen(false); 
+                              
+                              const initialData: Record<string, string> = {};
+                              if (schemaFieldDefinitions[schema.name]) {
+                                schemaFieldDefinitions[schema.name].forEach(f => {
+                                  if (f.type === 'radio' && f.options && f.options.length > 0) {
+                                    initialData[`${schema.name}_${f.label}`] = f.options[0];
+                                  }
+                                });
+                              }
+                              setSchemaData(initialData);
+                              setIsSchemaBuilderOpen(true); 
+                            }} className="flex items-center gap-1 text-[12px] font-medium px-2 py-1 rounded-[3px] border text-gray-500 border-gray-300 hover:bg-gray-50 bg-white">
+                              <PlusCircle className="w-3.5 h-3.5" /> Use
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                {schemaModalTab === 'import' && (
                   <div className="h-full flex flex-col">
                     <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Import Schema Code from</h3>
