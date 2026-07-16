@@ -65,6 +65,26 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
     orderBy: { createdAt: 'desc' }
   });
 
+  async function handleBulkAction(formData: FormData) {
+    'use server';
+    const action = formData.get('action');
+    const ids = formData.getAll('submissionIds').map(id => String(id));
+    
+    if (ids.length === 0 || !action) return;
+    
+    if (action === 'Trash') {
+      await prisma.formSubmission.updateMany({ where: { id: { in: ids } }, data: { status: 'Trash' } });
+    } else if (action === 'Spam') {
+      await prisma.formSubmission.updateMany({ where: { id: { in: ids } }, data: { status: 'Spam' } });
+    } else if (action === 'Restore') {
+      await prisma.formSubmission.updateMany({ where: { id: { in: ids } }, data: { status: 'Active' } });
+    } else if (action === 'Delete') {
+      await prisma.formSubmission.deleteMany({ where: { id: { in: ids } } });
+    }
+    
+    redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
+  }
+
   return (
     <div className="max-w-[1200px]">
       <div className="flex justify-between items-end mb-6">
@@ -81,7 +101,7 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
           <a 
             href={`/api/forms/${activeForm.id}/export`}
             download
-            className="ml-4 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50 transition-colors font-medium flex items-center gap-2"
+            className="ml-4 bg-[#5e3fde] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#4b32b2] transition-colors font-medium flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
             Export CSV
@@ -97,14 +117,17 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
         <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Trash`} className={statusFilter === 'Trash' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Trash <span className="text-gray-500 font-normal">({trashCount})</span></Link>
       </div>
       
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <form action={handleBulkAction} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="flex items-center gap-2">
-            <select className="border border-gray-200 rounded-lg px-3 py-1.5 outline-none text-sm bg-white text-gray-700">
-              <option>Bulk actions</option>
-              <option>Trash</option>
+            <select name="action" className="border border-gray-200 rounded-lg px-3 py-1.5 outline-none text-sm bg-white text-gray-700">
+              <option value="">Bulk actions</option>
+              <option value="Trash">Trash</option>
+              <option value="Spam">Mark as Spam</option>
+              <option value="Restore">Restore</option>
+              <option value="Delete">Delete Permanently</option>
             </select>
-            <button className="bg-white border border-gray-200 text-gray-700 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors font-medium">
+            <button type="submit" className="bg-white border border-gray-200 text-gray-700 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition-colors font-medium">
               Apply
             </button>
           </div>
@@ -136,7 +159,7 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
                 return (
                   <tr key={sub.id} className="hover:bg-gray-50 transition-colors group bg-white">
                     <td className="py-4 px-4 text-center align-top">
-                      <input type="checkbox" className="rounded border-gray-300 text-[#5e3fde] focus:ring-[#5e3fde]" />
+                      <input type="checkbox" name="submissionIds" value={sub.id} className="rounded border-gray-300 text-[#5e3fde] focus:ring-[#5e3fde]" />
                     </td>
                     {fields.slice(0, 2).map((field, index) => {
                       const value = parsedData[field.id] ? (Array.isArray(parsedData[field.id]) ? parsedData[field.id].join(', ') : String(parsedData[field.id])) : '';
@@ -236,7 +259,7 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
             </tbody>
           </table>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
