@@ -9,8 +9,7 @@ export async function GET(req: Request) {
     const products = await prisma.product.findMany({
       where: search ? {
         title: {
-          contains: search,
-          mode: 'insensitive',
+          contains: search
         },
       } : undefined,
       orderBy: {
