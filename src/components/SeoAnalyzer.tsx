@@ -999,69 +999,82 @@ export default function SeoAnalyzer({
                   </>
                 ) : (
                   <div className="bg-white p-6 rounded-[3px] border border-[#e2e4e7] h-full flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-[14px] font-semibold text-[#1d2327]">JSON-LD Code</h3>
-                      <div className="flex items-center gap-2">
-                        <button className="flex items-center gap-1 border border-gray-300 text-gray-600 px-3 py-1.5 rounded-[3px] text-[12px] font-medium hover:bg-gray-50">
-                          <FileText className="w-3.5 h-3.5" /> Copy
-                        </button>
-                        <button className="flex items-center gap-1 border border-gray-300 text-gray-600 px-3 py-1.5 rounded-[3px] text-[12px] font-medium hover:bg-gray-50">
-                          <Search className="w-3.5 h-3.5" /> Test with Google
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-red-500 text-[13px] font-medium mb-4">Note: Please save the post as a draft first to see the actual data.</p>
-                    <div className="flex-1 bg-[#282c34] text-[#abb2bf] font-mono text-[13px] p-4 rounded-[3px] overflow-auto">
-                      <pre>
-                        {(() => {
-                          const schemaObj: any = {
-                            "@context": "https://schema.org",
-                            "@graph": {
-                              "@type": selectedSchema,
-                            }
-                          };
+                    {(() => {
+                      const generateSchemaObj = () => {
+                        const schemaObj: any = {
+                          "@context": "https://schema.org",
+                          "@graph": {
+                            "@type": selectedSchema,
+                          }
+                        };
+                        const graphNode = schemaObj["@graph"];
+                        
+                        if (selectedSchema === 'Service' || selectedSchema === 'Product') {
+                          graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+                        }
+                        if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
+                          graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
+                        }
+                        
+                        const fields = schemaFieldDefinitions[selectedSchema] || [];
+                        fields.forEach(field => {
+                          if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
                           
-                          const graphNode = schemaObj["@graph"];
+                          const fieldKey = `${selectedSchema}_${field.label}`;
+                          let val = schemaData[fieldKey];
                           
-                          const fields = schemaFieldDefinitions[selectedSchema] || [];
-                          fields.forEach(field => {
-                            if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+                          if (!val && field.placeholder) {
+                            val = field.placeholder;
+                          }
+                          
+                          if (val) {
+                            const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
                             
-                            const fieldKey = `${selectedSchema}_${field.label}`;
-                            let val = schemaData[fieldKey];
-                            
-                            // Fallback to placeholder if empty
-                            if (!val && field.placeholder) {
-                              val = field.placeholder;
-                            }
-                            
-                            if (val) {
-                              const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
-                              
-                              if ((selectedSchema === 'Service' || selectedSchema === 'Product') && (cleanKey === 'price' || cleanKey === 'currency' || cleanKey === 'availability')) {
-                                if (!graphNode.offers) {
-                                  graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                                }
-                                graphNode.offers[cleanKey] = val;
-                              } else {
-                                try {
-                                  graphNode[cleanKey] = JSON.parse(val);
-                                } catch {
-                                  graphNode[cleanKey] = val;
-                                }
+                            if ((selectedSchema === 'Service' || selectedSchema === 'Product') && (cleanKey === 'price' || cleanKey === 'currency' || cleanKey === 'availability')) {
+                              if (!graphNode.offers) {
+                                graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+                              }
+                              graphNode.offers[cleanKey] = val;
+                            } else {
+                              try {
+                                graphNode[cleanKey] = JSON.parse(val);
+                              } catch {
+                                graphNode[cleanKey] = val;
                               }
                             }
-                          });
-                          
-                          if (graphNode.headline && !graphNode.name) {
-                             graphNode.name = graphNode.headline;
-                             delete graphNode.headline;
                           }
+                        });
+                        
+                        if (graphNode.headline && !graphNode.name) {
+                           graphNode.name = graphNode.headline;
+                           delete graphNode.headline;
+                        }
+                        return schemaObj;
+                      };
 
-                          return JSON.stringify(schemaObj, null, 2);
-                        })()}
-                      </pre>
-                    </div>
+                      const currentSchemaObj = generateSchemaObj();
+                      const currentSchemaJson = JSON.stringify(currentSchemaObj, null, 2);
+
+                      return (
+                        <>
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-[14px] font-semibold text-[#1d2327]">JSON-LD Code</h3>
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => { navigator.clipboard.writeText(currentSchemaJson); toast.success('Code copied!'); }} className="flex items-center gap-1 border border-gray-300 text-gray-600 px-3 py-1.5 rounded-[3px] text-[12px] font-medium hover:bg-gray-50">
+                                <FileText className="w-3.5 h-3.5" /> Copy
+                              </button>
+                              <button onClick={() => window.open('https://search.google.com/test/rich-results', '_blank')} className="flex items-center gap-1 border border-gray-300 text-gray-600 px-3 py-1.5 rounded-[3px] text-[12px] font-medium hover:bg-gray-50">
+                                <Search className="w-3.5 h-3.5" /> Test with Google
+                              </button>
+                            </div>
+                          </div>
+                          <p className="text-red-500 text-[13px] font-medium mb-4">Note: Please save the post as a draft first to see the actual data.</p>
+                          <div className="flex-1 bg-[#282c34] text-[#abb2bf] font-mono text-[13px] p-4 rounded-[3px] overflow-auto">
+                            <pre>{currentSchemaJson}</pre>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
              </div>
@@ -1079,6 +1092,13 @@ export default function SeoAnalyzer({
                       }
                     };
                     const graphNode = schemaObj["@graph"];
+                    
+                    if (selectedSchema === 'Service' || selectedSchema === 'Product') {
+                      graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+                    }
+                    if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
+                      graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
+                    }
                     
                     const fields = schemaFieldDefinitions[selectedSchema] || [];
                     fields.forEach(field => {
