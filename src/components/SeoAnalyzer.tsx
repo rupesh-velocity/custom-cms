@@ -33,7 +33,7 @@ interface SeoAnalyzerProps {
   onScoreChange?: (score: number) => void;
 }
 
-type FieldType = 'text' | 'textarea' | 'radio' | 'group' | 'info' | 'section';
+type FieldType = 'text' | 'textarea' | 'radio' | 'group' | 'info' | 'section' | 'shortcode';
 
 interface SchemaField {
   label: string;
@@ -45,7 +45,7 @@ interface SchemaField {
 
 const shortcodeInfo = "You can either use this shortcode or Schema Block in the block editor to print the schema data in the content in order to meet the Google's guidelines. Read more about it here.";
 const reviewLocationInfo = "Custom (use shortcode)\nThe review or rating must be displayed on the page to comply with Google's Schema guidelines.\n\nShortcode\n[rank_math_rich_snippet]\n" + shortcodeInfo;
-const shortcodeOnlyInfo = "Shortcode\n[rank_math_rich_snippet]\n" + shortcodeInfo;
+const shortcodeOnlyInfo = shortcodeInfo;
 
 const reviewFields: SchemaField[] = [
   { label: 'Review', type: 'section' },
@@ -147,7 +147,7 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
   'Job Posting': [
     { label: 'HEADLINE *', type: 'text', placeholder: '%seo_title%' },
     { label: 'DESCRIPTION', type: 'textarea', placeholder: '%seo_description%' },
-    { label: 'SHORTCODE', type: 'info', info: shortcodeOnlyInfo },
+    { label: 'SHORTCODE', type: 'shortcode', info: shortcodeOnlyInfo },
     { label: 'SALARY CURRENCY', type: 'text', info: 'ISO 4217 Currency code. Example: EUR' },
     { label: 'SALARY (RECOMMENDED)', type: 'text', info: 'Insert amount, e.g. 50.00, or a salary range, e.g. 40.00-50.00' },
     { label: 'PAYROLL (RECOMMENDED)', type: 'radio', options: ['None'] },
@@ -169,14 +169,14 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
   'Music': [
     { label: 'HEADLINE *', type: 'text', placeholder: '%seo_title%' },
     { label: 'DESCRIPTION', type: 'textarea', placeholder: '%seo_description%' },
-    { label: 'SHORTCODE', type: 'info', info: shortcodeOnlyInfo },
+    { label: 'SHORTCODE', type: 'shortcode', info: shortcodeOnlyInfo },
     { label: 'URL', type: 'text', placeholder: '%url%' },
     { label: 'MUSIC TYPE', type: 'radio', options: ['MusicGroup', 'MusicAlbum'] }
   ],
   'Person': [
     { label: 'HEADLINE *', type: 'text', placeholder: '%seo_title%' },
     { label: 'DESCRIPTION', type: 'textarea', placeholder: '%seo_description%' },
-    { label: 'SHORTCODE', type: 'info', info: shortcodeOnlyInfo },
+    { label: 'SHORTCODE', type: 'shortcode', info: shortcodeOnlyInfo },
     { label: 'EMAIL', type: 'text' },
     ...addressFields,
     { label: 'GENDER', type: 'text' },
@@ -228,7 +228,7 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
   'Restaurant': [
     { label: 'HEADLINE *', type: 'text', placeholder: '%seo_title%' },
     { label: 'DESCRIPTION', type: 'textarea', placeholder: '%seo_description%' },
-    { label: 'SHORTCODE', type: 'info', info: shortcodeOnlyInfo },
+    { label: 'SHORTCODE', type: 'shortcode', info: shortcodeOnlyInfo },
     { label: 'PHONE NUMBER', type: 'text' },
     { label: 'PRICE RANGE', type: 'text' },
     ...addressFields,
@@ -245,7 +245,7 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
   'Service': [
     { label: 'HEADLINE *', type: 'text', placeholder: '%seo_title%' },
     { label: 'DESCRIPTION', type: 'textarea', placeholder: '%seo_description%' },
-    { label: 'SHORTCODE', type: 'info', info: shortcodeOnlyInfo },
+    { label: 'SHORTCODE', type: 'shortcode', info: shortcodeOnlyInfo },
     { label: 'SERVICE TYPE', type: 'text', info: "The type of service being offered, e.g. veterans' benefits, emergency relief, etc." },
     { label: 'Offers', type: 'section' },
     { label: 'PRICE', type: 'text' },
@@ -774,7 +774,24 @@ export default function SeoAnalyzer({
                              <span className={`text-[13px] ${isSelected ? 'text-[#0085ba] font-medium' : 'text-[#50575e]'}`}>{schema.name}</span>
                              {schema.pro && <span className="bg-[#22c55e] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] ml-1">PRO</span>}
                            </div>
-                           <button onClick={() => { setSelectedSchema(schema.name); setIsSchemaModalOpen(false); setIsSchemaBuilderOpen(true); }} className={`flex items-center gap-1 text-[12px] font-medium px-2 py-1 rounded-[3px] border ${isSelected ? 'text-[#0085ba] border-[#0085ba] bg-white' : 'text-gray-500 border-gray-300 hover:bg-gray-50'}`}>
+                           <button onClick={() => { 
+                             setSelectedSchema(schema.name); 
+                             setIsSchemaModalOpen(false); 
+                             
+                             // Pre-populate placeholders into schemaData so Code Validation works immediately
+                             const initialData: Record<string, string> = {};
+                             if (schemaFieldDefinitions[schema.name]) {
+                               schemaFieldDefinitions[schema.name].forEach(f => {
+                                 if (f.placeholder) {
+                                   initialData[`${schema.name}_${f.label}`] = f.placeholder;
+                                 } else if (f.type === 'radio' && f.options && f.options.length > 0) {
+                                   initialData[`${schema.name}_${f.label}`] = f.options[0];
+                                 }
+                               });
+                             }
+                             setSchemaData(initialData);
+                             setIsSchemaBuilderOpen(true); 
+                           }} className={`flex items-center gap-1 text-[12px] font-medium px-2 py-1 rounded-[3px] border ${isSelected ? 'text-[#0085ba] border-[#0085ba] bg-white' : 'text-gray-500 border-gray-300 hover:bg-gray-50'}`}>
                              <PlusCircle className="w-3.5 h-3.5" /> Use
                            </button>
                          </div>
@@ -901,6 +918,23 @@ export default function SeoAnalyzer({
                           <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
                             <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
                             <div className="p-4 text-[13px] text-gray-600 whitespace-pre-wrap leading-relaxed">{field.info}</div>
+                          </div>
+                        );
+                      }
+                      
+                      if (field.type === 'shortcode') {
+                        return (
+                          <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
+                            <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
+                            <div className="p-4">
+                              <input 
+                                type="text" 
+                                readOnly
+                                value={`[rank_math_rich_snippet id="s-${Math.random().toString(36).substring(2, 10)}"]`}
+                                className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] bg-gray-50 outline-none shadow-inner mb-2 text-gray-500" 
+                              />
+                              <div className="text-[13px] text-gray-600 leading-relaxed whitespace-pre-wrap">{field.info}</div>
+                            </div>
                           </div>
                         );
                       }
