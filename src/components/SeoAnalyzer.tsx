@@ -7,7 +7,7 @@ import {
   XCircle, CheckCircle2, HelpCircle, TrendingUp, X, Star,
   Book, GraduationCap, Database, Calendar, List, CheckSquare, 
   Film, Music, User, Mic, ShoppingCart, Utensils, UtensilsCrossed, 
-  Settings, LayoutGrid, Video, PlusCircle, Info
+  Settings, LayoutGrid, Video, PlusCircle, Info, Search
 } from 'lucide-react';
 
 interface SeoAnalyzerProps {
