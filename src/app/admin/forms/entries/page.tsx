@@ -68,7 +68,7 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
   async function handleBulkAction(formData: FormData) {
     'use server';
     const action = formData.get('action');
-    const ids = formData.getAll('submissionIds').map(id => String(id));
+    const ids = formData.getAll('submissionIds').map(id => parseInt(String(id), 10));
     
     if (ids.length === 0 || !action) return;
     
