@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = global as unknown as { prismaClientV3: PrismaClient }
 
-// Recursive proxy that intercepts all property access and function calls, returning a rejected promise.
+// Recursive mock proxy for build phase
 const mockPrisma = new Proxy({}, {
   get(target, prop) {
     if (prop === 'then') return undefined;
@@ -21,8 +21,25 @@ const mockPrisma = new Proxy({}, {
   }
 }) as PrismaClient;
 
-export const prisma = globalForPrisma.prismaClientV3 || (
-  process.env.DATABASE_URL ? new PrismaClient() : mockPrisma
-);
+let prismaInstance: PrismaClient | undefined = globalForPrisma.prismaClientV3;
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prismaClientV3 = prisma
+// Lazy initialize Prisma to avoid module-level initialization errors in Turbopack
+export const prisma = new Proxy({} as PrismaClient, {
+  get(target, prop) {
+    if (prop === 'then') return undefined;
+
+    if (!prismaInstance) {
+      // If DATABASE_URL is missing, we are likely in a build phase where it is omitted.
+      if (!process.env.DATABASE_URL) {
+        return Reflect.get(mockPrisma, prop);
+      }
+      
+      prismaInstance = new PrismaClient();
+      if (process.env.NODE_ENV !== 'production') {
+        globalForPrisma.prismaClientV3 = prismaInstance;
+      }
+    }
+
+    return Reflect.get(prismaInstance, prop);
+  }
+});
