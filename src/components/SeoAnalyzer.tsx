@@ -5,10 +5,16 @@ import toast from 'react-hot-toast';
 import { 
   Cog, Briefcase, FileText, Share2, ChevronDown, ChevronUp, 
   XCircle, CheckCircle2, HelpCircle, TrendingUp, X, Star,
-  Book, GraduationCap, Database, Calendar, List, CheckSquare, 
-  Film, Music, User, Mic, ShoppingCart, Utensils, UtensilsCrossed, 
-  Settings, LayoutGrid, Video, PlusCircle, Info, Search, Eye, Trash2, Edit2
+  Settings, LayoutGrid, Video, PlusCircle, Info, Search, Eye, Trash2, Edit2, Copy
 } from 'lucide-react';
+
+export interface SchemaNode {
+  id: string;
+  key: string;
+  value: string;
+  type: 'property' | 'group';
+  children: SchemaNode[];
+}
 
 interface SeoAnalyzerProps {
   title: string;
@@ -351,6 +357,49 @@ export default function SeoAnalyzer({
   const [importJson, setImportJson] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState('');
+  const [customSchemaNodes, setCustomSchemaNodes] = useState<SchemaNode[]>([
+    { id: 'root-1', key: '', value: '', type: 'group', children: [
+      { id: 'prop-1', key: '@type', value: '', type: 'property', children: [] }
+    ]}
+  ]);
+
+  const updateSchemaNode = (nodes: SchemaNode[], id: string, updater: (n: SchemaNode) => SchemaNode): SchemaNode[] => {
+    return nodes.map(n => {
+      if (n.id === id) return updater({ ...n });
+      if (n.children && n.children.length > 0) return { ...n, children: updateSchemaNode(n.children, id, updater) };
+      return n;
+    });
+  };
+
+  const addSchemaNode = (nodes: SchemaNode[], parentId: string, newNode: SchemaNode): SchemaNode[] => {
+    if (parentId === 'root') return [...nodes, newNode];
+    return nodes.map(n => {
+      if (n.id === parentId) return { ...n, children: [...n.children, newNode] };
+      if (n.children && n.children.length > 0) return { ...n, children: addSchemaNode(n.children, parentId, newNode) };
+      return n;
+    });
+  };
+
+  const deleteSchemaNode = (nodes: SchemaNode[], id: string): SchemaNode[] => {
+    return nodes.filter(n => n.id !== id).map(n => ({
+      ...n,
+      children: n.children ? deleteSchemaNode(n.children, id) : []
+    }));
+  };
+
+  const buildJsonFromNodes = (nodes: SchemaNode[]): any => {
+    const result: any = {};
+    nodes.forEach(node => {
+      if (!node.key) return;
+      if (node.type === 'group') {
+        result[node.key] = buildJsonFromNodes(node.children);
+      } else {
+        result[node.key] = node.value;
+      }
+    });
+    return result;
+  };
+
   const [builderTab, setBuilderTab] = useState<'edit' | 'validation'>('edit');
   
   const [schemas, setSchemas] = useState<any[]>([]);
@@ -387,16 +436,16 @@ export default function SeoAnalyzer({
     { name: 'Article', icon: FileText, pro: false },
     { name: 'Book', icon: Book, pro: false },
     { name: 'Course', icon: GraduationCap, pro: false },
-    { name: 'Dataset', icon: Database, pro: true },
+    { name: 'Dataset', icon: Database, pro: false },
     { name: 'Event', icon: Calendar, pro: false },
-    { name: 'FAQ', icon: List, pro: true },
-    { name: 'Fact Check', icon: CheckSquare, pro: true },
-    { name: 'HowTo', icon: HelpCircle, pro: true },
+    { name: 'FAQ', icon: List, pro: false },
+    { name: 'Fact Check', icon: CheckSquare, pro: false },
+    { name: 'HowTo', icon: HelpCircle, pro: false },
     { name: 'Job Posting', icon: Briefcase, pro: false },
-    { name: 'Movie', icon: Film, pro: true },
+    { name: 'Movie', icon: Film, pro: false },
     { name: 'Music', icon: Music, pro: false },
     { name: 'Person', icon: User, pro: false },
-    { name: 'Podcast Episode', icon: Mic, pro: true },
+    { name: 'Podcast Episode', icon: Mic, pro: false },
     { name: 'Product', icon: ShoppingCart, pro: false },
     { name: 'Recipe', icon: Utensils, pro: false },
     { name: 'Restaurant', icon: UtensilsCrossed, pro: false },
@@ -916,7 +965,6 @@ export default function SeoAnalyzer({
                               updateSchemas(newSchemas);
                               setImportJson('');
                               setIsSchemaModalOpen(false);
-                              toast.success('Schema imported!');
                             } catch (e: any) {
                               setImportError('Invalid JSON format: ' + e.message);
                             }
@@ -942,7 +990,6 @@ export default function SeoAnalyzer({
                               updateSchemas(newSchemas);
                               setImportHtml('');
                               setIsSchemaModalOpen(false);
-                              toast.success('Schema imported from HTML!');
                             } else {
                               setImportError('No valid JSON-LD schema found in HTML.');
                             }
@@ -960,7 +1007,6 @@ export default function SeoAnalyzer({
                             updateSchemas(newSchemas);
                             setImportUrl('');
                             setIsSchemaModalOpen(false);
-                            toast.success('Schema imported from URL!');
                           } catch (e: any) {
                             setImportError(e.message);
                           } finally {
@@ -976,25 +1022,22 @@ export default function SeoAnalyzer({
                   </div>
                )}
                {schemaModalTab === 'custom' && (
-                  <div className="h-full flex flex-col">
-                    <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Custom Schema (JSON-LD)</h3>
-                    <p className="text-[13px] text-gray-500 mb-4">Write raw JSON-LD schema markup below. Advanced users only.</p>
-                    <textarea value={customSchemaJson} onChange={(e) => setCustomSchemaJson(e.target.value)} placeholder="{\n  &quot;@context&quot;: &quot;https://schema.org&quot;,\n  &quot;@type&quot;: &quot;Event&quot;,\n  ...\n}" className="flex-1 w-full border border-[#8c8f94] rounded-[3px] p-4 text-[13px] font-mono outline-none focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] min-h-[300px]" />
-                    <div className="mt-4 flex justify-end">
-                      <button onClick={() => {
-                        try {
-                          const parsed = JSON.parse(customSchemaJson);
-                          const newSchemas = [...schemas];
-                          if (editingSchemaIndex !== null) {
-                            newSchemas[editingSchemaIndex] = parsed;
-                          } else {
-                            newSchemas.push(parsed);
-                          }
-                          updateSchemas(newSchemas);
-                          setIsSchemaModalOpen(false);
-                        } catch (e) {}
-                      }} className="bg-[#0085ba] text-white px-5 py-2 rounded-[3px] text-[13px] font-medium hover:bg-[#0073aa] transition-colors">Save Custom Schema</button>
+                  <div className="h-full flex flex-col items-center justify-center py-12">
+                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                      <LayoutGrid className="w-8 h-8 text-[#0085ba]" />
                     </div>
+                    <h3 className="text-[16px] font-semibold text-[#1d2327] mb-2">Advanced Schema Builder</h3>
+                    <p className="text-[13px] text-gray-500 mb-6 text-center max-w-sm">Build your own custom schema markup from scratch using our advanced recursive property editor.</p>
+                    <button 
+                      onClick={() => {
+                        setSelectedSchema('Custom');
+                        setIsSchemaBuilderOpen(true);
+                        setIsSchemaModalOpen(false);
+                      }} 
+                      className="bg-[#0085ba] text-white px-6 py-2.5 rounded-[3px] text-[13px] font-medium hover:bg-[#0073aa] transition-colors"
+                    >
+                      Open Advanced Editor
+                    </button>
                   </div>
                 )}
              </div>
@@ -1033,111 +1076,159 @@ export default function SeoAnalyzer({
              <div className="flex-1 overflow-y-auto bg-[#f9f9f9] p-6 relative">
                 {builderTab === 'edit' ? (
                   <>
-                    <div className="border border-[#e2e4e7] rounded-[3px] bg-white mb-6">
-                      <div className="p-3 text-[13px] font-bold text-[#1d2327]">{selectedSchema}</div>
-                    </div>
-                    {(schemaFieldDefinitions[selectedSchema] || []).map((field, idx) => {
-                      const fieldKey = `${selectedSchema}_${field.label}`;
-                      const val = schemaData[fieldKey] || '';
-                      
-                      if (field.type === 'section') {
-                        return (
-                          <div key={idx} className="mt-6 mb-2">
-                            <span className="font-semibold text-[14px] text-[#1d2327]">{field.label}</span>
-                          </div>
-                        );
-                      }
-                      
-                      if (field.type === 'info') {
-                        return (
-                          <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
-                            <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
-                            <div className="p-4 text-[13px] text-gray-600 whitespace-pre-wrap leading-relaxed">{field.info}</div>
-                          </div>
-                        );
-                      }
-                      
-                      if (field.type === 'shortcode') {
-                        return (
-                          <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
-                            <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
-                            <div className="p-4">
-                              <input 
-                                type="text" 
-                                readOnly
-                                value={`[rank_math_rich_snippet id="s-${Math.random().toString(36).substring(2, 10)}"]`}
-                                className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] bg-gray-50 outline-none shadow-inner mb-2 text-gray-500" 
-                              />
-                              <div className="text-[13px] text-gray-600 leading-relaxed whitespace-pre-wrap">{field.info}</div>
-                            </div>
-                          </div>
-                        );
-                      }
-                      
-                      if (field.type === 'group') {
-                        return (
-                          <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
-                            <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
-                            <div className="p-4">
-                              <button className="text-[13px] font-medium text-[#0085ba] bg-gray-50 border border-gray-200 px-4 py-1.5 rounded-[3px] hover:bg-white hover:border-[#0085ba]">Add Property</button>
-                            </div>
-                          </div>
-                        );
-                      }
+                    {selectedSchema === 'Custom' ? (
+                       <div className="bg-white border border-[#e2e4e7] rounded-[3px] p-4">
+                         {customSchemaNodes.map(function renderNode(node, idx) {
+                           return (
+                             <div key={node.id} className="mb-4">
+                               <div className="flex items-center gap-2">
+                                 <input 
+                                   type="text" 
+                                   value={node.key} 
+                                   onChange={(e) => setCustomSchemaNodes(nodes => updateSchemaNode(nodes, node.id, n => ({ ...n, key: e.target.value })))} 
+                                   className="w-48 border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner"
+                                 />
+                                 <input 
+                                   type="text" 
+                                   value={node.value} 
+                                   onChange={(e) => setCustomSchemaNodes(nodes => updateSchemaNode(nodes, node.id, n => ({ ...n, value: e.target.value })))} 
+                                   className="flex-1 border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner"
+                                 />
+                                 {node.type === 'group' ? (
+                                   <div className="flex items-center gap-3 ml-2">
+                                     <button onClick={() => setCustomSchemaNodes(nodes => addSchemaNode(nodes, node.id, { id: Math.random().toString(36).substr(2, 9), key: '', value: '', type: 'property', children: [] }))} className="flex items-center gap-1 text-[12px] text-gray-500 hover:text-[#0085ba]"><PlusCircle className="w-3.5 h-3.5" /> Add Property</button>
+                                     <button onClick={() => setCustomSchemaNodes(nodes => addSchemaNode(nodes, node.id, { id: Math.random().toString(36).substr(2, 9), key: '', value: '', type: 'group', children: [] }))} className="flex items-center gap-1 text-[12px] text-gray-500 hover:text-[#0085ba]"><PlusCircle className="w-3.5 h-3.5" /> Add Property Group</button>
+                                     <button onClick={() => setCustomSchemaNodes(nodes => deleteSchemaNode(nodes, node.id))} className="flex items-center gap-1 text-[12px] text-gray-500 hover:text-red-600"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
+                                   </div>
+                                 ) : (
+                                   <div className="flex items-center gap-2 ml-2">
+                                     <button onClick={() => {
+                                       setCustomSchemaNodes(nodes => addSchemaNode(nodes, 'root', { ...node, id: Math.random().toString(36).substr(2, 9) }));
+                                     }} className="p-1.5 text-gray-400 border border-gray-300 rounded hover:text-[#0085ba] hover:border-[#0085ba]"><Copy className="w-3.5 h-3.5" /></button>
+                                     <button onClick={() => setCustomSchemaNodes(nodes => deleteSchemaNode(nodes, node.id))} className="p-1.5 text-gray-400 border border-gray-300 rounded hover:text-red-600 hover:border-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
+                                   </div>
+                                 )}
+                               </div>
+                               {node.type === 'group' && node.children && node.children.length > 0 && (
+                                 <div className="ml-8 mt-2 pl-4 border-l-2 border-gray-100">
+                                   {node.children.map(child => renderNode(child, 0))}
+                                 </div>
+                               )}
+                             </div>
+                           );
+                         })}
+                       </div>
+                     ) : (
+                       <>
+                         <div className="border border-[#e2e4e7] rounded-[3px] bg-white mb-6">
+                           <div className="p-3 text-[13px] font-bold text-[#1d2327]">{selectedSchema}</div>
+                         </div>
+                         {(schemaFieldDefinitions[selectedSchema] || []).map((field, idx) => {
+                           const fieldKey = `${selectedSchema}_${field.label}`;
+                           const val = schemaData[fieldKey] || '';
+                           
+                           if (field.type === 'section') {
+                             return (
+                               <div key={idx} className="mt-6 mb-2">
+                                 <span className="font-semibold text-[14px] text-[#1d2327]">{field.label}</span>
+                               </div>
+                             );
+                           }
+                           
+                           if (field.type === 'info') {
+                             return (
+                               <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
+                                 <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
+                                 <div className="p-4 text-[13px] text-gray-600 whitespace-pre-wrap leading-relaxed">{field.info}</div>
+                               </div>
+                             );
+                           }
+                           
+                           if (field.type === 'shortcode') {
+                             return (
+                               <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
+                                 <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
+                                 <div className="p-4">
+                                   <input 
+                                     type="text" 
+                                     readOnly
+                                     value={`[rank_math_rich_snippet id="s-${Math.random().toString(36).substring(2, 10)}"]`}
+                                     className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] bg-gray-50 outline-none shadow-inner mb-2 text-gray-500" 
+                                   />
+                                   <div className="text-[13px] text-gray-600 leading-relaxed whitespace-pre-wrap">{field.info}</div>
+                                 </div>
+                               </div>
+                             );
+                           }
+                           
+                           if (field.type === 'group') {
+                             return (
+                               <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
+                                 <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
+                                 <div className="p-4">
+                                   <button className="text-[13px] font-medium text-[#0085ba] bg-gray-50 border border-gray-200 px-4 py-1.5 rounded-[3px] hover:bg-white hover:border-[#0085ba]">Add Property</button>
+                                 </div>
+                               </div>
+                             );
+                           }
 
-                      return (
-                        <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
-                          <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">
-                            {field.label.replace(/\s*\*\s*$/, '')} {field.label.includes('*') && <span className="text-red-500">*</span>}
-                          </div>
-                          <div className="p-4">
-                            {field.type === 'text' && (
-                              <input 
-                                type="text" 
-                                value={val}
-                                onChange={(e) => handleSchemaDataChange(field.label, e.target.value)}
-                                placeholder={field.placeholder}
-                                className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner" 
-                              />
-                            )}
-                            
-                            {field.type === 'textarea' && (
-                              <textarea 
-                                value={val}
-                                onChange={(e) => handleSchemaDataChange(field.label, e.target.value)}
-                                placeholder={field.placeholder}
-                                rows={4}
-                                className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner" 
-                              />
-                            )}
-                            
-                            {field.type === 'radio' && field.options && (
-                              <div className="space-y-3">
-                                {field.options.map(opt => (
-                                  <label key={opt} className="flex items-center gap-2 text-[13px] text-[#1d2327]">
-                                    <input 
-                                      type="radio" 
-                                      name={`radio_${fieldKey}`}
-                                      checked={val === opt || (val === '' && opt === field.options![0])}
-                                      onChange={() => handleSchemaDataChange(field.label, opt)}
-                                      className="w-4 h-4 text-[#0085ba] border-gray-300 focus:ring-[#0085ba]"
-                                    />
-                                    {opt}
-                                  </label>
-                                ))}
-                              </div>
-                            )}
-
-                            {field.info && <div className="mt-2 text-[12px] text-gray-500">{field.info}</div>}
-                          </div>
-                        </div>
-                      );
-                    })}
+                           return (
+                             <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
+                               <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">
+                                 {field.label.replace(/\s*\*\s*$/, '')} {field.label.includes('*') && <span className="text-red-500">*</span>}
+                               </div>
+                               <div className="p-4">
+                                 {field.type === 'text' && (
+                                   <input 
+                                     type="text" 
+                                     value={val}
+                                     onChange={(e) => handleSchemaDataChange(field.label, e.target.value)}
+                                     placeholder={field.placeholder}
+                                     className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner" 
+                                   />
+                                 )}
+                                 {field.type === 'textarea' && (
+                                   <textarea 
+                                     value={val}
+                                     onChange={(e) => handleSchemaDataChange(field.label, e.target.value)}
+                                     placeholder={field.placeholder}
+                                     className="w-full h-24 border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner" 
+                                   />
+                                 )}
+                                 {field.type === 'radio' && (
+                                   <div className="flex items-center gap-4 flex-wrap">
+                                     {field.options?.map(opt => (
+                                       <label key={opt} className="flex items-center gap-1.5 text-[13px] text-gray-700 cursor-pointer">
+                                         <input 
+                                           type="radio" 
+                                           name={fieldKey}
+                                           value={opt}
+                                           checked={val === opt}
+                                           onChange={(e) => handleSchemaDataChange(field.label, e.target.value)}
+                                           className="text-[#0085ba] focus:ring-[#0085ba]"
+                                         /> {opt}
+                                       </label>
+                                     ))}
+                                   </div>
+                                 )}
+                               </div>
+                             </div>
+                           );
+                         })}
+                       </>
+                     )}
                   </>
                 ) : (
                   <div className="bg-white p-6 rounded-[3px] border border-[#e2e4e7] h-full flex flex-col">
                     {(() => {
                       const generateSchemaObj = () => {
+                        if (selectedSchema === 'Custom') {
+                          return {
+                            "@context": "https://schema.org",
+                            "@graph": customObj
+                          };
+                        }
+
                         const schemaObj: any = {
                           "@context": "https://schema.org",
                           "@graph": {
@@ -1245,7 +1336,79 @@ export default function SeoAnalyzer({
                   <button 
                     type="button" 
                     onClick={() => {
-                      const schemaObj: any = {
+                      let schemaObj: any = {};
+                      if (selectedSchema === 'Custom') {
+                        schemaObj = {
+                          "@context": "https://schema.org",
+                          "@graph": buildJsonFromNodes(customSchemaNodes)
+                        };
+                      } else {
+                        schemaObj = {
+                          "@context": "https://schema.org",
+                          "@graph": {
+                            "@type": selectedSchema,
+                          }
+                        };
+                        const graphNode = schemaObj["@graph"];
+                        
+                        const fields = schemaFieldDefinitions[selectedSchema] || [];
+                        const fieldValues: Record<string, any> = {};
+                        fields.forEach(field => {
+                          if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+                          const fieldKey = `${selectedSchema}_${field.label}`;
+                          let val = schemaData[fieldKey];
+                          if (!val && field.placeholder) val = field.placeholder;
+                          if (val) {
+                            const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
+                            fieldValues[cleanKey] = val;
+                          }
+                        });
+                        
+                        if (fieldValues.headline && !fieldValues.name) {
+                          fieldValues.name = fieldValues.headline;
+                          delete fieldValues.headline;
+                        }
+                        
+                        if (fieldValues.name) graphNode.name = fieldValues.name;
+                        if (fieldValues.description) graphNode.description = fieldValues.description;
+                        
+                        if (selectedSchema === 'Service' || selectedSchema === 'Product') {
+                          graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+                          if (fieldValues.price) graphNode.offers.price = fieldValues.price;
+                          if (fieldValues.currency) graphNode.offers.currency = fieldValues.currency;
+                          if (fieldValues.availability) graphNode.offers.availability = fieldValues.availability;
+                        }
+                        
+                        if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
+                          graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
+                        }
+                        
+                        Object.keys(fieldValues).forEach(k => {
+                          if (k !== 'name' && k !== 'description' && k !== 'price' && k !== 'currency' && k !== 'availability') {
+                            try { graphNode[k] = JSON.parse(fieldValues[k]); } 
+                            catch { graphNode[k] = fieldValues[k]; }
+                          }
+                        });
+                      }
+                      
+                      updateSchemas([...schemas, schemaObj]);
+                      toast.success('Schema saved as custom template!');
+                    }}
+                    className="text-[#0085ba] text-[13px] font-medium hover:underline border border-[#0085ba] px-3 py-1 rounded-[3px]"
+                  >
+                    Save as Template
+                  </button>
+                </div>
+                <button 
+                  onClick={() => {
+                    let schemaObj: any = {};
+                    if (selectedSchema === 'Custom') {
+                      schemaObj = {
+                        "@context": "https://schema.org",
+                        "@graph": buildJsonFromNodes(customSchemaNodes)
+                      };
+                    } else {
+                      schemaObj = {
                         "@context": "https://schema.org",
                         "@graph": {
                           "@type": selectedSchema,
@@ -1257,6 +1420,7 @@ export default function SeoAnalyzer({
                       const fieldValues: Record<string, any> = {};
                       fields.forEach(field => {
                         if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+                        
                         const fieldKey = `${selectedSchema}_${field.label}`;
                         let val = schemaData[fieldKey];
                         if (!val && field.placeholder) val = field.placeholder;
@@ -1267,8 +1431,8 @@ export default function SeoAnalyzer({
                       });
                       
                       if (fieldValues.headline && !fieldValues.name) {
-                        fieldValues.name = fieldValues.headline;
-                        delete fieldValues.headline;
+                         fieldValues.name = fieldValues.headline;
+                         delete fieldValues.headline;
                       }
                       
                       if (fieldValues.name) graphNode.name = fieldValues.name;
@@ -1291,64 +1455,6 @@ export default function SeoAnalyzer({
                           catch { graphNode[k] = fieldValues[k]; }
                         }
                       });
-                      
-                      updateSchemas([...schemas, schemaObj]);
-                      toast.success('Schema saved as custom template!');
-                    }}
-                    className="text-[#0085ba] text-[13px] font-medium hover:underline border border-[#0085ba] px-3 py-1 rounded-[3px]"
-                  >
-                    Save as Template
-                  </button>
-                </div>
-                <button 
-                  onClick={() => {
-                    const schemaObj: any = {
-                      "@context": "https://schema.org",
-                      "@graph": {
-                        "@type": selectedSchema,
-                      }
-                    };
-                    const graphNode = schemaObj["@graph"];
-                    
-                    if (selectedSchema === 'Service' || selectedSchema === 'Product') {
-                      graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                    }
-                    if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
-                      graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
-                    }
-                    
-                    const fields = schemaFieldDefinitions[selectedSchema] || [];
-                    fields.forEach(field => {
-                      if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
-                      
-                      const fieldKey = `${selectedSchema}_${field.label}`;
-                      let val = schemaData[fieldKey];
-                      
-                      if (!val && field.placeholder) {
-                        val = field.placeholder;
-                      }
-                      
-                      if (val) {
-                        const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
-                        
-                        if ((selectedSchema === 'Service' || selectedSchema === 'Product') && (cleanKey === 'price' || cleanKey === 'currency' || cleanKey === 'availability')) {
-                          if (!graphNode.offers) {
-                            graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                          }
-                          graphNode.offers[cleanKey] = val;
-                        } else {
-                          try {
-                            graphNode[cleanKey] = JSON.parse(val);
-                          } catch {
-                            graphNode[cleanKey] = val;
-                          }
-                        }
-                      }
-                    });
-                    
-                    if (graphNode.headline && !graphNode.name) {
-                       graphNode.name = graphNode.headline;
-                       delete graphNode.headline;
                     }
                     
                     const newSchemas = [...schemas];
