@@ -779,7 +779,8 @@ export default function SeoAnalyzer({
                      })}
                    </div>
                  </div>
-                             {schemaModalTab === 'import' && (
+               )}
+               {schemaModalTab === 'import' && (
                   <div className="h-full flex flex-col">
                     <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Import Schema Code from URL</h3>
                     <p className="text-[13px] text-gray-500 mb-4">Enter a URL to fetch and import any JSON-LD schema present on that page.</p>
@@ -843,7 +844,7 @@ export default function SeoAnalyzer({
                       }} className="bg-[#0085ba] text-white px-5 py-2 rounded-[3px] text-[13px] font-medium hover:bg-[#0073aa] transition-colors">Save Custom Schema</button>
                     </div>
                   </div>
-                )}   )}
+                )}
              </div>
           </div>
         </div>
