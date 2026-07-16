@@ -5,6 +5,7 @@ import { optimizeHtmlImages } from '@/lib/html-optimizer';
 import { cookies } from 'next/headers';
 import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 import BlogSidebar from '@/components/BlogSidebar';
+import { processSchemaVariables } from '@/lib/schema-parser';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,12 +108,21 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
 
     return (
       <div className="min-h-screen bg-white">
-        {page.schemaJson && (
-          <script 
-            type="application/ld+json" 
-            dangerouslySetInnerHTML={{ __html: page.schemaJson }} 
-          />
-        )}
+        {(() => {
+          if (!page.schemaJson) return null;
+          const parsedSchemas = processSchemaVariables(page.schemaJson, page);
+          if (!parsedSchemas) return null;
+          
+          const schemasToRender = Array.isArray(parsedSchemas) ? parsedSchemas : [parsedSchemas];
+          
+          return schemasToRender.map((schema, index) => (
+            <script 
+              key={`schema-${index}`}
+              type="application/ld+json" 
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} 
+            />
+          ));
+        })()}
         {page.visibility === 'Password Protected' && (!await cookies().then(c => c.get(`post_pass_${page.id}`)?.value === page.password)) ? (
           <PasswordProtectedForm id={page.id} type="page" title={page.title} />
         ) : (

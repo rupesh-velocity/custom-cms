@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { 
   Cog, Briefcase, FileText, Share2, ChevronDown, ChevronUp, 
   XCircle, CheckCircle2, HelpCircle, TrendingUp, X, Star,
@@ -338,13 +339,38 @@ export default function SeoAnalyzer({
   const [isSchemaBuilderOpen, setIsSchemaBuilderOpen] = useState(false);
   const [schemaModalTab, setSchemaModalTab] = useState('templates');
   const [selectedSchema, setSelectedSchema] = useState('Article');
+  const [editingSchemaIndex, setEditingSchemaIndex] = useState<number | null>(null);
   
-  const [schemaData, setSchemaData] = useState<Record<string, string>>({
-    'Article_HEADLINE *': '%seo_title%',
-    'Article_DESCRIPTION': '%seo_description%',
-    'Article_KEYWORDS *': '%keywords%',
-    'Article_ARTICLE TYPE *': 'Article'
-  });
+  // Custom schema builder state
+  const [customSchemaJson, setCustomSchemaJson] = useState('{\n  "@context": "https://schema.org",\n  "@type": "Event"\n}');
+  
+  // Import schema state
+  const [importUrl, setImportUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState('');
+  
+  const [schemas, setSchemas] = useState<any[]>([]);
+  const [schemaData, setSchemaData] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (schemaJson && schemas.length === 0) {
+      try {
+        const parsed = JSON.parse(schemaJson);
+        if (Array.isArray(parsed)) {
+          setSchemas(parsed);
+        } else if (parsed && typeof parsed === 'object') {
+          setSchemas([parsed]);
+        }
+      } catch(e) {}
+    }
+  }, [schemaJson]);
+
+  const updateSchemas = (newSchemas: any[]) => {
+    setSchemas(newSchemas);
+    if (setSchemaJson) {
+      setSchemaJson(JSON.stringify(newSchemas, null, 2));
+    }
+  };
 
   const handleSchemaDataChange = (fieldLabel: string, value: string) => {
     setSchemaData(prev => ({
@@ -648,19 +674,54 @@ export default function SeoAnalyzer({
         <div className="bg-white p-5 space-y-6 min-h-[300px]">
           <div className="flex items-center justify-between border-b border-[#e2e4e7] pb-4">
             <h3 className="text-[14px] font-semibold text-[#1d2327]">Schema in Use</h3>
-            <button type="button" onClick={() => setIsSchemaModalOpen(true)} className="bg-[#0085ba] text-white text-[13px] px-4 py-1.5 rounded-[3px] hover:bg-[#0073aa] transition-colors">Schema Generator</button>
+            <button type="button" onClick={() => { setEditingSchemaIndex(null); setIsSchemaModalOpen(true); }} className="bg-[#0085ba] text-white text-[13px] px-4 py-1.5 rounded-[3px] hover:bg-[#0073aa] transition-colors">Schema Generator</button>
           </div>
-          <div className="border border-[#e2e4e7] rounded-[3px] p-4 flex items-center justify-between hover:border-[#0085ba] transition-colors bg-[#f9f9f9]">
-            <div className="flex items-center gap-3">
-               <FileText className="w-5 h-5 text-gray-500" />
-               <span className="text-[13px] font-medium text-[#1d2327]">{selectedSchema}</span>
+          
+          {schemas.length === 0 ? (
+            <div className="border border-dashed border-gray-300 rounded-[3px] p-8 text-center text-gray-500 text-[13px]">
+              No schemas added yet. Click Schema Generator to add one.
             </div>
-            <div className="flex items-center gap-4 text-[13px] text-[#0085ba] font-semibold">
-               <button type="button" onClick={() => setIsSchemaBuilderOpen(true)} className="hover:underline">Edit</button>
-               <button type="button" className="text-red-600 hover:underline">Delete</button>
+          ) : (
+            <div className="space-y-3">
+              {schemas.map((s, i) => (
+                <div key={i} className="border border-[#e2e4e7] rounded-[3px] p-4 flex items-center justify-between hover:border-[#0085ba] transition-colors bg-[#f9f9f9]">
+                  <div className="flex items-center gap-3">
+                     <FileText className="w-5 h-5 text-gray-500" />
+                     <span className="text-[13px] font-medium text-[#1d2327]">{s['@type'] || 'Custom Schema'}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-[13px] text-[#0085ba] font-semibold">
+                     <button type="button" onClick={() => { 
+                       setEditingSchemaIndex(i); 
+                       if (s['@type'] && schemaFieldDefinitions[s['@type']]) {
+                         setSelectedSchema(s['@type']);
+                         const newData: Record<string, string> = {};
+                         Object.keys(s).forEach(k => {
+                           if (k !== '@context' && k !== '@type') {
+                             const fieldDef = schemaFieldDefinitions[s['@type']].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
+                             if (fieldDef) {
+                               newData[`${s['@type']}_${fieldDef.label}`] = typeof s[k] === 'string' ? s[k] : JSON.stringify(s[k]);
+                             }
+                           }
+                         });
+                         setSchemaData(newData);
+                         setIsSchemaBuilderOpen(true);
+                       } else {
+                         setCustomSchemaJson(JSON.stringify(s, null, 2));
+                         setSchemaModalTab('custom');
+                         setIsSchemaModalOpen(true);
+                       }
+                     }} className="hover:underline">Edit</button>
+                     <button type="button" onClick={() => {
+                       const newSchemas = [...schemas];
+                       newSchemas.splice(i, 1);
+                       updateSchemas(newSchemas);
+                     }} className="text-red-600 hover:underline">Delete</button>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-          <p className="text-[13px] text-gray-500">
+          )}
+          <p className="text-[13px] text-gray-500 mt-4">
             Schema Markup helps search engines understand your content better and can enhance your search results with rich snippets.
           </p>
         </div>
@@ -690,6 +751,7 @@ export default function SeoAnalyzer({
              </div>
              <div className="flex px-6 border-b border-[#e2e4e7] bg-[#f9f9f9]">
                <button type="button" onClick={() => setSchemaModalTab('templates')} className={`flex items-center gap-2 px-6 py-4 text-[13px] font-medium border-b-2 transition-colors ${schemaModalTab === 'templates' ? 'border-[#0085ba] text-[#0085ba] bg-white' : 'border-transparent text-[#50575e] hover:text-[#0085ba]'}`}><FileText className="w-4 h-4" /> Schema Templates</button>
+               <button type="button" onClick={() => setSchemaModalTab('import')} className={`flex items-center gap-2 px-6 py-4 text-[13px] font-medium border-b-2 transition-colors ${schemaModalTab === 'import' ? 'border-[#0085ba] text-[#0085ba] bg-white' : 'border-transparent text-[#50575e] hover:text-[#0085ba]'}`}><Share2 className="w-4 h-4" /> Import</button>
                <button type="button" onClick={() => setSchemaModalTab('custom')} className={`flex items-center gap-2 px-6 py-4 text-[13px] font-medium border-b-2 transition-colors ${schemaModalTab === 'custom' ? 'border-[#0085ba] text-[#0085ba] bg-white' : 'border-transparent text-[#50575e] hover:text-[#0085ba]'}`}><PlusCircle className="w-4 h-4" /> Custom Schema</button>
              </div>
              <div className="flex-1 overflow-y-auto p-6 bg-white">
@@ -717,17 +779,71 @@ export default function SeoAnalyzer({
                      })}
                    </div>
                  </div>
+                             {schemaModalTab === 'import' && (
+                  <div className="h-full flex flex-col">
+                    <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Import Schema Code from URL</h3>
+                    <p className="text-[13px] text-gray-500 mb-4">Enter a URL to fetch and import any JSON-LD schema present on that page.</p>
+                    
+                    <div className="space-y-4 max-w-xl">
+                      <div>
+                        <label className="block text-[13px] font-semibold text-[#1d2327] mb-1">Page URL</label>
+                        <input type="text" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://example.com/product/123" className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
+                      </div>
+                      {importError && <div className="text-red-600 text-[13px] bg-red-50 p-3 rounded-[3px] border border-red-200">{importError}</div>}
+                      <button 
+                        onClick={async () => {
+                          if (!importUrl) return;
+                          setIsImporting(true);
+                          setImportError('');
+                          try {
+                            const res = await fetch(`/api/schema/import?url=${encodeURIComponent(importUrl)}`);
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || 'Failed to import');
+                            if (!data.schemas || data.schemas.length === 0) throw new Error('No valid JSON-LD schemas found on this URL.');
+                            
+                            const newSchemas = [...schemas, ...data.schemas];
+                            updateSchemas(newSchemas);
+                            toast.success(`Imported ${data.schemas.length} schemas successfully!`);
+                            setImportUrl('');
+                            setIsSchemaModalOpen(false);
+                          } catch (e: any) {
+                            setImportError(e.message);
+                          } finally {
+                            setIsImporting(false);
+                          }
+                        }}
+                        disabled={isImporting}
+                        className="bg-[#0085ba] text-white px-5 py-2 rounded-[3px] text-[13px] font-medium hover:bg-[#0073aa] transition-colors disabled:opacity-50"
+                      >
+                        {isImporting ? 'Importing...' : 'Import'}
+                      </button>
+                    </div>
+                  </div>
                )}
                {schemaModalTab === 'custom' && (
                   <div className="h-full flex flex-col">
                     <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Custom Schema (JSON-LD)</h3>
-                    <p className="text-[13px] text-gray-500 mb-4">Add your own custom JSON-LD schema markup below. It will be injected directly into the page's head tag.</p>
-                    <textarea value={schemaJson} onChange={(e) => setSchemaJson && setSchemaJson(e.target.value)} placeholder="{\n  &quot;@context&quot;: &quot;https://schema.org&quot;,\n  &quot;@type&quot;: &quot;Event&quot;,\n  ...\n}" className="flex-1 w-full border border-[#8c8f94] rounded-[3px] p-4 text-[13px] font-mono outline-none focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] min-h-[300px]" />
+                    <p className="text-[13px] text-gray-500 mb-4">Write raw JSON-LD schema markup below. Advanced users only.</p>
+                    <textarea value={customSchemaJson} onChange={(e) => setCustomSchemaJson(e.target.value)} placeholder="{\n  &quot;@context&quot;: &quot;https://schema.org&quot;,\n  &quot;@type&quot;: &quot;Event&quot;,\n  ...\n}" className="flex-1 w-full border border-[#8c8f94] rounded-[3px] p-4 text-[13px] font-mono outline-none focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] min-h-[300px]" />
                     <div className="mt-4 flex justify-end">
-                      <button onClick={() => setIsSchemaModalOpen(false)} className="bg-[#0085ba] text-white px-5 py-2 rounded-[3px] text-[13px] font-medium hover:bg-[#0073aa] transition-colors">Save Custom Schema</button>
+                      <button onClick={() => {
+                        try {
+                          const parsed = JSON.parse(customSchemaJson);
+                          const newSchemas = [...schemas];
+                          if (editingSchemaIndex !== null) {
+                            newSchemas[editingSchemaIndex] = parsed;
+                          } else {
+                            newSchemas.push(parsed);
+                          }
+                          updateSchemas(newSchemas);
+                          setIsSchemaModalOpen(false);
+                        } catch (e) {
+                          toast.error('Invalid JSON. Please fix errors before saving.');
+                        }
+                      }} className="bg-[#0085ba] text-white px-5 py-2 rounded-[3px] text-[13px] font-medium hover:bg-[#0073aa] transition-colors">Save Custom Schema</button>
                     </div>
                   </div>
-                )}
+                )}   )}
              </div>
           </div>
         </div>
@@ -848,10 +964,21 @@ export default function SeoAnalyzer({
                     Object.keys(schemaData).forEach(k => {
                       if (k.startsWith(selectedSchema + '_') && schemaData[k]) {
                         const cleanKey = k.replace(selectedSchema + '_', '').toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
-                        schemaObj[cleanKey] = schemaData[k];
+                        try {
+                          schemaObj[cleanKey] = JSON.parse(schemaData[k]);
+                        } catch {
+                          schemaObj[cleanKey] = schemaData[k];
+                        }
                       }
                     });
-                    if (setSchemaJson) setSchemaJson(JSON.stringify(schemaObj, null, 2));
+                    
+                    const newSchemas = [...schemas];
+                    if (editingSchemaIndex !== null) {
+                      newSchemas[editingSchemaIndex] = schemaObj;
+                    } else {
+                      newSchemas.push(schemaObj);
+                    }
+                    updateSchemas(newSchemas);
                     setIsSchemaBuilderOpen(false);
                   }}
                   className="bg-[#0085ba] text-white px-5 py-2.5 rounded-[3px] text-[14px] font-semibold hover:bg-[#0073aa]"
