@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
 
 const globalForPrisma = global as unknown as { prismaClientV3: PrismaClient }
 
@@ -29,12 +31,17 @@ export const prisma = new Proxy({} as PrismaClient, {
     if (prop === 'then') return undefined;
 
     if (!prismaInstance) {
+      const url = process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL;
+      
       // If DATABASE_URL is missing, we are likely in a build phase where it is omitted.
-      if (!process.env.DATABASE_URL) {
+      if (!url) {
         return Reflect.get(mockPrisma, prop);
       }
       
-      prismaInstance = new PrismaClient();
+      const pool = new Pool({ connectionString: url });
+      const adapter = new PrismaPg(pool);
+      
+      prismaInstance = new PrismaClient({ adapter });
       if (process.env.NODE_ENV !== 'production') {
         globalForPrisma.prismaClientV3 = prismaInstance;
       }
