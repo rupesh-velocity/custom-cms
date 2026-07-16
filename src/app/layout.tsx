@@ -33,6 +33,7 @@ const poppins = Poppins({
 });
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function generateMetadata(): Promise<Metadata> {
   let settings: any[] = [];
