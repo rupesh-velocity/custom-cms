@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import { 
   Cog, Briefcase, FileText, Share2, ChevronDown, ChevronUp, 
   XCircle, CheckCircle2, HelpCircle, TrendingUp, X, Star,
+  Book, GraduationCap, Database, Calendar, List, CheckSquare, 
+  Film, Music, User, Mic, ShoppingCart, Utensils, UtensilsCrossed, 
   Settings, LayoutGrid, Video, PlusCircle, Info, Search, Eye, Trash2, Edit2, Copy
 } from 'lucide-react';
 
