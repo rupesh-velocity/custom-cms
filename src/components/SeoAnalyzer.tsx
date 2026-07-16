@@ -778,13 +778,11 @@ export default function SeoAnalyzer({
                              setSelectedSchema(schema.name); 
                              setIsSchemaModalOpen(false); 
                              
-                             // Pre-populate placeholders into schemaData so Code Validation works immediately
+                             // Pre-populate only radio buttons, leave placeholders empty so they render as HTML placeholders
                              const initialData: Record<string, string> = {};
                              if (schemaFieldDefinitions[schema.name]) {
                                schemaFieldDefinitions[schema.name].forEach(f => {
-                                 if (f.placeholder) {
-                                   initialData[`${schema.name}_${f.label}`] = f.placeholder;
-                                 } else if (f.type === 'radio' && f.options && f.options.length > 0) {
+                                 if (f.type === 'radio' && f.options && f.options.length > 0) {
                                    initialData[`${schema.name}_${f.label}`] = f.options[0];
                                  }
                                });
@@ -1025,20 +1023,31 @@ export default function SeoAnalyzer({
                           
                           const graphNode = schemaObj["@graph"];
                           
-                          Object.keys(schemaData).forEach(k => {
-                            if (k.startsWith(selectedSchema + '_') && schemaData[k]) {
-                              const cleanKey = k.replace(selectedSchema + '_', '').toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
+                          const fields = schemaFieldDefinitions[selectedSchema] || [];
+                          fields.forEach(field => {
+                            if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+                            
+                            const fieldKey = `${selectedSchema}_${field.label}`;
+                            let val = schemaData[fieldKey];
+                            
+                            // Fallback to placeholder if empty
+                            if (!val && field.placeholder) {
+                              val = field.placeholder;
+                            }
+                            
+                            if (val) {
+                              const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
                               
                               if ((selectedSchema === 'Service' || selectedSchema === 'Product') && (cleanKey === 'price' || cleanKey === 'currency' || cleanKey === 'availability')) {
                                 if (!graphNode.offers) {
                                   graphNode.offers = { "@type": "Offer", "availability": "InStock" };
                                 }
-                                graphNode.offers[cleanKey] = schemaData[k];
+                                graphNode.offers[cleanKey] = val;
                               } else {
                                 try {
-                                  graphNode[cleanKey] = JSON.parse(schemaData[k]);
+                                  graphNode[cleanKey] = JSON.parse(val);
                                 } catch {
-                                  graphNode[cleanKey] = schemaData[k];
+                                  graphNode[cleanKey] = val;
                                 }
                               }
                             }
@@ -1071,20 +1080,30 @@ export default function SeoAnalyzer({
                     };
                     const graphNode = schemaObj["@graph"];
                     
-                    Object.keys(schemaData).forEach(k => {
-                      if (k.startsWith(selectedSchema + '_') && schemaData[k]) {
-                        const cleanKey = k.replace(selectedSchema + '_', '').toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
+                    const fields = schemaFieldDefinitions[selectedSchema] || [];
+                    fields.forEach(field => {
+                      if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+                      
+                      const fieldKey = `${selectedSchema}_${field.label}`;
+                      let val = schemaData[fieldKey];
+                      
+                      if (!val && field.placeholder) {
+                        val = field.placeholder;
+                      }
+                      
+                      if (val) {
+                        const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
                         
                         if ((selectedSchema === 'Service' || selectedSchema === 'Product') && (cleanKey === 'price' || cleanKey === 'currency' || cleanKey === 'availability')) {
                           if (!graphNode.offers) {
                             graphNode.offers = { "@type": "Offer", "availability": "InStock" };
                           }
-                          graphNode.offers[cleanKey] = schemaData[k];
+                          graphNode.offers[cleanKey] = val;
                         } else {
                           try {
-                            graphNode[cleanKey] = JSON.parse(schemaData[k]);
+                            graphNode[cleanKey] = JSON.parse(val);
                           } catch {
-                            graphNode[cleanKey] = schemaData[k];
+                            graphNode[cleanKey] = val;
                           }
                         }
                       }
