@@ -1083,46 +1083,56 @@ export default function SeoAnalyzer({
                         };
                         const graphNode = schemaObj["@graph"];
                         
+                        // Grab all fields
+                        const fields = schemaFieldDefinitions[selectedSchema] || [];
+                        const fieldValues: Record<string, any> = {};
+                        
+                        fields.forEach(field => {
+                          if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+                          const fieldKey = `${selectedSchema}_${field.label}`;
+                          let val = schemaData[fieldKey];
+                          if (!val && field.placeholder) val = field.placeholder;
+                          
+                          if (val) {
+                            const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
+                            fieldValues[cleanKey] = val;
+                          }
+                        });
+                        
+                        // Handle headline -> name mapping
+                        if (fieldValues.headline && !fieldValues.name) {
+                          fieldValues.name = fieldValues.headline;
+                          delete fieldValues.headline;
+                        }
+                        
+                        // Insert name and description first to match RankMath format exactly
+                        if (fieldValues.name) graphNode.name = fieldValues.name;
+                        if (fieldValues.description) graphNode.description = fieldValues.description;
+                        
+                        // Insert offers
                         if (selectedSchema === 'Service' || selectedSchema === 'Product') {
                           graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+                          if (fieldValues.price) graphNode.offers.price = fieldValues.price;
+                          if (fieldValues.currency) graphNode.offers.currency = fieldValues.currency;
+                          if (fieldValues.availability) graphNode.offers.availability = fieldValues.availability;
                         }
+                        
+                        // Insert image
                         if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
                           graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
                         }
                         
-                        const fields = schemaFieldDefinitions[selectedSchema] || [];
-                        fields.forEach(field => {
-                          if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
-                          
-                          const fieldKey = `${selectedSchema}_${field.label}`;
-                          let val = schemaData[fieldKey];
-                          
-                          if (!val && field.placeholder) {
-                            val = field.placeholder;
-                          }
-                          
-                          if (val) {
-                            const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
-                            
-                            if ((selectedSchema === 'Service' || selectedSchema === 'Product') && (cleanKey === 'price' || cleanKey === 'currency' || cleanKey === 'availability')) {
-                              if (!graphNode.offers) {
-                                graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                              }
-                              graphNode.offers[cleanKey] = val;
-                            } else {
-                              try {
-                                graphNode[cleanKey] = JSON.parse(val);
-                              } catch {
-                                graphNode[cleanKey] = val;
-                              }
+                        // Insert all other remaining fields
+                        Object.keys(fieldValues).forEach(k => {
+                          if (k !== 'name' && k !== 'description' && k !== 'price' && k !== 'currency' && k !== 'availability') {
+                            try {
+                              graphNode[k] = JSON.parse(fieldValues[k]);
+                            } catch {
+                              graphNode[k] = fieldValues[k];
                             }
                           }
                         });
                         
-                        if (graphNode.headline && !graphNode.name) {
-                           graphNode.name = graphNode.headline;
-                           delete graphNode.headline;
-                        }
                         return schemaObj;
                       };
 
@@ -1138,9 +1148,19 @@ export default function SeoAnalyzer({
                                 <FileText className="w-3.5 h-3.5" /> Copy
                               </button>
                               <button onClick={() => { 
-                                navigator.clipboard.writeText(currentSchemaJson);
-                                toast.success('Copied! Paste it in the test window.', { duration: 4000 });
-                                window.open('https://search.google.com/test/rich-results', '_blank');
+                                // Submit code snippet via POST to Google Rich Results Test
+                                const form = document.createElement('form');
+                                form.method = 'POST';
+                                form.action = 'https://search.google.com/test/rich-results';
+                                form.target = '_blank';
+                                const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'code_snippet';
+                                input.value = currentSchemaJson;
+                                form.appendChild(input);
+                                document.body.appendChild(form);
+                                form.submit();
+                                document.body.removeChild(form);
                               }} className="flex items-center gap-1 border border-gray-300 text-gray-600 px-3 py-1.5 rounded-[3px] text-[12px] font-medium hover:bg-gray-50">
                                 <Search className="w-3.5 h-3.5" /> Test with Google
                               </button>
@@ -1162,7 +1182,6 @@ export default function SeoAnalyzer({
                   <button 
                     type="button" 
                     onClick={() => {
-                      // Save current config as template (adds to schemas array for now)
                       const schemaObj: any = {
                         "@context": "https://schema.org",
                         "@graph": {
@@ -1170,13 +1189,9 @@ export default function SeoAnalyzer({
                         }
                       };
                       const graphNode = schemaObj["@graph"];
-                      if (selectedSchema === 'Service' || selectedSchema === 'Product') {
-                        graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                      }
-                      if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
-                        graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
-                      }
+                      
                       const fields = schemaFieldDefinitions[selectedSchema] || [];
+                      const fieldValues: Record<string, any> = {};
                       fields.forEach(field => {
                         if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
                         const fieldKey = `${selectedSchema}_${field.label}`;
@@ -1184,19 +1199,36 @@ export default function SeoAnalyzer({
                         if (!val && field.placeholder) val = field.placeholder;
                         if (val) {
                           const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
-                          if ((selectedSchema === 'Service' || selectedSchema === 'Product') && (cleanKey === 'price' || cleanKey === 'currency' || cleanKey === 'availability')) {
-                            if (!graphNode.offers) graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                            graphNode.offers[cleanKey] = val;
-                          } else {
-                            try { graphNode[cleanKey] = JSON.parse(val); } 
-                            catch { graphNode[cleanKey] = val; }
-                          }
+                          fieldValues[cleanKey] = val;
                         }
                       });
-                      if (graphNode.headline && !graphNode.name) {
-                         graphNode.name = graphNode.headline;
-                         delete graphNode.headline;
+                      
+                      if (fieldValues.headline && !fieldValues.name) {
+                        fieldValues.name = fieldValues.headline;
+                        delete fieldValues.headline;
                       }
+                      
+                      if (fieldValues.name) graphNode.name = fieldValues.name;
+                      if (fieldValues.description) graphNode.description = fieldValues.description;
+                      
+                      if (selectedSchema === 'Service' || selectedSchema === 'Product') {
+                        graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+                        if (fieldValues.price) graphNode.offers.price = fieldValues.price;
+                        if (fieldValues.currency) graphNode.offers.currency = fieldValues.currency;
+                        if (fieldValues.availability) graphNode.offers.availability = fieldValues.availability;
+                      }
+                      
+                      if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
+                        graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
+                      }
+                      
+                      Object.keys(fieldValues).forEach(k => {
+                        if (k !== 'name' && k !== 'description' && k !== 'price' && k !== 'currency' && k !== 'availability') {
+                          try { graphNode[k] = JSON.parse(fieldValues[k]); } 
+                          catch { graphNode[k] = fieldValues[k]; }
+                        }
+                      });
+                      
                       updateSchemas([...schemas, schemaObj]);
                       toast.success('Schema saved as custom template!');
                     }}
