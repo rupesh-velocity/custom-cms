@@ -13,8 +13,8 @@ export default async function SearchPage(props: { searchParams: Promise<{ q?: st
       status: 'Published',
       visibility: 'Public',
       OR: [
-        { title: { contains: q, mode: 'insensitive' } },
-        { contentText: { contains: q, mode: 'insensitive' } }
+        { title: { contains: q } },
+        { contentText: { contains: q } }
       ]
     },
     orderBy: { publishedAt: 'desc' },

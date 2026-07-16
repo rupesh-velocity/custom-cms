@@ -35,15 +35,21 @@ const poppins = Poppins({
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await prisma.setting.findMany({
-    where: {
-      key: { in: [
-        'site_title', 'site_tagline', 'site_icon', 
-        'seo_google_verify', 'seo_bing_verify', 'seo_baidu_verify', 
-        'seo_yandex_verify', 'seo_pinterest_verify' // norton doesn't have native Next.js support, we'll put it in other
-      ] }
-    }
-  });
+  let settings: any[] = [];
+  
+  try {
+    settings = await prisma.setting.findMany({
+      where: {
+        key: { in: [
+          'site_title', 'site_tagline', 'site_icon', 
+          'seo_google_verify', 'seo_bing_verify', 'seo_baidu_verify', 
+          'seo_yandex_verify', 'seo_pinterest_verify' // norton doesn't have native Next.js support, we'll put it in other
+        ] }
+      }
+    });
+  } catch (error) {
+    console.warn("Could not fetch metadata settings during build (Prisma skipped)");
+  }
   
   const settingsObj = settings.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value;
@@ -79,11 +85,17 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // Fetch custom code settings
-  const settings = await prisma.setting.findMany({
-    where: {
-      key: { in: ['custom_css', 'head_scripts', 'body_scripts', 'seo_custom_webmaster_tags', 'seo_norton_verify'] }
-    }
-  });
+  let settings: any[] = [];
+  
+  try {
+    settings = await prisma.setting.findMany({
+      where: {
+        key: { in: ['custom_css', 'head_scripts', 'body_scripts', 'seo_custom_webmaster_tags', 'seo_norton_verify'] }
+      }
+    });
+  } catch (error) {
+    console.warn("Could not fetch root layout settings during build (Prisma skipped)");
+  }
   
   const settingsObj = settings.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value;

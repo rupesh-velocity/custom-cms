@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import FormSwitcher from './FormSwitcher';
+import { handleBulkAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,25 +66,7 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
     orderBy: { createdAt: 'desc' }
   });
 
-  async function handleBulkAction(formData: FormData) {
-    'use server';
-    const action = formData.get('action');
-    const ids = formData.getAll('submissionIds').map(id => parseInt(String(id), 10));
-    
-    if (ids.length === 0 || !action) return;
-    
-    if (action === 'Trash') {
-      await prisma.formSubmission.updateMany({ where: { id: { in: ids } }, data: { status: 'Trash' } });
-    } else if (action === 'Spam') {
-      await prisma.formSubmission.updateMany({ where: { id: { in: ids } }, data: { status: 'Spam' } });
-    } else if (action === 'Restore') {
-      await prisma.formSubmission.updateMany({ where: { id: { in: ids } }, data: { status: 'Active' } });
-    } else if (action === 'Delete') {
-      await prisma.formSubmission.deleteMany({ where: { id: { in: ids } } });
-    }
-    
-    redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
-  }
+  const boundBulkAction = handleBulkAction.bind(null, activeForm.id, statusFilter);
 
   return (
     <div className="max-w-[1200px]">
@@ -117,7 +100,7 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
         <Link href={`/admin/forms/entries?form_id=${activeForm.id}&status=Trash`} className={statusFilter === 'Trash' ? 'font-semibold text-gray-900' : 'text-[#5e3fde] hover:underline'}>Trash <span className="text-gray-500 font-normal">({trashCount})</span></Link>
       </div>
       
-      <form action={handleBulkAction} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <form action={boundBulkAction} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="flex items-center gap-2">
             <select name="action" className="border border-gray-200 rounded-lg px-3 py-1.5 outline-none text-sm bg-white text-gray-700">
