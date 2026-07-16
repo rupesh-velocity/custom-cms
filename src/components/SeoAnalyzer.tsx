@@ -345,7 +345,10 @@ export default function SeoAnalyzer({
   const [customSchemaJson, setCustomSchemaJson] = useState('{\n  "@context": "https://schema.org",\n  "@type": "Event"\n}');
   
   // Import schema state
+  const [importType, setImportType] = useState('url');
   const [importUrl, setImportUrl] = useState('');
+  const [importHtml, setImportHtml] = useState('');
+  const [importJson, setImportJson] = useState('');
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState('');
   const [builderTab, setBuilderTab] = useState<'edit' | 'validation'>('edit');
@@ -800,20 +803,90 @@ export default function SeoAnalyzer({
                )}
                {schemaModalTab === 'import' && (
                   <div className="h-full flex flex-col">
-                    <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Import Schema Code from URL</h3>
-                    <p className="text-[13px] text-gray-500 mb-4">Enter a URL to fetch and import any JSON-LD schema present on that page.</p>
+                    <h3 className="text-[14px] font-semibold text-[#1d2327] mb-2">Import Schema Code from</h3>
+                    <p className="text-[13px] text-gray-500 mb-4">Select the source to import schema from.</p>
                     
                     <div className="space-y-4 max-w-xl">
                       <div>
-                        <label className="block text-[13px] font-semibold text-[#1d2327] mb-1">Page URL</label>
-                        <input type="text" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://example.com/product/123" className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
+                        <select 
+                          value={importType} 
+                          onChange={e => setImportType(e.target.value)} 
+                          className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none text-[#1d2327]"
+                        >
+                          <option value="url">URL / Online Page</option>
+                          <option value="html">HTML Code</option>
+                          <option value="json">JSON-LD/Custom Code</option>
+                        </select>
                       </div>
+                      
+                      {importType === 'url' && (
+                        <div>
+                          <input type="text" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://example.com/product/123" className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
+                        </div>
+                      )}
+                      
+                      {importType === 'html' && (
+                        <div>
+                          <textarea value={importHtml} onChange={e => setImportHtml(e.target.value)} placeholder="Paste HTML containing schema here..." className="w-full h-32 border border-[#8c8f94] rounded-[3px] p-3 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none font-mono"></textarea>
+                        </div>
+                      )}
+
+                      {importType === 'json' && (
+                        <div>
+                          <textarea value={importJson} onChange={e => setImportJson(e.target.value)} placeholder="Paste JSON-LD or custom code here..." className="w-full h-32 border border-[#8c8f94] rounded-[3px] p-3 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none font-mono"></textarea>
+                        </div>
+                      )}
+
                       {importError && <div className="text-red-600 text-[13px] bg-red-50 p-3 rounded-[3px] border border-red-200">{importError}</div>}
                       <button 
                         onClick={async () => {
-                          if (!importUrl) return;
-                          setIsImporting(true);
+                          if (importType === 'url' && !importUrl) return;
+                          if (importType === 'html' && !importHtml) return;
+                          if (importType === 'json' && !importJson) return;
+                          
                           setImportError('');
+                          
+                          if (importType === 'json') {
+                            try {
+                              const parsed = JSON.parse(importJson);
+                              const newSchemas = [...schemas, parsed];
+                              updateSchemas(newSchemas);
+                              setImportJson('');
+                              setIsSchemaModalOpen(false);
+                              toast.success('Schema imported!');
+                            } catch (e: any) {
+                              setImportError('Invalid JSON format: ' + e.message);
+                            }
+                            return;
+                          }
+                          
+                          if (importType === 'html') {
+                            // Extract JSON-LD from HTML regex
+                            const regex = /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi;
+                            let match;
+                            let found = false;
+                            const newSchemas = [...schemas];
+                            
+                            while ((match = regex.exec(importHtml)) !== null) {
+                              try {
+                                const parsed = JSON.parse(match[1]);
+                                newSchemas.push(parsed);
+                                found = true;
+                              } catch(e) {}
+                            }
+                            
+                            if (found) {
+                              updateSchemas(newSchemas);
+                              setImportHtml('');
+                              setIsSchemaModalOpen(false);
+                              toast.success('Schema imported from HTML!');
+                            } else {
+                              setImportError('No valid JSON-LD schema found in HTML.');
+                            }
+                            return;
+                          }
+                          
+                          setIsImporting(true);
                           try {
                             const res = await fetch(`/api/schema/import?url=${encodeURIComponent(importUrl)}`);
                             const data = await res.json();
@@ -824,6 +897,7 @@ export default function SeoAnalyzer({
                             updateSchemas(newSchemas);
                             setImportUrl('');
                             setIsSchemaModalOpen(false);
+                            toast.success('Schema imported from URL!');
                           } catch (e: any) {
                             setImportError(e.message);
                           } finally {
@@ -1063,7 +1137,11 @@ export default function SeoAnalyzer({
                               <button onClick={() => { navigator.clipboard.writeText(currentSchemaJson); toast.success('Code copied!'); }} className="flex items-center gap-1 border border-gray-300 text-gray-600 px-3 py-1.5 rounded-[3px] text-[12px] font-medium hover:bg-gray-50">
                                 <FileText className="w-3.5 h-3.5" /> Copy
                               </button>
-                              <button onClick={() => window.open('https://search.google.com/test/rich-results', '_blank')} className="flex items-center gap-1 border border-gray-300 text-gray-600 px-3 py-1.5 rounded-[3px] text-[12px] font-medium hover:bg-gray-50">
+                              <button onClick={() => { 
+                                navigator.clipboard.writeText(currentSchemaJson);
+                                toast.success('Copied! Paste it in the test window.', { duration: 4000 });
+                                window.open('https://search.google.com/test/rich-results', '_blank');
+                              }} className="flex items-center gap-1 border border-gray-300 text-gray-600 px-3 py-1.5 rounded-[3px] text-[12px] font-medium hover:bg-gray-50">
                                 <Search className="w-3.5 h-3.5" /> Test with Google
                               </button>
                             </div>
@@ -1081,7 +1159,51 @@ export default function SeoAnalyzer({
              <div className="px-6 py-4 border-t border-[#e2e4e7] bg-[#f9f9f9] flex items-center justify-between">
                 <div>
                   <button type="button" className="text-[#0085ba] text-[13px] font-medium hover:underline mr-4">Advanced Editor</button>
-                  <button type="button" className="text-[#0085ba] text-[13px] font-medium hover:underline border border-[#0085ba] px-3 py-1 rounded-[3px]">Save as Template</button>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      // Save current config as template (adds to schemas array for now)
+                      const schemaObj: any = {
+                        "@context": "https://schema.org",
+                        "@graph": {
+                          "@type": selectedSchema,
+                        }
+                      };
+                      const graphNode = schemaObj["@graph"];
+                      if (selectedSchema === 'Service' || selectedSchema === 'Product') {
+                        graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+                      }
+                      if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
+                        graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
+                      }
+                      const fields = schemaFieldDefinitions[selectedSchema] || [];
+                      fields.forEach(field => {
+                        if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+                        const fieldKey = `${selectedSchema}_${field.label}`;
+                        let val = schemaData[fieldKey];
+                        if (!val && field.placeholder) val = field.placeholder;
+                        if (val) {
+                          const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
+                          if ((selectedSchema === 'Service' || selectedSchema === 'Product') && (cleanKey === 'price' || cleanKey === 'currency' || cleanKey === 'availability')) {
+                            if (!graphNode.offers) graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+                            graphNode.offers[cleanKey] = val;
+                          } else {
+                            try { graphNode[cleanKey] = JSON.parse(val); } 
+                            catch { graphNode[cleanKey] = val; }
+                          }
+                        }
+                      });
+                      if (graphNode.headline && !graphNode.name) {
+                         graphNode.name = graphNode.headline;
+                         delete graphNode.headline;
+                      }
+                      updateSchemas([...schemas, schemaObj]);
+                      toast.success('Schema saved as custom template!');
+                    }}
+                    className="text-[#0085ba] text-[13px] font-medium hover:underline border border-[#0085ba] px-3 py-1 rounded-[3px]"
+                  >
+                    Save as Template
+                  </button>
                 </div>
                 <button 
                   onClick={() => {
