@@ -162,63 +162,63 @@ export default async function AllEntriesPage({ searchParams }: { searchParams: P
                                   <span className="text-gray-300">|</span>
                                   <button className="text-[#0071a1] hover:text-[#005a82]">Mark read</button>
                                   <span className="text-gray-300">|</span>
-                                  <form action={async () => {
+                                  <button formAction={async () => {
                                     'use server';
                                     await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Spam' } });
                                     redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
-                                  }} className="inline-flex items-center gap-1.5">
-                                    <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Mark as Spam</button>
-                                  </form>
+                                  }} className="text-[#b32d2e] hover:text-[#8a2425]">
+                                    Mark as Spam
+                                  </button>
                                   <span className="text-gray-300">|</span>
-                                  <form action={async () => {
+                                  <button formAction={async () => {
                                     'use server';
                                     await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Trash' } });
                                     redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
-                                  }} className="inline-flex items-center gap-1.5">
-                                    <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Trash</button>
-                                  </form>
+                                  }} className="text-[#b32d2e] hover:text-[#8a2425]">
+                                    Trash
+                                  </button>
                                 </>
                               )}
 
                               {sub.status === 'Spam' && (
                                 <>
                                   <span className="text-gray-300">|</span>
-                                  <form action={async () => {
+                                  <button formAction={async () => {
                                     'use server';
                                     await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Active' } });
                                     redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
-                                  }} className="inline-flex items-center gap-1.5">
-                                    <button type="submit" className="text-[#0071a1] hover:text-[#005a82]">Not Spam</button>
-                                  </form>
+                                  }} className="text-[#0071a1] hover:text-[#005a82]">
+                                    Not Spam
+                                  </button>
                                   <span className="text-gray-300">|</span>
-                                  <form action={async () => {
+                                  <button formAction={async () => {
                                     'use server';
                                     await prisma.formSubmission.delete({ where: { id: sub.id } });
                                     redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
-                                  }} className="inline-flex items-center gap-1.5">
-                                    <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Delete Permanently</button>
-                                  </form>
+                                  }} className="text-[#b32d2e] hover:text-[#8a2425]">
+                                    Delete Permanently
+                                  </button>
                                 </>
                               )}
 
                               {sub.status === 'Trash' && (
                                 <>
                                   <span className="text-gray-300">|</span>
-                                  <form action={async () => {
+                                  <button formAction={async () => {
                                     'use server';
                                     await prisma.formSubmission.update({ where: { id: sub.id }, data: { status: 'Active' } });
                                     redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
-                                  }} className="inline-flex items-center gap-1.5">
-                                    <button type="submit" className="text-[#0071a1] hover:text-[#005a82]">Restore</button>
-                                  </form>
+                                  }} className="text-[#0071a1] hover:text-[#005a82]">
+                                    Restore
+                                  </button>
                                   <span className="text-gray-300">|</span>
-                                  <form action={async () => {
+                                  <button formAction={async () => {
                                     'use server';
                                     await prisma.formSubmission.delete({ where: { id: sub.id } });
                                     redirect(`/admin/forms/entries?form_id=${activeForm.id}&status=${statusFilter}`);
-                                  }} className="inline-flex items-center gap-1.5">
-                                    <button type="submit" className="text-[#b32d2e] hover:text-[#8a2425]">Delete Permanently</button>
-                                  </form>
+                                  }} className="text-[#b32d2e] hover:text-[#8a2425]">
+                                    Delete Permanently
+                                  </button>
                                 </>
                               )}
                             </div>
