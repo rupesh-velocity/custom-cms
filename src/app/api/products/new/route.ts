@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
     const cookieStore = await cookies();
     const token = cookieStore.get('cms_session')?.value;
-    let authorId = null;
+    let authorId: any = null;
 
     if (token) {
       try {

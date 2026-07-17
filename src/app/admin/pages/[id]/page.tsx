@@ -40,7 +40,7 @@ export default function EditPage() {
   useEffect(() => {
     if (!params?.id) return;
     
-    fetch(`/api/pages/${params.id}`)
+    fetch(`/api/pages/${params?.id}`)
       .then(res => res.json())
       .then(data => {
         if (data.error) {
@@ -71,7 +71,7 @@ export default function EditPage() {
         fetch('/api/settings')
           .then(res => res.json())
           .then(settings => {
-            if (settings.homepage_displays === 'static_page' && settings.homepage_page_id === params.id) {
+            if (settings.homepage_displays === 'static_page' && settings.homepage_page_id === params?.id) {
               setIsHomepage(true);
             }
             setIsLoading(false);
@@ -93,7 +93,7 @@ export default function EditPage() {
     setIsSaving(true);
     const finalStatus = overrideStatus || status;
     try {
-      const res = await fetch(`/api/pages/${params.id}`, {
+      const res = await fetch(`/api/pages/${params?.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

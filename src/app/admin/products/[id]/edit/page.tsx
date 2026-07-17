@@ -58,7 +58,7 @@ export default function EditProductPage() {
 
   useEffect(() => {
     if (!params?.id) return;
-    fetch(`/api/products/${params.id}`)
+    fetch(`/api/products/${params?.id}`)
       .then(res => res.json())
       .then(data => {
         if (data.error) {

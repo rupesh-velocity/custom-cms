@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     
     // Auth
     const token = (await cookies()).get('auth-token')?.value;
-    let authorId = null;
+    let authorId: any = null;
     if (token) {
       try {
         const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');

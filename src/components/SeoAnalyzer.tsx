@@ -391,7 +391,8 @@ export default function SeoAnalyzer({
 
   const [isSchemaModalOpen, setIsSchemaModalOpen] = useState(false);
   const [isSchemaBuilderOpen, setIsSchemaBuilderOpen] = useState(false);
-  const [schemaModalTab, setSchemaModalTab] = useState('templates');
+  const [schemaModalTab, setSchemaModalTab] = useState<string>('templates');
+  const [schemaLibraryTab, setSchemaLibraryTab] = useState<'catalog' | 'saved'>('catalog');
   const [selectedSchema, setSelectedSchema] = useState('Article');
   const [editingSchemaIndex, setEditingSchemaIndex] = useState<number | null>(null);
   
@@ -1000,11 +1001,11 @@ export default function SeoAnalyzer({
                         <h3 className="text-[14px] font-semibold text-[#1d2327] mb-3">Available Schema Types</h3>
                         <div className="flex flex-col gap-2">
                           <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" checked={schemaModalTab === 'templates'} onChange={() => setSchemaModalTab('templates')} className="text-[#0085ba] focus:ring-[#0085ba]" />
+                            <input type="radio" checked={schemaLibraryTab === 'catalog'} onChange={() => setSchemaLibraryTab('catalog')} className="text-[#0085ba] focus:ring-[#0085ba]" />
                             <span className="text-[13px] text-[#1d2327]">Schema Catalog</span>
                           </label>
                           <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" checked={schemaModalTab === 'custom'} onChange={() => setSchemaModalTab('custom')} className="text-[#0085ba] focus:ring-[#0085ba]" />
+                            <input type="radio" checked={schemaLibraryTab === 'saved'} onChange={() => setSchemaLibraryTab('saved')} className="text-[#0085ba] focus:ring-[#0085ba]" />
                             <span className="text-[13px] text-[#1d2327]">Your Templates</span>
                           </label>
                         </div>
@@ -1015,7 +1016,7 @@ export default function SeoAnalyzer({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mt-6">
-                      {schemaModalTab === 'templates' ? (
+                      {schemaLibraryTab === 'catalog' ? (
                         schemaTypes.map((schema) => {
                           return (
                             <div key={schema.name} className="flex items-center justify-between p-3 border border-[#e2e4e7] rounded-[3px] transition-colors hover:border-gray-300 bg-white">

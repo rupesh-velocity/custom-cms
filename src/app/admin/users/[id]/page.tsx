@@ -14,7 +14,7 @@ export default function EditUserPage() {
   useEffect(() => {
     if (!params?.id) return;
     
-    fetch(`/api/users/${params.id}`)
+    fetch(`/api/users/${params?.id}`)
       .then(res => res.json())
       .then(data => {
         if (data.error) {

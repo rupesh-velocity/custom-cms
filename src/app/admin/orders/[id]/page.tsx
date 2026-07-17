@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
-  const orderId = parseInt(resolvedParams.id);
+  const orderId = parseInt(resolvedParams?.id);
 
   if (isNaN(orderId)) {
     notFound();

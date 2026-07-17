@@ -40,7 +40,7 @@ export default function EditPost() {
   useEffect(() => {
     if (!params?.id) return;
     
-    fetch(`/api/posts/${params.id}`)
+    fetch(`/api/posts/${params?.id}`)
       .then(res => res.json())
       .then(data => {
         if (data.error) {
@@ -74,7 +74,7 @@ export default function EditPost() {
         console.error(err);
         setIsLoading(false);
       });
-  }, [params.id, router]);
+  }, [params?.id, router]);
 
   const handleUpdate = async (overrideStatus?: string) => {
     if (!title) {
@@ -85,7 +85,7 @@ export default function EditPost() {
     setIsSaving(true);
     const finalStatus = overrideStatus || status;
     try {
-      const res = await fetch(`/api/posts/${params.id}`, {
+      const res = await fetch(`/api/posts/${params?.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

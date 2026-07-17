@@ -6,7 +6,7 @@ import FormSettingsEditor from '@/components/FormSettingsEditor';
 export default async function SettingsPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const form = await prisma.form.findUnique({
-    where: { id: parseInt(params.id) }
+    where: { id: parseInt(params?.id) }
   });
 
   if (!form) return notFound();

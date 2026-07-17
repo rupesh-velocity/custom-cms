@@ -6,7 +6,7 @@ import { jwtVerify } from 'jose';
 export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ id?: string, type?: string, productId?: string }> }) {
   const params = await searchParams;
   
-  const id = params.id || params.productId;
+  const id = params?.id || params.productId;
   const type = params.type || 'product';
 
   if (!id) {

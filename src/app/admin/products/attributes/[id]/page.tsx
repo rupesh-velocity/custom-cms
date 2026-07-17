@@ -16,13 +16,13 @@ export default function AttributeTermsPage({ params }: { params: { id: string } 
   
   useEffect(() => {
     fetchData();
-  }, [params.id]);
+  }, [params?.id]);
 
   const fetchData = async () => {
     try {
       const [attrRes, termsRes] = await Promise.all([
-        fetch(`/api/products/attributes/${params.id}`),
-        fetch(`/api/products/attributes/${params.id}/terms`)
+        fetch(`/api/products/attributes/${params?.id}`),
+        fetch(`/api/products/attributes/${params?.id}/terms`)
       ]);
       const attrData = await attrRes.json();
       const termsData = await termsRes.json();
@@ -39,7 +39,7 @@ export default function AttributeTermsPage({ params }: { params: { id: string } 
     e.preventDefault();
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/products/attributes/${params.id}/terms`, {
+      const res = await fetch(`/api/products/attributes/${params?.id}/terms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, slug, description })
@@ -63,7 +63,7 @@ export default function AttributeTermsPage({ params }: { params: { id: string } 
   const handleDelete = async (termId: number) => {
     if (!confirm('Are you sure you want to delete this term?')) return;
     try {
-      const res = await fetch(`/api/products/attributes/${params.id}/terms/${termId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/products/attributes/${params?.id}/terms/${termId}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchData();
       } else {
