@@ -18,7 +18,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     );
   }
   
-  let itemData = null;
+  let itemData: any = null;
 
   if (type === 'course') {
     const course = await prisma.course.findUnique({ where: { id: parseInt(id) } });
