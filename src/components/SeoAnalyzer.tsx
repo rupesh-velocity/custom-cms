@@ -41,6 +41,52 @@ interface SeoAnalyzerProps {
   onScoreChange?: (score: number) => void;
 }
 
+const resolveVariables = (str: string, props: Partial<SeoAnalyzerProps>) => {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/%seo_title%/g, props.seoTitle || props.title || '')
+    .replace(/%seo_description%/g, props.metaDescription || '')
+    .replace(/%url%/g, props.redirectUrl || '')
+    .replace(/%name%/g, 'Velocity Consultancy')
+    .replace(/%org_name%/g, 'Velocity Consultancy')
+    .replace(/%org_url%/g, 'https://www.velocityconsultancy.com')
+    .replace(/%org_logo%/g, 'https://www.velocityconsultancy.com/logo.png')
+    .replace(/%post_thumbnail%/g, 'https://www.velocityconsultancy.com/thumbnail.png')
+    .replace(/%date\(Y-m-d\)%/g, new Date().toISOString().split('T')[0])
+    .replace(/%keywords%/g, props.focusKeyword || '');
+};
+
+const resolveObjectVariables = (obj: any, props: Partial<SeoAnalyzerProps>): any => {
+  if (typeof obj === 'string') return resolveVariables(obj, props);
+  if (Array.isArray(obj)) return obj.map(item => resolveObjectVariables(item, props));
+  if (obj !== null && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key in obj) {
+      newObj[key] = resolveObjectVariables(obj[key], props);
+    }
+    return newObj;
+  }
+  return obj;
+};
+
+const removeEmptyFields = (obj: any): any => {
+  if (Array.isArray(obj)) {
+    const arr = obj.map(removeEmptyFields).filter((v: any) => v !== null && v !== undefined && v !== '');
+    return arr.length > 0 ? arr : undefined;
+  }
+  if (obj !== null && typeof obj === 'object') {
+    const newObj: any = {};
+    for (const key in obj) {
+      const val = removeEmptyFields(obj[key]);
+      if (val !== null && val !== undefined && val !== '') {
+        newObj[key] = val;
+      }
+    }
+    return Object.keys(newObj).length > 0 ? newObj : undefined;
+  }
+  return obj;
+};
+
 type FieldType = 'text' | 'textarea' | 'radio' | 'group' | 'info' | 'section' | 'shortcode';
 
 interface SchemaField {
@@ -403,9 +449,96 @@ export default function SeoAnalyzer({
   };
 
   const [builderTab, setBuilderTab] = useState<'edit' | 'validation'>('edit');
-  
   const [schemas, setSchemas] = useState<any[]>([]);
   const [schemaData, setSchemaData] = useState<Record<string, string>>({});
+  const [customTemplates, setCustomTemplates] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/schema-templates')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setCustomTemplates(data);
+      })
+      .catch(console.error);
+  }, []);
+
+  const generateSchemaObj = () => {
+    let baseObj: any;
+    if (selectedSchema === 'Custom') {
+      const customObj = buildJsonFromNodes(customSchemaNodes);
+      baseObj = {
+        "@context": "https://schema.org",
+        "@graph": [customObj]
+      };
+    } else {
+      const schemaObj: any = {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": selectedSchema,
+          }
+        ]
+      };
+      const graphNode = schemaObj["@graph"][0];
+      
+      const fields = schemaFieldDefinitions[selectedSchema] || [];
+      const fieldValues: Record<string, any> = {};
+      
+      fields.forEach(field => {
+        if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+        const fieldKey = `${selectedSchema}_${field.label}`;
+        let val = schemaData[fieldKey];
+        if (!val && field.placeholder) val = field.placeholder;
+        
+        if (val) {
+          const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
+          fieldValues[cleanKey] = val;
+        }
+      });
+      
+      if (fieldValues.headline && !fieldValues.name) {
+        fieldValues.name = fieldValues.headline;
+        delete fieldValues.headline;
+      }
+      
+      if (fieldValues.name) graphNode.name = fieldValues.name;
+      if (fieldValues.description) graphNode.description = fieldValues.description;
+      
+      if (selectedSchema === 'Service' || selectedSchema === 'Product') {
+        graphNode.offers = { "@type": "Offer", "availability": "InStock" };
+        if (fieldValues.price) graphNode.offers.price = fieldValues.price;
+        if (fieldValues.currency) graphNode.offers.currency = fieldValues.currency;
+        if (fieldValues.availability) graphNode.offers.availability = fieldValues.availability;
+      }
+      
+      if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
+        graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
+      }
+      
+      Object.keys(fieldValues).forEach(k => {
+        if (k !== 'name' && k !== 'description' && k !== 'price' && k !== 'currency' && k !== 'availability') {
+          try {
+            graphNode[k] = JSON.parse(fieldValues[k]);
+          } catch {
+            graphNode[k] = fieldValues[k];
+          }
+        }
+      });
+      baseObj = schemaObj;
+    }
+
+    const resolvedObj = resolveObjectVariables(baseObj, { title, seoTitle, metaDescription, redirectUrl, focusKeyword });
+    const filteredObj = removeEmptyFields(resolvedObj);
+    
+    if (filteredObj && filteredObj["@graph"] && Array.isArray(filteredObj["@graph"]) && filteredObj["@graph"].length > 0) {
+      return {
+        "@context": "https://schema.org",
+        "@graph": filteredObj["@graph"]
+      };
+    }
+    
+    return baseObj;
+  };
 
   useEffect(() => {
     if (schemaJson && schemas.length === 0) {
@@ -867,13 +1000,11 @@ export default function SeoAnalyzer({
                         <h3 className="text-[14px] font-semibold text-[#1d2327] mb-3">Available Schema Types</h3>
                         <div className="flex flex-col gap-2">
                           <label className="flex items-center gap-2 cursor-pointer">
-                            <div className="w-4 h-4 rounded-full border-2 border-[#0085ba] flex items-center justify-center">
-                              <div className="w-2 h-2 rounded-full bg-[#0085ba]" />
-                            </div>
+                            <input type="radio" checked={schemaModalTab === 'templates'} onChange={() => setSchemaModalTab('templates')} className="text-[#0085ba] focus:ring-[#0085ba]" />
                             <span className="text-[13px] text-[#1d2327]">Schema Catalog</span>
                           </label>
                           <label className="flex items-center gap-2 cursor-pointer">
-                            <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex items-center justify-center"></div>
+                            <input type="radio" checked={schemaModalTab === 'custom'} onChange={() => setSchemaModalTab('custom')} className="text-[#0085ba] focus:ring-[#0085ba]" />
                             <span className="text-[13px] text-[#1d2327]">Your Templates</span>
                           </label>
                         </div>
@@ -884,34 +1015,62 @@ export default function SeoAnalyzer({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mt-6">
-                      {schemaTypes.map((schema) => {
-                        return (
-                          <div key={schema.name} className="flex items-center justify-between p-3 border border-[#e2e4e7] rounded-[3px] transition-colors hover:border-gray-300 bg-white">
-                            <div className="flex items-center gap-3">
-                              <schema.icon className="w-4 h-4 text-gray-400" />
-                              <span className="text-[13px] text-[#50575e]">{schema.name}</span>
-                              {schema.pro && <span className="bg-[#22c55e] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] ml-1">PRO</span>}
+                      {schemaModalTab === 'templates' ? (
+                        schemaTypes.map((schema) => {
+                          return (
+                            <div key={schema.name} className="flex items-center justify-between p-3 border border-[#e2e4e7] rounded-[3px] transition-colors hover:border-gray-300 bg-white">
+                              <div className="flex items-center gap-3">
+                                <schema.icon className="w-4 h-4 text-gray-400" />
+                                <span className="text-[13px] text-[#50575e]">{schema.name}</span>
+                                {schema.pro && <span className="bg-[#22c55e] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-[2px] ml-1">PRO</span>}
+                              </div>
+                              <button onClick={() => { 
+                                setSelectedSchema(schema.name); 
+                                setIsSchemaModalOpen(false); 
+                                
+                                const initialData: Record<string, string> = {};
+                                if (schemaFieldDefinitions[schema.name]) {
+                                  schemaFieldDefinitions[schema.name].forEach(f => {
+                                    if (f.type === 'radio' && f.options && f.options.length > 0) {
+                                      initialData[`${schema.name}_${f.label}`] = f.options[0];
+                                    }
+                                  });
+                                }
+                                setSchemaData(initialData);
+                                
+                                setIsSchemaBuilderOpen(true);
+                                setEditingSchemaIndex(null);
+                                setBuilderTab('edit');
+                              }} className="flex items-center gap-1 text-[12px] font-medium px-2 py-1 rounded-[3px] border text-gray-500 border-gray-300 hover:bg-gray-50 bg-white">
+                                <PlusCircle className="w-3.5 h-3.5" /> Use
+                              </button>
                             </div>
-                            <button onClick={() => { 
-                              setSelectedSchema(schema.name); 
-                              setIsSchemaModalOpen(false); 
-                              
-                              const initialData: Record<string, string> = {};
-                              if (schemaFieldDefinitions[schema.name]) {
-                                schemaFieldDefinitions[schema.name].forEach(f => {
-                                  if (f.type === 'radio' && f.options && f.options.length > 0) {
-                                    initialData[`${schema.name}_${f.label}`] = f.options[0];
-                                  }
-                                });
-                              }
-                              setSchemaData(initialData);
-                              setIsSchemaBuilderOpen(true); 
-                            }} className="flex items-center gap-1 text-[12px] font-medium px-2 py-1 rounded-[3px] border text-gray-500 border-gray-300 hover:bg-gray-50 bg-white">
-                              <PlusCircle className="w-3.5 h-3.5" /> Use
-                            </button>
+                          );
+                        })
+                      ) : (
+                        customTemplates.length > 0 ? (
+                          customTemplates.map((template, idx) => (
+                            <div key={template.id || idx} className="flex items-center justify-between p-3 border border-[#e2e4e7] rounded-[3px] transition-colors hover:border-gray-300 bg-white">
+                              <div className="flex items-center gap-3">
+                                <FileText className="w-4 h-4 text-gray-400" />
+                                <span className="text-[13px] text-[#50575e]">{template.name}</span>
+                              </div>
+                              <button onClick={() => { 
+                                let parsedSchema = typeof template.schema === 'string' ? JSON.parse(template.schema) : template.schema;
+                                updateSchemas([...schemas, parsedSchema]);
+                                setIsSchemaModalOpen(false);
+                                toast.success('Template loaded!');
+                              }} className="flex items-center gap-1 text-[12px] font-medium px-2 py-1 rounded-[3px] border text-gray-500 border-gray-300 hover:bg-gray-50 bg-white">
+                                <PlusCircle className="w-3.5 h-3.5" /> Use
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="col-span-2 py-8 text-center text-gray-500 text-[14px]">
+                            No custom templates saved yet.
                           </div>
-                        );
-                      })}
+                        )
+                      )}
                     </div>
                   </div>
                 )}
@@ -1104,9 +1263,31 @@ export default function SeoAnalyzer({
                                    </div>
                                  ) : (
                                    <div className="flex items-center gap-2 ml-2">
-                                     <button onClick={() => {
-                                       setCustomSchemaNodes(nodes => addSchemaNode(nodes, 'root', { ...node, id: Math.random().toString(36).substr(2, 9) }));
-                                     }} className="p-1.5 text-gray-400 border border-gray-300 rounded hover:text-[#0085ba] hover:border-[#0085ba]"><Copy className="w-3.5 h-3.5" /></button>
+                                     <button
+                                      title="Copy Property"
+                                      onClick={() => {
+                                        const duplicateNode = (n: SchemaNode): SchemaNode => ({
+                                          ...n,
+                                          id: Math.random().toString(36).substring(2, 9),
+                                          children: n.children.map(duplicateNode)
+                                        });
+                                        const newNode = duplicateNode(node);
+                                        const copyNodes = (nodes: SchemaNode[]): SchemaNode[] => {
+                                          const result: SchemaNode[] = [];
+                                          for (const n of nodes) {
+                                            result.push(n);
+                                            if (n.id === node.id) result.push(newNode);
+                                            else {
+                                              const updated = { ...n, children: copyNodes(n.children) };
+                                              result.pop();
+                                              result.push(updated);
+                                            }
+                                          }
+                                          return result;
+                                        };
+                                        setCustomSchemaNodes(copyNodes(customSchemaNodes));
+                                      }}
+                                      className="p-1.5 text-gray-400 border border-gray-300 rounded hover:text-[#0085ba] hover:border-[#0085ba]"><Copy className="w-3.5 h-3.5" /></button>
                                      <button onClick={() => setCustomSchemaNodes(nodes => deleteSchemaNode(nodes, node.id))} className="p-1.5 text-gray-400 border border-gray-300 rounded hover:text-red-600 hover:border-red-600"><Trash2 className="w-3.5 h-3.5" /></button>
                                    </div>
                                  )}
@@ -1223,76 +1404,6 @@ export default function SeoAnalyzer({
                 ) : (
                   <div className="bg-white p-6 rounded-[3px] border border-[#e2e4e7] h-full flex flex-col">
                     {(() => {
-                      const generateSchemaObj = () => {
-                        if (selectedSchema === 'Custom') {
-                          const customObj = buildJsonFromNodes(customSchemaNodes);
-                          return {
-                            "@context": "https://schema.org",
-                            "@graph": customObj
-                          };
-                        }
-
-                        const schemaObj: any = {
-                          "@context": "https://schema.org",
-                          "@graph": {
-                            "@type": selectedSchema,
-                          }
-                        };
-                        const graphNode = schemaObj["@graph"];
-                        
-                        // Grab all fields
-                        const fields = schemaFieldDefinitions[selectedSchema] || [];
-                        const fieldValues: Record<string, any> = {};
-                        
-                        fields.forEach(field => {
-                          if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
-                          const fieldKey = `${selectedSchema}_${field.label}`;
-                          let val = schemaData[fieldKey];
-                          if (!val && field.placeholder) val = field.placeholder;
-                          
-                          if (val) {
-                            const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
-                            fieldValues[cleanKey] = val;
-                          }
-                        });
-                        
-                        // Handle headline -> name mapping
-                        if (fieldValues.headline && !fieldValues.name) {
-                          fieldValues.name = fieldValues.headline;
-                          delete fieldValues.headline;
-                        }
-                        
-                        // Insert name and description first to match RankMath format exactly
-                        if (fieldValues.name) graphNode.name = fieldValues.name;
-                        if (fieldValues.description) graphNode.description = fieldValues.description;
-                        
-                        // Insert offers
-                        if (selectedSchema === 'Service' || selectedSchema === 'Product') {
-                          graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                          if (fieldValues.price) graphNode.offers.price = fieldValues.price;
-                          if (fieldValues.currency) graphNode.offers.currency = fieldValues.currency;
-                          if (fieldValues.availability) graphNode.offers.availability = fieldValues.availability;
-                        }
-                        
-                        // Insert image
-                        if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
-                          graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
-                        }
-                        
-                        // Insert all other remaining fields
-                        Object.keys(fieldValues).forEach(k => {
-                          if (k !== 'name' && k !== 'description' && k !== 'price' && k !== 'currency' && k !== 'availability') {
-                            try {
-                              graphNode[k] = JSON.parse(fieldValues[k]);
-                            } catch {
-                              graphNode[k] = fieldValues[k];
-                            }
-                          }
-                        });
-                        
-                        return schemaObj;
-                      };
-
                       const currentSchemaObj = generateSchemaObj();
                       const currentSchemaJson = JSON.stringify(currentSchemaObj, null, 2);
 
@@ -1339,63 +1450,22 @@ export default function SeoAnalyzer({
                   <button 
                     type="button" 
                     onClick={() => {
-                      let schemaObj: any = {};
-                      if (selectedSchema === 'Custom') {
-                        schemaObj = {
-                          "@context": "https://schema.org",
-                          "@graph": buildJsonFromNodes(customSchemaNodes)
-                        };
-                      } else {
-                        schemaObj = {
-                          "@context": "https://schema.org",
-                          "@graph": {
-                            "@type": selectedSchema,
-                          }
-                        };
-                        const graphNode = schemaObj["@graph"];
-                        
-                        const fields = schemaFieldDefinitions[selectedSchema] || [];
-                        const fieldValues: Record<string, any> = {};
-                        fields.forEach(field => {
-                          if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
-                          const fieldKey = `${selectedSchema}_${field.label}`;
-                          let val = schemaData[fieldKey];
-                          if (!val && field.placeholder) val = field.placeholder;
-                          if (val) {
-                            const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
-                            fieldValues[cleanKey] = val;
-                          }
-                        });
-                        
-                        if (fieldValues.headline && !fieldValues.name) {
-                          fieldValues.name = fieldValues.headline;
-                          delete fieldValues.headline;
-                        }
-                        
-                        if (fieldValues.name) graphNode.name = fieldValues.name;
-                        if (fieldValues.description) graphNode.description = fieldValues.description;
-                        
-                        if (selectedSchema === 'Service' || selectedSchema === 'Product') {
-                          graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                          if (fieldValues.price) graphNode.offers.price = fieldValues.price;
-                          if (fieldValues.currency) graphNode.offers.currency = fieldValues.currency;
-                          if (fieldValues.availability) graphNode.offers.availability = fieldValues.availability;
-                        }
-                        
-                        if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
-                          graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
-                        }
-                        
-                        Object.keys(fieldValues).forEach(k => {
-                          if (k !== 'name' && k !== 'description' && k !== 'price' && k !== 'currency' && k !== 'availability') {
-                            try { graphNode[k] = JSON.parse(fieldValues[k]); } 
-                            catch { graphNode[k] = fieldValues[k]; }
-                          }
-                        });
+                      const schemaObj = generateSchemaObj();
+                      let templateName = selectedSchema === 'Custom' ? 'Custom Template' : selectedSchema + ' Template';
+                      const name = window.prompt("Enter template name:", templateName);
+                      if (name) {
+                        fetch('/api/schema-templates', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ name, schema: schemaObj })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                          setCustomTemplates(prev => [data, ...prev]);
+                          toast.success('Schema saved as custom template!');
+                        })
+                        .catch(() => toast.error('Failed to save template.'));
                       }
-                      
-                      updateSchemas([...schemas, schemaObj]);
-                      toast.success('Schema saved as custom template!');
                     }}
                     className="text-[#0085ba] text-[13px] font-medium hover:underline border border-[#0085ba] px-3 py-1 rounded-[3px]"
                   >
@@ -1404,62 +1474,7 @@ export default function SeoAnalyzer({
                 </div>
                 <button 
                   onClick={() => {
-                    let schemaObj: any = {};
-                    if (selectedSchema === 'Custom') {
-                      schemaObj = {
-                        "@context": "https://schema.org",
-                        "@graph": buildJsonFromNodes(customSchemaNodes)
-                      };
-                    } else {
-                      schemaObj = {
-                        "@context": "https://schema.org",
-                        "@graph": {
-                          "@type": selectedSchema,
-                        }
-                      };
-                      const graphNode = schemaObj["@graph"];
-                      
-                      const fields = schemaFieldDefinitions[selectedSchema] || [];
-                      const fieldValues: Record<string, any> = {};
-                      fields.forEach(field => {
-                        if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
-                        
-                        const fieldKey = `${selectedSchema}_${field.label}`;
-                        let val = schemaData[fieldKey];
-                        if (!val && field.placeholder) val = field.placeholder;
-                        if (val) {
-                          const cleanKey = field.label.toLowerCase().replace(/\s*\*\s*$/, '').replace(/ /g, '');
-                          fieldValues[cleanKey] = val;
-                        }
-                      });
-                      
-                      if (fieldValues.headline && !fieldValues.name) {
-                         fieldValues.name = fieldValues.headline;
-                         delete fieldValues.headline;
-                      }
-                      
-                      if (fieldValues.name) graphNode.name = fieldValues.name;
-                      if (fieldValues.description) graphNode.description = fieldValues.description;
-                      
-                      if (selectedSchema === 'Service' || selectedSchema === 'Product') {
-                        graphNode.offers = { "@type": "Offer", "availability": "InStock" };
-                        if (fieldValues.price) graphNode.offers.price = fieldValues.price;
-                        if (fieldValues.currency) graphNode.offers.currency = fieldValues.currency;
-                        if (fieldValues.availability) graphNode.offers.availability = fieldValues.availability;
-                      }
-                      
-                      if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
-                        graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
-                      }
-                      
-                      Object.keys(fieldValues).forEach(k => {
-                        if (k !== 'name' && k !== 'description' && k !== 'price' && k !== 'currency' && k !== 'availability') {
-                          try { graphNode[k] = JSON.parse(fieldValues[k]); } 
-                          catch { graphNode[k] = fieldValues[k]; }
-                        }
-                      });
-                    }
-                    
+                    const schemaObj = generateSchemaObj();
                     const newSchemas = [...schemas];
                     if (editingSchemaIndex !== null) {
                       newSchemas[editingSchemaIndex] = schemaObj;

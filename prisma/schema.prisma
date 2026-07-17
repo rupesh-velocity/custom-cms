@@ -372,3 +372,11 @@ model FormSubmission {
   isStarred Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model SchemaTemplate {
+  id        Int      @id @default(autoincrement())
+  name      String
+  schema    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
