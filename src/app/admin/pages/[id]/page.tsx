@@ -82,7 +82,7 @@ export default function EditPage() {
         console.error(err);
         setIsLoading(false);
       });
-  }, [params.id, router]);
+  }, [params?.id, router]);
 
   const handleUpdate = async (overrideStatus?: string) => {
     if (!title) {
