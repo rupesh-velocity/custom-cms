@@ -1225,6 +1225,7 @@ export default function SeoAnalyzer({
                     {(() => {
                       const generateSchemaObj = () => {
                         if (selectedSchema === 'Custom') {
+                          const customObj = buildJsonFromNodes(customSchemaNodes);
                           return {
                             "@context": "https://schema.org",
                             "@graph": customObj
