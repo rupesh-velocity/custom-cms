@@ -1437,9 +1437,10 @@ export default function SeoAnalyzer({
                 {builderTab === 'edit' ? (
                   <>
                     {selectedSchema === 'Custom' ? (
-                       <div className="bg-white border border-[#e2e4e7] rounded-[3px] p-4">
-                         {customSchemaNodes.map(function renderNode(node, idx) {
-                           return (
+                       <div className="bg-white border border-[#e2e4e7] rounded-[3px] p-4 overflow-x-auto">
+                         <div className="min-w-[600px]">
+                           {customSchemaNodes.map(function renderNode(node, idx) {
+                             return (
                              <div key={node.id} className="mb-4">
                                <div className="flex items-center gap-2">
                                  <input 
@@ -1501,6 +1502,7 @@ export default function SeoAnalyzer({
                              </div>
                            );
                          })}
+                         </div>
                        </div>
                      ) : (
                        <>
