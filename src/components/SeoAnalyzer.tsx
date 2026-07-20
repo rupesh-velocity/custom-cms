@@ -894,17 +894,26 @@ export default function SeoAnalyzer({
                              }
                            }
                          });
-                         schemaFieldDefinitions[type].forEach(f => {
-                           if (!newData[`${type}_${f.label}`] && f.placeholder && f.placeholder.startsWith('%') && f.placeholder.endsWith('%')) {
-                             newData[`${type}_${f.label}`] = f.placeholder;
-                           }
-                         });
                          setSchemaData(newData);
                          setIsSchemaBuilderOpen(true);
                        } else {
-                         setCustomSchemaJson(JSON.stringify(s, null, 2));
-                         setSchemaModalTab('custom');
-                         setIsSchemaModalOpen(true);
+                         const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
+                         
+                         const parseObjToNodes = (obj: any): SchemaNode[] => {
+                           const children = Object.entries(obj)
+                             .filter(([k]) => k !== '@context')
+                             .map(([k, v]) => {
+                                if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+                                  return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children: parseObjToNodes(v) };
+                                }
+                                return { id: Math.random().toString(36).substr(2, 9), key: k, value: typeof v === 'object' ? JSON.stringify(v) : String(v), type: 'property' as const, children: [] };
+                             });
+                           return [{ id: 'root-1', key: '', value: '', type: 'group' as const, children }];
+                         };
+
+                         setCustomSchemaNodes(parseObjToNodes(data));
+                         setSelectedSchema('Custom');
+                         setIsSchemaBuilderOpen(true);
                        }
                      }} className="hover:underline">Edit</button>
                      <button type="button" onClick={() => {
@@ -982,12 +991,25 @@ export default function SeoAnalyzer({
                                          }
                                        }
                                      });
-                                     schemaFieldDefinitions[type].forEach(f => {
-                                       if (!newData[`${type}_${f.label}`] && f.placeholder && f.placeholder.startsWith('%') && f.placeholder.endsWith('%')) {
-                                         newData[`${type}_${f.label}`] = f.placeholder;
-                                       }
-                                     });
                                      setSchemaData(newData);
+                                     setIsSchemaBuilderOpen(true);
+                                   } else {
+                                     const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
+                                     
+                                     const parseObjToNodes = (obj: any): SchemaNode[] => {
+                                       const children = Object.entries(obj)
+                                         .filter(([k]) => k !== '@context')
+                                         .map(([k, v]) => {
+                                            if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+                                              return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children: parseObjToNodes(v) };
+                                            }
+                                            return { id: Math.random().toString(36).substr(2, 9), key: k, value: typeof v === 'object' ? JSON.stringify(v) : String(v), type: 'property' as const, children: [] };
+                                         });
+                                       return [{ id: 'root-1', key: '', value: '', type: 'group' as const, children }];
+                                     };
+            
+                                     setCustomSchemaNodes(parseObjToNodes(data));
+                                     setSelectedSchema('Custom');
                                      setIsSchemaBuilderOpen(true);
                                    }
                                  }} className="flex items-center gap-1 hover:text-[#0085ba] transition-colors"><Edit2 className="w-3.5 h-3.5" /> Edit</button>
@@ -1044,8 +1066,6 @@ export default function SeoAnalyzer({
                                   schemaFieldDefinitions[schema.name].forEach(f => {
                                     if (f.type === 'radio' && f.options && f.options.length > 0) {
                                       initialData[`${schema.name}_${f.label}`] = f.options[0];
-                                    } else if (f.placeholder && f.placeholder.startsWith('%') && f.placeholder.endsWith('%')) {
-                                      initialData[`${schema.name}_${f.label}`] = f.placeholder;
                                     }
                                   });
                                 }
@@ -1134,25 +1154,34 @@ export default function SeoAnalyzer({
                           
                           const extractSchemas = (parsed: any): any[] => {
                             const extracted: any[] = [];
-                            if (parsed['@graph'] && Array.isArray(parsed['@graph'])) {
-                              parsed['@graph'].forEach((node: any) => {
-                                extracted.push({
-                                  "@context": parsed["@context"] || "https://schema.org",
-                                  "@graph": [node]
-                                });
-                              });
-                            } else if (Array.isArray(parsed)) {
-                              parsed.forEach((node: any) => {
-                                extracted.push({
-                                  "@context": "https://schema.org",
-                                  "@graph": [node]
-                                });
-                              });
-                            } else if (parsed['@type'] && !parsed['@graph']) {
+                            const seenIds = new Set<string>();
+                            
+                            const processNode = (node: any) => {
+                              const types = Array.isArray(node['@type']) ? node['@type'] : [node['@type']];
+                              if (types.includes('WebSite') || types.includes('ImageObject')) return;
+                              if (types.length === 1 && types[0] === 'WebPage') return;
+                              
+                              if (node['@id']) {
+                                if (seenIds.has(node['@id'])) return;
+                                seenIds.add(node['@id']);
+                              } else {
+                                const nodeStr = JSON.stringify(node);
+                                if (seenIds.has(nodeStr)) return;
+                                seenIds.add(nodeStr);
+                              }
+                              
                               extracted.push({
                                 "@context": parsed["@context"] || "https://schema.org",
-                                "@graph": [parsed]
+                                "@graph": [node]
                               });
+                            };
+                          
+                            if (parsed['@graph'] && Array.isArray(parsed['@graph'])) {
+                              parsed['@graph'].forEach(processNode);
+                            } else if (Array.isArray(parsed)) {
+                              parsed.forEach(processNode);
+                            } else if (parsed['@type'] && !parsed['@graph']) {
+                              processNode(parsed);
                             } else {
                               extracted.push(parsed);
                             }
