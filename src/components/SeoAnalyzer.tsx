@@ -1132,10 +1132,38 @@ export default function SeoAnalyzer({
                           
                           setImportError('');
                           
+                          const extractSchemas = (parsed: any): any[] => {
+                            const extracted: any[] = [];
+                            if (parsed['@graph'] && Array.isArray(parsed['@graph'])) {
+                              parsed['@graph'].forEach((node: any) => {
+                                extracted.push({
+                                  "@context": parsed["@context"] || "https://schema.org",
+                                  "@graph": [node]
+                                });
+                              });
+                            } else if (Array.isArray(parsed)) {
+                              parsed.forEach((node: any) => {
+                                extracted.push({
+                                  "@context": "https://schema.org",
+                                  "@graph": [node]
+                                });
+                              });
+                            } else if (parsed['@type'] && !parsed['@graph']) {
+                              extracted.push({
+                                "@context": parsed["@context"] || "https://schema.org",
+                                "@graph": [parsed]
+                              });
+                            } else {
+                              extracted.push(parsed);
+                            }
+                            return extracted;
+                          };
+                          
                           if (importType === 'json') {
                             try {
                               const parsed = JSON.parse(importJson);
-                              const newSchemas = [...schemas, parsed];
+                              const schemasToAdd = extractSchemas(parsed);
+                              const newSchemas = [...schemas, ...schemasToAdd];
                               updateSchemas(newSchemas);
                               setImportJson('');
                               setIsSchemaModalOpen(false);
@@ -1155,7 +1183,7 @@ export default function SeoAnalyzer({
                             while ((match = regex.exec(importHtml)) !== null) {
                               try {
                                 const parsed = JSON.parse(match[1]);
-                                newSchemas.push(parsed);
+                                newSchemas.push(...extractSchemas(parsed));
                                 found = true;
                               } catch(e) {}
                             }
@@ -1177,7 +1205,10 @@ export default function SeoAnalyzer({
                             if (!res.ok) throw new Error(data.error || 'Failed to import');
                             if (!data.schemas || data.schemas.length === 0) throw new Error('No valid JSON-LD schemas found on this URL.');
                             
-                            const newSchemas = [...schemas, ...data.schemas];
+                            const newSchemas = [...schemas];
+                            data.schemas.forEach((s: any) => {
+                               newSchemas.push(...extractSchemas(s));
+                            });
                             updateSchemas(newSchemas);
                             setImportUrl('');
                             setIsSchemaModalOpen(false);
