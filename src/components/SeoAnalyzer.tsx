@@ -1548,36 +1548,37 @@ export default function SeoAnalyzer({
                              } catch {}
                              
                              return (
-                               <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
-                                 <div className="flex items-center justify-between p-3 border-b border-[#e2e4e7]">
-                                   <div className="text-[11px] font-bold text-[#1d2327] uppercase">{field.label}</div>
+                               <div key={idx} className="mt-8 mb-4">
+                                 <div className="flex items-center justify-between mb-4">
+                                   <div className="text-[14px] font-bold text-[#1d2327]">{field.label}</div>
                                    <button type="button" onClick={() => {
                                      const newItems = [...items, {}];
                                      setSchemaData({ ...schemaData, [fieldKey]: JSON.stringify(newItems) });
-                                   }} className="text-[12px] text-gray-500 hover:text-[#0085ba] flex items-center gap-1">
-                                     <PlusCircle className="w-3.5 h-3.5" /> Add Property Group
+                                   }} className="text-[13px] text-gray-500 hover:text-[#0085ba] flex items-center gap-1">
+                                     <PlusCircle className="w-4 h-4" /> Add Property Group
                                    </button>
                                  </div>
-                                 <div className="p-4 bg-gray-50 space-y-4">
+                                 <div className="space-y-6">
                                    {items.map((item: any, itemIdx: number) => (
-                                      <div key={itemIdx} className="border-l-2 border-gray-200 pl-4 relative">
-                                        <div className="flex items-center justify-between mb-4">
-                                          <div className="text-[13px] font-medium text-[#1d2327] font-bold">{field.itemLabel || 'Item'} {itemIdx + 1}</div>
+                                      <div key={itemIdx} className="border-l-2 border-[#e2e4e7] pl-5 relative ml-2">
+                                        <div className="absolute left-[-2px] top-[14px] w-[16px] h-[2px] bg-[#e2e4e7]"></div>
+                                        <div className="flex items-center justify-between mb-3">
+                                          <div className="text-[13px] font-bold text-[#1d2327]">{field.itemLabel || 'Item'} {itemIdx + 1}</div>
                                           <button type="button" onClick={() => {
                                             const newItems = [...items];
                                             newItems.splice(itemIdx, 1);
                                             setSchemaData({ ...schemaData, [fieldKey]: JSON.stringify(newItems) });
                                           }} className="text-[12px] text-gray-500 hover:text-red-600 flex items-center gap-1">
-                                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                                            <Trash2 className="w-4 h-4" /> Delete
                                           </button>
                                         </div>
                                         <div className="space-y-3">
                                           {field.subFields?.map((subField, subIdx) => (
-                                            <div key={subIdx} className="border border-[#e2e4e7] rounded-[3px] bg-white">
-                                              <div className="p-2.5 text-[10px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase bg-gray-50">
+                                            <div key={subIdx} className="border border-[#e2e4e7] rounded-[3px] bg-white p-3">
+                                              <div className="text-[11px] font-bold text-[#1d2327] uppercase mb-2">
                                                 {subField.label}
                                               </div>
-                                              <div className="p-3">
+                                              <div>
                                                 {subField.type === 'text' && (
                                                   <input type="text" value={item[subField.label.toLowerCase()] || ''} onChange={e => {
                                                     const newItems = [...items];
@@ -1590,7 +1591,7 @@ export default function SeoAnalyzer({
                                                     const newItems = [...items];
                                                     newItems[itemIdx] = { ...newItems[itemIdx], [subField.label.toLowerCase()]: e.target.value };
                                                     setSchemaData({ ...schemaData, [fieldKey]: JSON.stringify(newItems) });
-                                                  }} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner min-h-[60px]" />
+                                                  }} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner min-h-[80px]" />
                                                 )}
                                               </div>
                                             </div>
