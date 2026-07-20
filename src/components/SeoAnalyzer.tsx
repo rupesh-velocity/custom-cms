@@ -894,6 +894,11 @@ export default function SeoAnalyzer({
                              }
                            }
                          });
+                         schemaFieldDefinitions[type].forEach(f => {
+                           if (!newData[`${type}_${f.label}`] && f.placeholder && f.placeholder.startsWith('%') && f.placeholder.endsWith('%')) {
+                             newData[`${type}_${f.label}`] = f.placeholder;
+                           }
+                         });
                          setSchemaData(newData);
                          setIsSchemaBuilderOpen(true);
                        } else {
@@ -975,6 +980,11 @@ export default function SeoAnalyzer({
                                          if (fieldDef) {
                                            newData[`${type}_${fieldDef.label}`] = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
                                          }
+                                       }
+                                     });
+                                     schemaFieldDefinitions[type].forEach(f => {
+                                       if (!newData[`${type}_${f.label}`] && f.placeholder && f.placeholder.startsWith('%') && f.placeholder.endsWith('%')) {
+                                         newData[`${type}_${f.label}`] = f.placeholder;
                                        }
                                      });
                                      setSchemaData(newData);
