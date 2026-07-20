@@ -1438,7 +1438,7 @@ export default function SeoAnalyzer({
                   <>
                     {selectedSchema === 'Custom' ? (
                        <div className="bg-white border border-[#e2e4e7] rounded-[3px] p-4 overflow-x-auto">
-                         <div className="min-w-[600px]">
+                         <div className="min-w-max pr-4">
                            {customSchemaNodes.map(function renderNode(node, idx) {
                              return (
                              <div key={node.id} className="mb-4">
