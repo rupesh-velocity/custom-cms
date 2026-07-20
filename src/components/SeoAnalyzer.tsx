@@ -1782,15 +1782,18 @@ export default function SeoAnalyzer({
                 </div>
                 <button 
                   onClick={() => {
-                    const schemaObj = generateSchemaObj();
+                    const newSchema = generateSchemaObj();
                     const newSchemas = [...schemas];
                     if (editingSchemaIndex !== null) {
-                      newSchemas[editingSchemaIndex] = schemaObj;
+                      newSchemas[editingSchemaIndex] = newSchema;
                     } else {
-                      newSchemas.push(schemaObj);
+                      newSchemas.push(newSchema);
                     }
                     updateSchemas(newSchemas);
+                    onSave?.({ schemas: newSchemas });
                     setIsSchemaBuilderOpen(false);
+                    setSelectedSchema('Article');
+                    setEditingSchemaIndex(null);
                   }}
                   className="bg-[#0085ba] text-white px-5 py-2.5 rounded-[3px] text-[14px] font-semibold hover:bg-[#0073aa]"
                 >

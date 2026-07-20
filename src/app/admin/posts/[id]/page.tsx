@@ -84,6 +84,14 @@ export default function EditPost() {
     
     setIsSaving(true);
     const finalStatus = overrideStatus || status;
+    
+    // DEBUG: Show exactly what is being sent
+    if (schemaJson && schemaJson !== '[]') {
+      toast.success('Sending schema to DB! Length: ' + schemaJson.length);
+    } else {
+      toast.error('Warning: Schema is empty or []!');
+    }
+
     try {
       const res = await fetch(`/api/posts/${params?.id}`, {
         method: 'PATCH',
