@@ -1034,6 +1034,8 @@ export default function SeoAnalyzer({
                                   schemaFieldDefinitions[schema.name].forEach(f => {
                                     if (f.type === 'radio' && f.options && f.options.length > 0) {
                                       initialData[`${schema.name}_${f.label}`] = f.options[0];
+                                    } else if (f.placeholder && f.placeholder.startsWith('%') && f.placeholder.endsWith('%')) {
+                                      initialData[`${schema.name}_${f.label}`] = f.placeholder;
                                     }
                                   });
                                 }
