@@ -896,7 +896,15 @@ export default function SeoAnalyzer({
                      <button type="button" onClick={() => { 
                        setEditingSchemaIndex(i); 
                        const type = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
+                       const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
+                       let hasUnmappedKeys = false;
                        if (type && schemaFieldDefinitions[type]) {
+                         hasUnmappedKeys = Object.keys(data).some(k => {
+                           if (k === '@context' || k === '@type' || k === '@graph' || k === '@id') return false;
+                           return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
+                         });
+                       }
+                       if (type && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
                          setSelectedSchema(type);
                          const newData: Record<string, string> = {};
                          const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
@@ -911,7 +919,6 @@ export default function SeoAnalyzer({
                          setSchemaData(newData);
                          setIsSchemaBuilderOpen(true);
                        } else {
-                         const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                          
                          const parseObjToNodes = (obj: any, isRoot = true): SchemaNode[] => {
                            const processValue = (k: string, v: any): SchemaNode => {
@@ -1008,7 +1015,15 @@ export default function SeoAnalyzer({
                                  <button type="button" onClick={() => { 
                                    setEditingSchemaIndex(i); 
                                    const type = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
+                                   const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
+                                   let hasUnmappedKeys = false;
                                    if (type && schemaFieldDefinitions[type]) {
+                                     hasUnmappedKeys = Object.keys(data).some(k => {
+                                       if (k === '@context' || k === '@type' || k === '@graph' || k === '@id') return false;
+                                       return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
+                                     });
+                                   }
+                                   if (type && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
                                      setSelectedSchema(type);
                                      const newData: Record<string, string> = {};
                                      const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
@@ -1023,7 +1038,6 @@ export default function SeoAnalyzer({
                                      setSchemaData(newData);
                                      setIsSchemaBuilderOpen(true);
                                    } else {
-                                     const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                                      
                                      const parseObjToNodes = (obj: any, isRoot = true): SchemaNode[] => {
                                        const processValue = (k: string, v: any): SchemaNode => {
