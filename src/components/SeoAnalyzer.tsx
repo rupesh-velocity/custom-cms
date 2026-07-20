@@ -971,7 +971,7 @@ export default function SeoAnalyzer({
                            newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
                          }
                          Object.keys(data).forEach(k => {
-                           if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity')) {
+                           if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity') && !(type === 'FAQ' && k === 'name')) {
                              const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
                              if (fieldDef) newData[`${type}_${fieldDef.label}`] = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
                            }
@@ -1093,7 +1093,7 @@ export default function SeoAnalyzer({
                                        newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
                                      }
                                      Object.keys(data).forEach(k => {
-                                       if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity')) {
+                                       if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity') && !(type === 'FAQ' && k === 'name')) {
                                          const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
                                          if (fieldDef) {
                                            newData[`${type}_${fieldDef.label}`] = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
