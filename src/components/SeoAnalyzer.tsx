@@ -119,6 +119,28 @@ const addressFields: SchemaField[] = [
   { label: 'COUNTRY', type: 'text' }
 ];
 
+const schemaTypeMap: Record<string, string> = {
+  'FAQ': 'FAQPage',
+  'Job Posting': 'JobPosting',
+  'Fact Check': 'ClaimReview',
+  'Podcast Episode': 'PodcastEpisode',
+};
+
+const mapSchemaType = (t: any): string => {
+  if (Array.isArray(t)) {
+    if (t.includes('FAQPage')) return 'FAQ';
+    if (t.includes('FAQ')) return 'FAQ';
+    for (const item of t) {
+      const found = Object.entries(schemaTypeMap).find(([k, v]) => v === item);
+      if (found) return found[0];
+      if (schemaFieldDefinitions[item]) return item;
+    }
+    return t[0] || '';
+  }
+  const found = Object.entries(schemaTypeMap).find(([k, v]) => v === t);
+  return found ? found[0] : (t || '');
+};
+
 const schemaFieldDefinitions: Record<string, SchemaField[]> = {
   'Article': [
     { label: 'HEADLINE *', type: 'text', placeholder: '%seo_title%' },
@@ -504,7 +526,7 @@ export default function SeoAnalyzer({
         "@context": "https://schema.org",
         "@graph": [
           {
-            "@type": selectedSchema,
+            "@type": schemaTypeMap[selectedSchema] || selectedSchema,
           }
         ]
       };
@@ -924,31 +946,34 @@ export default function SeoAnalyzer({
                   <div className="flex items-center gap-4 text-[13px] text-[#0085ba] font-semibold">
                      <button type="button" onClick={() => { 
                        setEditingSchemaIndex(i); 
-                       const type = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
+                       const rawType = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
+                       const type = schemaTypeMap[rawType] || 'Custom';
                        const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                        let hasUnmappedKeys = false;
-                       if (type && schemaFieldDefinitions[type]) {
+                       if (type !== 'Custom' && schemaFieldDefinitions[type]) {
                          hasUnmappedKeys = Object.keys(data).some(k => {
-                           if (k === '@context' || k === '@type' || k === '@graph' || k === '@id') return false;
+                           if (k === '@context' || k === '@type' || k === '@graph' || k === '@id' || (type === 'FAQ' && k === 'mainEntity')) return false;
                            return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
                          });
                        }
-                       if (type && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
+                       if (type !== 'Custom' && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
                          setSelectedSchema(type);
                          const newData: Record<string, string> = {};
-                         const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
+                         if (type === 'FAQ' && data.mainEntity) {
+                           const flatQuestions = (Array.isArray(data.mainEntity) ? data.mainEntity : [data.mainEntity]).map((q: any) => ({
+                             question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
+                           }));
+                           newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
+                         }
                          Object.keys(data).forEach(k => {
-                           if (k !== '@context' && k !== '@type' && k !== '@graph') {
+                           if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity')) {
                              const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
-                             if (fieldDef) {
-                               newData[`${type}_${fieldDef.label}`] = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
-                             }
+                             if (fieldDef) newData[`${type}_${fieldDef.label}`] = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
                            }
                          });
                          setSchemaData(newData);
                          setIsSchemaBuilderOpen(true);
                        } else {
-                         
                          const parseObjToNodes = (obj: any, isRoot = true): SchemaNode[] => {
                            const processValue = (k: string, v: any): SchemaNode => {
                              if (typeof v === 'object' && v !== null) {
@@ -964,18 +989,14 @@ export default function SeoAnalyzer({
                              }
                              return { id: Math.random().toString(36).substr(2, 9), key: k, value: String(v), type: 'property' as const, children: [] };
                            };
-
                            if (isRoot && typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
                              const children = Object.entries(obj)
                                .filter(([k]) => k !== '@context')
                                .map(([k, v]) => processValue(k, v));
                              return [{ id: 'root-1', key: obj['@type'] || 'Custom', value: '', type: 'group' as const, children }];
                            }
-                           
-                           // Fallback for non-root or array structures
                            return [{ id: 'root-1', key: 'Custom', value: '', type: 'group' as const, children: Array.isArray(obj) ? obj.map((item, idx) => processValue(String(idx), item)) : [] }];
                          };
-
                          setCustomSchemaNodes(parseObjToNodes(data));
                          setSelectedSchema('Custom');
                          setIsSchemaBuilderOpen(true);
@@ -1043,29 +1064,27 @@ export default function SeoAnalyzer({
                               <div className="flex items-center gap-3 text-[12px] text-gray-500">
                                  <button type="button" onClick={() => { 
                                    setEditingSchemaIndex(i); 
-                                   const type = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
+                                   const rawType = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
+                                   const type = schemaTypeMap[rawType] || 'Custom';
                                    const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                                    let hasUnmappedKeys = false;
-                                   if (type && schemaFieldDefinitions[type]) {
+                                   if (type !== 'Custom' && schemaFieldDefinitions[type]) {
                                      hasUnmappedKeys = Object.keys(data).some(k => {
-                                       if (k === '@context' || k === '@type' || k === '@graph' || k === '@id') return false;
+                                       if (k === '@context' || k === '@type' || k === '@graph' || k === '@id' || (type === 'FAQ' && k === 'mainEntity')) return false;
                                        return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
                                      });
                                    }
-                                   if (type && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
+                                   if (type !== 'Custom' && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
                                      setSelectedSchema(type);
                                      const newData: Record<string, string> = {};
-                                     if (type === 'FAQPage' && data.mainEntity) {
+                                     if (type === 'FAQ' && data.mainEntity) {
                                        const flatQuestions = (Array.isArray(data.mainEntity) ? data.mainEntity : [data.mainEntity]).map((q: any) => ({
-                                         question: q.name,
-                                         url: q.url,
-                                         image: q.image,
-                                         answer: q.acceptedAnswer?.text || q.acceptedAnswer
+                                         question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
                                        }));
                                        newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
                                      }
                                      Object.keys(data).forEach(k => {
-                                       if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQPage' && k === 'mainEntity')) {
+                                       if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity')) {
                                          const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
                                          if (fieldDef) {
                                            newData[`${type}_${fieldDef.label}`] = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
