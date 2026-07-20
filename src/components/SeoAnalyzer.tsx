@@ -989,7 +989,7 @@ export default function SeoAnalyzer({
                            if (['@context', '@type', '@graph', '@id'].includes(key) || (type === 'FAQ' && key === 'mainentity')) return false;
                            
                            // Ignore common bundled WebPage properties that users don't care about when editing specific schemas like FAQ
-                           if (['url', 'datepublished', 'datemodified', 'inlanguage', 'potentialaction', 'publisher', 'description', 'author', 'mainentityofpage'].includes(key)) return false;
+                           if (['url', 'datepublished', 'datemodified', 'inlanguage', 'potentialaction', 'publisher', 'description', 'author', 'mainentityofpage', 'name', 'image', 'subjectof', 'offers'].includes(key)) return false;
                            
                            return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === key);
                          });
@@ -1003,11 +1003,17 @@ export default function SeoAnalyzer({
                            }));
                            newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
                          }
-                         if (type === 'Service' && data.subjectOf && data.subjectOf[0]?.mainEntity) {
-                           const flatQuestions = (Array.isArray(data.subjectOf[0].mainEntity) ? data.subjectOf[0].mainEntity : [data.subjectOf[0].mainEntity]).map((q: any) => ({
-                             question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
-                           }));
-                           newData[`Service_Questions`] = JSON.stringify(flatQuestions);
+                         if (type === 'Service') {
+                           if (data.name) newData[`Service_HEADLINE *`] = data.name;
+                           if (data.description) newData[`Service_DESCRIPTION`] = data.description;
+                           if (data.offers?.price) newData[`Service_PRICE`] = String(data.offers.price);
+                           if (data.offers?.priceCurrency) newData[`Service_CURRENCY`] = String(data.offers.priceCurrency);
+                           if (data.subjectOf && data.subjectOf[0]?.mainEntity) {
+                             const flatQuestions = (Array.isArray(data.subjectOf[0].mainEntity) ? data.subjectOf[0].mainEntity : [data.subjectOf[0].mainEntity]).map((q: any) => ({
+                               question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
+                             }));
+                             newData[`Service_Questions`] = JSON.stringify(flatQuestions);
+                           }
                          }
                          Object.keys(data).forEach(k => {
                            if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity') && !(type === 'FAQ' && k === 'name')) {
@@ -1117,7 +1123,7 @@ export default function SeoAnalyzer({
                                        const key = k.toLowerCase();
                                        if (['@context', '@type', '@graph', '@id'].includes(key) || (type === 'FAQ' && key === 'mainentity')) return false;
                                        
-                                       if (['url', 'datepublished', 'datemodified', 'inlanguage', 'potentialaction', 'publisher', 'description', 'author', 'mainentityofpage'].includes(key)) return false;
+                                       if (['url', 'datepublished', 'datemodified', 'inlanguage', 'potentialaction', 'publisher', 'description', 'author', 'mainentityofpage', 'name', 'image', 'subjectof', 'offers'].includes(key)) return false;
                                        
                                        return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === key);
                                      });
@@ -1131,11 +1137,17 @@ export default function SeoAnalyzer({
                                        }));
                                        newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
                                      }
-                                     if (type === 'Service' && data.subjectOf && data.subjectOf[0]?.mainEntity) {
-                                       const flatQuestions = (Array.isArray(data.subjectOf[0].mainEntity) ? data.subjectOf[0].mainEntity : [data.subjectOf[0].mainEntity]).map((q: any) => ({
-                                         question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
-                                       }));
-                                       newData[`Service_Questions`] = JSON.stringify(flatQuestions);
+                                     if (type === 'Service') {
+                                       if (data.name) newData[`Service_HEADLINE *`] = data.name;
+                                       if (data.description) newData[`Service_DESCRIPTION`] = data.description;
+                                       if (data.offers?.price) newData[`Service_PRICE`] = String(data.offers.price);
+                                       if (data.offers?.priceCurrency) newData[`Service_CURRENCY`] = String(data.offers.priceCurrency);
+                                       if (data.subjectOf && data.subjectOf[0]?.mainEntity) {
+                                         const flatQuestions = (Array.isArray(data.subjectOf[0].mainEntity) ? data.subjectOf[0].mainEntity : [data.subjectOf[0].mainEntity]).map((q: any) => ({
+                                           question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
+                                         }));
+                                         newData[`Service_Questions`] = JSON.stringify(flatQuestions);
+                                       }
                                      }
                                      Object.keys(data).forEach(k => {
                                        if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity') && !(type === 'FAQ' && k === 'name')) {
