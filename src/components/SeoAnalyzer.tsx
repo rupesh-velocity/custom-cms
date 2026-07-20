@@ -876,16 +876,16 @@ export default function SeoAnalyzer({
                 <div key={i} className="border border-[#e2e4e7] rounded-[3px] p-4 flex items-center justify-between hover:border-[#0085ba] transition-colors bg-[#f9f9f9]">
                   <div className="flex items-center gap-3">
                      <FileText className="w-5 h-5 text-gray-500" />
-                     <span className="text-[13px] font-medium text-[#1d2327]">{s['@type'] || s['@graph']?.['@type'] || 'Custom Schema'}</span>
+                     <span className="text-[13px] font-medium text-[#1d2327]">{s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']) || 'Custom Schema'}</span>
                   </div>
                   <div className="flex items-center gap-4 text-[13px] text-[#0085ba] font-semibold">
                      <button type="button" onClick={() => { 
                        setEditingSchemaIndex(i); 
-                       const type = s['@type'] || s['@graph']?.['@type'];
+                       const type = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
                        if (type && schemaFieldDefinitions[type]) {
                          setSelectedSchema(type);
                          const newData: Record<string, string> = {};
-                         const data = s['@graph'] || s;
+                         const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                          Object.keys(data).forEach(k => {
                            if (k !== '@context' && k !== '@type' && k !== '@graph') {
                              const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
@@ -964,16 +964,16 @@ export default function SeoAnalyzer({
                                    <div className="w-2 h-2 rounded-full bg-[#0085ba]" />
                                  </div>
                                  <FileText className="w-4 h-4 text-gray-500" />
-                                 <span className="text-[13px] text-[#50575e]">{s['@type'] || s['@graph']?.['@type'] || 'Custom Schema'}</span>
+                                 <span className="text-[13px] text-[#50575e]">{s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']) || 'Custom Schema'}</span>
                               </div>
                               <div className="flex items-center gap-3 text-[12px] text-gray-500">
                                  <button type="button" onClick={() => { 
                                    setEditingSchemaIndex(i); 
-                                   const type = s['@type'] || s['@graph']?.['@type'];
+                                   const type = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
                                    if (type && schemaFieldDefinitions[type]) {
                                      setSelectedSchema(type);
                                      const newData: Record<string, string> = {};
-                                     const data = s['@graph'] || s;
+                                     const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                                      Object.keys(data).forEach(k => {
                                        if (k !== '@context' && k !== '@type' && k !== '@graph') {
                                          const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
