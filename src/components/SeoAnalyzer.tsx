@@ -437,15 +437,29 @@ export default function SeoAnalyzer({
   };
 
   const buildJsonFromNodes = (nodes: SchemaNode[]): any => {
-    const result: any = {};
+    const isArray = nodes.length > 0 && nodes.every(n => !isNaN(Number(n.key)) && String(Number(n.key)) === n.key);
+    const result: any = isArray ? [] : {};
+    
     nodes.forEach(node => {
-      if (!node.key) return;
+      if (!node.key && !isArray) return;
+      const key = isArray ? Number(node.key) : node.key;
+      let val;
       if (node.type === 'group') {
-        result[node.key] = buildJsonFromNodes(node.children);
+        val = buildJsonFromNodes(node.children);
       } else {
-        result[node.key] = node.value;
+        val = node.value;
+      }
+      
+      if (isArray) {
+        result[key as number] = val;
+      } else {
+        result[key as string] = val;
       }
     });
+    
+    if (isArray) {
+      return (result as any[]).filter(v => v !== undefined);
+    }
     return result;
   };
 
@@ -900,18 +914,30 @@ export default function SeoAnalyzer({
                          const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                          
                          const parseObjToNodes = (obj: any, isRoot = true): SchemaNode[] => {
-                           const children = Object.entries(obj)
-                             .filter(([k]) => k !== '@context')
-                             .map(([k, v]) => {
-                                if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
-                                  return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children: parseObjToNodes(v, false) };
-                                }
-                                return { id: Math.random().toString(36).substr(2, 9), key: k, value: typeof v === 'object' ? JSON.stringify(v) : String(v), type: 'property' as const, children: [] };
-                             });
-                           if (isRoot) {
+                           const processValue = (k: string, v: any): SchemaNode => {
+                             if (typeof v === 'object' && v !== null) {
+                               if (Array.isArray(v)) {
+                                 const children = v.map((item, idx) => processValue(String(idx), item));
+                                 return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children };
+                               } else {
+                                 const children = Object.entries(v)
+                                   .filter(([subK]) => subK !== '@context')
+                                   .map(([subK, subV]) => processValue(subK, subV));
+                                 return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children };
+                               }
+                             }
+                             return { id: Math.random().toString(36).substr(2, 9), key: k, value: String(v), type: 'property' as const, children: [] };
+                           };
+
+                           if (isRoot && typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+                             const children = Object.entries(obj)
+                               .filter(([k]) => k !== '@context')
+                               .map(([k, v]) => processValue(k, v));
                              return [{ id: 'root-1', key: obj['@type'] || 'Custom', value: '', type: 'group' as const, children }];
                            }
-                           return children;
+                           
+                           // Fallback for non-root or array structures
+                           return [{ id: 'root-1', key: 'Custom', value: '', type: 'group' as const, children: Array.isArray(obj) ? obj.map((item, idx) => processValue(String(idx), item)) : [] }];
                          };
 
                          setCustomSchemaNodes(parseObjToNodes(data));
@@ -1000,18 +1026,29 @@ export default function SeoAnalyzer({
                                      const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                                      
                                      const parseObjToNodes = (obj: any, isRoot = true): SchemaNode[] => {
-                                       const children = Object.entries(obj)
-                                         .filter(([k]) => k !== '@context')
-                                         .map(([k, v]) => {
-                                            if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
-                                              return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children: parseObjToNodes(v, false) };
-                                            }
-                                            return { id: Math.random().toString(36).substr(2, 9), key: k, value: typeof v === 'object' ? JSON.stringify(v) : String(v), type: 'property' as const, children: [] };
-                                         });
-                                       if (isRoot) {
+                                       const processValue = (k: string, v: any): SchemaNode => {
+                                         if (typeof v === 'object' && v !== null) {
+                                           if (Array.isArray(v)) {
+                                             const children = v.map((item, idx) => processValue(String(idx), item));
+                                             return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children };
+                                           } else {
+                                             const children = Object.entries(v)
+                                               .filter(([subK]) => subK !== '@context')
+                                               .map(([subK, subV]) => processValue(subK, subV));
+                                             return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children };
+                                           }
+                                         }
+                                         return { id: Math.random().toString(36).substr(2, 9), key: k, value: String(v), type: 'property' as const, children: [] };
+                                       };
+            
+                                       if (isRoot && typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+                                         const children = Object.entries(obj)
+                                           .filter(([k]) => k !== '@context')
+                                           .map(([k, v]) => processValue(k, v));
                                          return [{ id: 'root-1', key: obj['@type'] || 'Custom', value: '', type: 'group' as const, children }];
                                        }
-                                       return children;
+                                       
+                                       return [{ id: 'root-1', key: 'Custom', value: '', type: 'group' as const, children: Array.isArray(obj) ? obj.map((item, idx) => processValue(String(idx), item)) : [] }];
                                      };
             
                                      setCustomSchemaNodes(parseObjToNodes(data));
