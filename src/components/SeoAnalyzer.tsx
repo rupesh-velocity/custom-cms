@@ -339,7 +339,13 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
     { label: 'SERVICE TYPE', type: 'text', info: "The type of service being offered, e.g. veterans' benefits, emergency relief, etc." },
     { label: 'Offers', type: 'section' },
     { label: 'PRICE', type: 'text' },
-    { label: 'CURRENCY', type: 'text' }
+    { label: 'CURRENCY', type: 'text' },
+    { label: 'Questions', type: 'group', subfields: [
+      { label: 'Question', type: 'text' },
+      { label: 'URL', type: 'text', placeholder: 'https://' },
+      { label: 'Image', type: 'text', placeholder: 'https://' },
+      { label: 'Answer', type: 'textarea' }
+    ]}
   ],
   'Software': [
     { label: 'HEADLINE *', type: 'text', placeholder: '%seo_title%' },
@@ -581,6 +587,29 @@ export default function SeoAnalyzer({
             if (q.answer) qNode.acceptedAnswer = { "@type": "Answer", "text": q.answer };
             return qNode;
           });
+        } catch {}
+        delete fieldValues.questions;
+      }
+      
+      if (selectedSchema === 'Service' && fieldValues.questions) {
+        try {
+          const qArray = JSON.parse(fieldValues.questions);
+          if (qArray && qArray.length > 0) {
+            graphNode.subjectOf = [
+              {
+                "@type": "FAQPage",
+                "name": fieldValues.headline || "%seo_title%",
+                "mainEntity": qArray.map((q: any) => {
+                  const qNode: any = { "@type": "Question" };
+                  if (q.question) qNode.name = q.question;
+                  if (q.url) qNode.url = q.url;
+                  if (q.image) qNode.image = q.image;
+                  if (q.answer) qNode.acceptedAnswer = { "@type": "Answer", "text": q.answer };
+                  return qNode;
+                })
+              }
+            ];
+          }
         } catch {}
         delete fieldValues.questions;
       }
@@ -974,6 +1003,12 @@ export default function SeoAnalyzer({
                            }));
                            newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
                          }
+                         if (type === 'Service' && data.subjectOf && data.subjectOf[0]?.mainEntity) {
+                           const flatQuestions = (Array.isArray(data.subjectOf[0].mainEntity) ? data.subjectOf[0].mainEntity : [data.subjectOf[0].mainEntity]).map((q: any) => ({
+                             question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
+                           }));
+                           newData[`Service_Questions`] = JSON.stringify(flatQuestions);
+                         }
                          Object.keys(data).forEach(k => {
                            if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity') && !(type === 'FAQ' && k === 'name')) {
                              const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
@@ -1095,6 +1130,12 @@ export default function SeoAnalyzer({
                                          question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
                                        }));
                                        newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
+                                     }
+                                     if (type === 'Service' && data.subjectOf && data.subjectOf[0]?.mainEntity) {
+                                       const flatQuestions = (Array.isArray(data.subjectOf[0].mainEntity) ? data.subjectOf[0].mainEntity : [data.subjectOf[0].mainEntity]).map((q: any) => ({
+                                         question: q.name, url: q.url, image: q.image, answer: q.acceptedAnswer?.text || q.acceptedAnswer
+                                       }));
+                                       newData[`Service_Questions`] = JSON.stringify(flatQuestions);
                                      }
                                      Object.keys(data).forEach(k => {
                                        if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQ' && k === 'mainEntity') && !(type === 'FAQ' && k === 'name')) {
