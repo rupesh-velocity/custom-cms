@@ -486,6 +486,10 @@ export default function SeoAnalyzer({
         val = node.value;
       }
       
+      if (key === 'addressCountry' && (val === 'India' || val === 'india')) {
+        val = 'IN';
+      }
+      
       if (isArray) {
         result[key as number] = val;
       } else {
