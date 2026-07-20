@@ -947,7 +947,7 @@ export default function SeoAnalyzer({
                      <button type="button" onClick={() => { 
                        setEditingSchemaIndex(i); 
                        const rawType = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
-                       const type = schemaTypeMap[rawType] || 'Custom';
+                       const type = mapSchemaType(rawType) || 'Custom';
                        const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                        let hasUnmappedKeys = false;
                        if (type !== 'Custom' && schemaFieldDefinitions[type]) {
@@ -1070,7 +1070,7 @@ export default function SeoAnalyzer({
                                  <button type="button" onClick={() => { 
                                    setEditingSchemaIndex(i); 
                                    const rawType = s['@type'] || (Array.isArray(s['@graph']) ? s['@graph'][0]?.['@type'] : s['@graph']?.['@type']);
-                                   const type = schemaTypeMap[rawType] || 'Custom';
+                                   const type = mapSchemaType(rawType) || 'Custom';
                                    const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                                    let hasUnmappedKeys = false;
                                    if (type !== 'Custom' && schemaFieldDefinitions[type]) {
