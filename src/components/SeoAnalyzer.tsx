@@ -95,6 +95,8 @@ interface SchemaField {
   options?: string[];
   placeholder?: string;
   info?: string;
+  subFields?: SchemaField[];
+  itemLabel?: string;
 }
 
 const shortcodeInfo = "You can either use this shortcode or Schema Block in the block editor to print the schema data in the content in order to meet the Google's guidelines. Read more about it here.";
@@ -186,7 +188,19 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
     ...reviewFields
   ],
   'FAQ': [
-    { label: 'QUESTIONS', type: 'group' }
+    { label: 'NAME *', type: 'text', placeholder: '%seo_title%' },
+    { label: 'SHORTCODE', type: 'shortcode', info: 'You can use the Schema Block in the block editor, or copy and paste this in the content. This shortcode will work on this page only.' },
+    { 
+      label: 'Questions', 
+      type: 'group',
+      itemLabel: 'Question',
+      subFields: [
+        { label: 'QUESTION', type: 'text' },
+        { label: 'URL', type: 'text' },
+        { label: 'IMAGE', type: 'text' },
+        { label: 'Answer', type: 'textarea' }
+      ]
+    }
   ],
   'Fact Check': [
     { label: 'CLAIM *', type: 'textarea' },
@@ -528,6 +542,21 @@ export default function SeoAnalyzer({
       
       if (selectedSchema === 'Service' || selectedSchema === 'Article' || selectedSchema === 'Blog Posting') {
         graphNode.image = { "@type": "ImageObject", "url": "%post_thumbnail%" };
+      }
+      
+      if (selectedSchema === 'FAQ' && fieldValues.questions) {
+        try {
+          const qArray = JSON.parse(fieldValues.questions);
+          graphNode.mainEntity = qArray.map((q: any) => {
+            const qNode: any = { "@type": "Question" };
+            if (q.question) qNode.name = q.question;
+            if (q.url) qNode.url = q.url;
+            if (q.image) qNode.image = q.image;
+            if (q.answer) qNode.acceptedAnswer = { "@type": "Answer", "text": q.answer };
+            return qNode;
+          });
+        } catch {}
+        delete fieldValues.questions;
       }
       
       Object.keys(fieldValues).forEach(k => {
@@ -1026,9 +1055,17 @@ export default function SeoAnalyzer({
                                    if (type && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
                                      setSelectedSchema(type);
                                      const newData: Record<string, string> = {};
-                                     const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
+                                     if (type === 'FAQPage' && data.mainEntity) {
+                                       const flatQuestions = (Array.isArray(data.mainEntity) ? data.mainEntity : [data.mainEntity]).map((q: any) => ({
+                                         question: q.name,
+                                         url: q.url,
+                                         image: q.image,
+                                         answer: q.acceptedAnswer?.text || q.acceptedAnswer
+                                       }));
+                                       newData[`FAQ_Questions`] = JSON.stringify(flatQuestions);
+                                     }
                                      Object.keys(data).forEach(k => {
-                                       if (k !== '@context' && k !== '@type' && k !== '@graph') {
+                                       if (k !== '@context' && k !== '@type' && k !== '@graph' && !(type === 'FAQPage' && k === 'mainEntity')) {
                                          const fieldDef = schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
                                          if (fieldDef) {
                                            newData[`${type}_${fieldDef.label}`] = typeof data[k] === 'string' ? data[k] : JSON.stringify(data[k]);
@@ -1477,11 +1514,62 @@ export default function SeoAnalyzer({
                            }
                            
                            if (field.type === 'group') {
+                             let items: any[] = [];
+                             try {
+                               if (val && typeof val === 'string') items = JSON.parse(val);
+                             } catch {}
+                             
                              return (
                                <div key={idx} className="border border-[#e2e4e7] rounded-[3px] bg-white mt-4">
-                                 <div className="p-3 text-[11px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase">{field.label}</div>
-                                 <div className="p-4">
-                                   <button className="text-[13px] font-medium text-[#0085ba] bg-gray-50 border border-gray-200 px-4 py-1.5 rounded-[3px] hover:bg-white hover:border-[#0085ba]">Add Property</button>
+                                 <div className="flex items-center justify-between p-3 border-b border-[#e2e4e7]">
+                                   <div className="text-[11px] font-bold text-[#1d2327] uppercase">{field.label}</div>
+                                   <button type="button" onClick={() => {
+                                     const newItems = [...items, {}];
+                                     setSchemaData({ ...schemaData, [fieldKey]: JSON.stringify(newItems) });
+                                   }} className="text-[12px] text-gray-500 hover:text-[#0085ba] flex items-center gap-1">
+                                     <PlusCircle className="w-3.5 h-3.5" /> Add Property Group
+                                   </button>
+                                 </div>
+                                 <div className="p-4 bg-gray-50 space-y-4">
+                                   {items.map((item: any, itemIdx: number) => (
+                                      <div key={itemIdx} className="border-l-2 border-gray-200 pl-4 relative">
+                                        <div className="flex items-center justify-between mb-4">
+                                          <div className="text-[13px] font-medium text-[#1d2327] font-bold">{field.itemLabel || 'Item'} {itemIdx + 1}</div>
+                                          <button type="button" onClick={() => {
+                                            const newItems = [...items];
+                                            newItems.splice(itemIdx, 1);
+                                            setSchemaData({ ...schemaData, [fieldKey]: JSON.stringify(newItems) });
+                                          }} className="text-[12px] text-gray-500 hover:text-red-600 flex items-center gap-1">
+                                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                                          </button>
+                                        </div>
+                                        <div className="space-y-3">
+                                          {field.subFields?.map((subField, subIdx) => (
+                                            <div key={subIdx} className="border border-[#e2e4e7] rounded-[3px] bg-white">
+                                              <div className="p-2.5 text-[10px] font-bold text-[#1d2327] border-b border-[#e2e4e7] uppercase bg-gray-50">
+                                                {subField.label}
+                                              </div>
+                                              <div className="p-3">
+                                                {subField.type === 'text' && (
+                                                  <input type="text" value={item[subField.label.toLowerCase()] || ''} onChange={e => {
+                                                    const newItems = [...items];
+                                                    newItems[itemIdx] = { ...newItems[itemIdx], [subField.label.toLowerCase()]: e.target.value };
+                                                    setSchemaData({ ...schemaData, [fieldKey]: JSON.stringify(newItems) });
+                                                  }} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner" />
+                                                )}
+                                                {subField.type === 'textarea' && (
+                                                  <textarea value={item[subField.label.toLowerCase()] || ''} onChange={e => {
+                                                    const newItems = [...items];
+                                                    newItems[itemIdx] = { ...newItems[itemIdx], [subField.label.toLowerCase()]: e.target.value };
+                                                    setSchemaData({ ...schemaData, [fieldKey]: JSON.stringify(newItems) });
+                                                  }} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner min-h-[60px]" />
+                                                )}
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                   ))}
                                  </div>
                                </div>
                              );
