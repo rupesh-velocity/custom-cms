@@ -899,16 +899,19 @@ export default function SeoAnalyzer({
                        } else {
                          const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                          
-                         const parseObjToNodes = (obj: any): SchemaNode[] => {
+                         const parseObjToNodes = (obj: any, isRoot = true): SchemaNode[] => {
                            const children = Object.entries(obj)
                              .filter(([k]) => k !== '@context')
                              .map(([k, v]) => {
                                 if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
-                                  return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children: parseObjToNodes(v) };
+                                  return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children: parseObjToNodes(v, false) };
                                 }
                                 return { id: Math.random().toString(36).substr(2, 9), key: k, value: typeof v === 'object' ? JSON.stringify(v) : String(v), type: 'property' as const, children: [] };
                              });
-                           return [{ id: 'root-1', key: '', value: '', type: 'group' as const, children }];
+                           if (isRoot) {
+                             return [{ id: 'root-1', key: obj['@type'] || 'Custom', value: '', type: 'group' as const, children }];
+                           }
+                           return children;
                          };
 
                          setCustomSchemaNodes(parseObjToNodes(data));
@@ -996,16 +999,19 @@ export default function SeoAnalyzer({
                                    } else {
                                      const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                                      
-                                     const parseObjToNodes = (obj: any): SchemaNode[] => {
+                                     const parseObjToNodes = (obj: any, isRoot = true): SchemaNode[] => {
                                        const children = Object.entries(obj)
                                          .filter(([k]) => k !== '@context')
                                          .map(([k, v]) => {
                                             if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
-                                              return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children: parseObjToNodes(v) };
+                                              return { id: Math.random().toString(36).substr(2, 9), key: k, value: '', type: 'group' as const, children: parseObjToNodes(v, false) };
                                             }
                                             return { id: Math.random().toString(36).substr(2, 9), key: k, value: typeof v === 'object' ? JSON.stringify(v) : String(v), type: 'property' as const, children: [] };
                                          });
-                                       return [{ id: 'root-1', key: '', value: '', type: 'group' as const, children }];
+                                       if (isRoot) {
+                                         return [{ id: 'root-1', key: obj['@type'] || 'Custom', value: '', type: 'group' as const, children }];
+                                       }
+                                       return children;
                                      };
             
                                      setCustomSchemaNodes(parseObjToNodes(data));
@@ -1322,12 +1328,14 @@ export default function SeoAnalyzer({
                                    onChange={(e) => setCustomSchemaNodes(nodes => updateSchemaNode(nodes, node.id, n => ({ ...n, key: e.target.value })))} 
                                    className="w-48 border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner"
                                  />
+                                 {node.type !== 'group' && (
                                  <input 
                                    type="text" 
                                    value={node.value} 
                                    onChange={(e) => setCustomSchemaNodes(nodes => updateSchemaNode(nodes, node.id, n => ({ ...n, value: e.target.value })))} 
                                    className="flex-1 border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none shadow-inner"
                                  />
+                                 )}
                                  {node.type === 'group' ? (
                                    <div className="flex items-center gap-3 ml-2">
                                      <button onClick={() => setCustomSchemaNodes(nodes => addSchemaNode(nodes, node.id, { id: Math.random().toString(36).substr(2, 9), key: '', value: '', type: 'property', children: [] }))} className="flex items-center gap-1 text-[12px] text-gray-500 hover:text-[#0085ba]"><PlusCircle className="w-3.5 h-3.5" /> Add Property</button>
