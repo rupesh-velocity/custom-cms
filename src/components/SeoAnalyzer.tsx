@@ -952,8 +952,13 @@ export default function SeoAnalyzer({
                        let hasUnmappedKeys = false;
                        if (type !== 'Custom' && schemaFieldDefinitions[type]) {
                          hasUnmappedKeys = Object.keys(data).some(k => {
-                           if (k === '@context' || k === '@type' || k === '@graph' || k === '@id' || (type === 'FAQ' && k === 'mainEntity')) return false;
-                           return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
+                           const key = k.toLowerCase();
+                           if (['@context', '@type', '@graph', '@id'].includes(key) || (type === 'FAQ' && key === 'mainentity')) return false;
+                           
+                           // Ignore common bundled WebPage properties that users don't care about when editing specific schemas like FAQ
+                           if (['url', 'datepublished', 'datemodified', 'inlanguage', 'potentialaction', 'publisher', 'description', 'author', 'mainentityofpage'].includes(key)) return false;
+                           
+                           return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === key);
                          });
                        }
                        if (type !== 'Custom' && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
@@ -1070,8 +1075,12 @@ export default function SeoAnalyzer({
                                    let hasUnmappedKeys = false;
                                    if (type !== 'Custom' && schemaFieldDefinitions[type]) {
                                      hasUnmappedKeys = Object.keys(data).some(k => {
-                                       if (k === '@context' || k === '@type' || k === '@graph' || k === '@id' || (type === 'FAQ' && k === 'mainEntity')) return false;
-                                       return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === k.toLowerCase());
+                                       const key = k.toLowerCase();
+                                       if (['@context', '@type', '@graph', '@id'].includes(key) || (type === 'FAQ' && key === 'mainentity')) return false;
+                                       
+                                       if (['url', 'datepublished', 'datemodified', 'inlanguage', 'potentialaction', 'publisher', 'description', 'author', 'mainentityofpage'].includes(key)) return false;
+                                       
+                                       return !schemaFieldDefinitions[type].find(f => f.label.replace(/\s*\*\s*$/, '').replace(/ /g, '').toLowerCase() === key);
                                      });
                                    }
                                    if (type !== 'Custom' && schemaFieldDefinitions[type] && !hasUnmappedKeys) {
