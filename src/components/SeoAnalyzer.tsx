@@ -340,7 +340,7 @@ const schemaFieldDefinitions: Record<string, SchemaField[]> = {
     { label: 'Offers', type: 'section' },
     { label: 'PRICE', type: 'text' },
     { label: 'CURRENCY', type: 'text' },
-    { label: 'Questions', type: 'group', subfields: [
+    { label: 'Questions', type: 'group', subFields: [
       { label: 'Question', type: 'text' },
       { label: 'URL', type: 'text', placeholder: 'https://' },
       { label: 'Image', type: 'text', placeholder: 'https://' },
