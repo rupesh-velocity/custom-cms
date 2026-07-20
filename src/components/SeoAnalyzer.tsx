@@ -950,7 +950,7 @@ export default function SeoAnalyzer({
                        const type = mapSchemaType(rawType) || 'Custom';
                        const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                        let hasUnmappedKeys = false;
-                       if (type !== 'Custom' && schemaFieldDefinitions[type]) {
+                       if (type !== 'Custom' && type !== 'FAQ' && schemaFieldDefinitions[type]) {
                          hasUnmappedKeys = Object.keys(data).some(k => {
                            const key = k.toLowerCase();
                            if (['@context', '@type', '@graph', '@id'].includes(key) || (type === 'FAQ' && key === 'mainentity')) return false;
@@ -1073,7 +1073,7 @@ export default function SeoAnalyzer({
                                    const type = mapSchemaType(rawType) || 'Custom';
                                    const data = Array.isArray(s['@graph']) ? s['@graph'][0] : (s['@graph'] || s);
                                    let hasUnmappedKeys = false;
-                                   if (type !== 'Custom' && schemaFieldDefinitions[type]) {
+                                   if (type !== 'Custom' && type !== 'FAQ' && schemaFieldDefinitions[type]) {
                                      hasUnmappedKeys = Object.keys(data).some(k => {
                                        const key = k.toLowerCase();
                                        if (['@context', '@type', '@graph', '@id'].includes(key) || (type === 'FAQ' && key === 'mainentity')) return false;
