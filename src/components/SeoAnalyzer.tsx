@@ -536,7 +536,7 @@ export default function SeoAnalyzer({
       const fieldValues: Record<string, any> = {};
       
       fields.forEach(field => {
-        if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode' || field.type === 'group') return;
+        if (field.type === 'section' || field.type === 'info' || field.type === 'shortcode') return;
         const fieldKey = `${selectedSchema}_${field.label}`;
         let val = schemaData[fieldKey];
         if (!val && field.placeholder) val = field.placeholder;
