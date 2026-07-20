@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 export default function SearchFilterClient({ placeholder = 'Search...' }: { placeholder?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const [query, setQuery] = useState(searchParams?.get('q') || '');
 
   useEffect(() => {

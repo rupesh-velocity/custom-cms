@@ -52,7 +52,7 @@ function MobileMenuNode({ node, onClick, depth = 0 }: { node: any, onClick: () =
 
 export default function MobileMenu({ menuTree, isAuthenticated, userRole }: { menuTree: any[], isAuthenticated?: boolean, userRole?: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
 
   // Close menu when route changes
   useEffect(() => {

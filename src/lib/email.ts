@@ -49,7 +49,7 @@ export async function sendCoursePurchaseEmail(userEmail: string, userName: strin
   });
   
   const settingsMap = settings.reduce((acc, curr) => {
-    acc[curr.key] = curr.value;
+    acc[curr.key] = curr.value || '';
     return acc;
   }, {} as Record<string, string>);
 

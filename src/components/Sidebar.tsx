@@ -6,7 +6,7 @@ import { LayoutDashboard, FileText, Files, Users, Settings, ChevronDown, Chevron
 import clsx from 'clsx';
 
 export default function Sidebar({ enableProducts = false }: { enableProducts?: boolean }) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   
   // Settings is considered active if we are on /admin/settings or any of its subpages
   const isSettingsActive = pathname.startsWith('/admin/settings') && pathname !== '/admin/settings/ecommerce';

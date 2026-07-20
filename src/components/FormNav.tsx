@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function FormNav({ formId, title }: { formId: string | number, title: string }) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   
   return (
     <div className="bg-white border-b border-gray-200 mb-6">
