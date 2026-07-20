@@ -1790,7 +1790,6 @@ export default function SeoAnalyzer({
                       newSchemas.push(newSchema);
                     }
                     updateSchemas(newSchemas);
-                    onSave?.({ schemas: newSchemas });
                     setIsSchemaBuilderOpen(false);
                     setSelectedSchema('Article');
                     setEditingSchemaIndex(null);
