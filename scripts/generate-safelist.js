@@ -9,7 +9,7 @@ const { Pool } = require('pg');
 async function main() {
   console.log('Generating Tailwind safelist from database content...');
   try {
-    const url = process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL;
+    const url = process.env.NEON_DATABASE_URL || process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL;
     
     if (!url) {
       console.log('No database URL found, using fallback safelist...');
