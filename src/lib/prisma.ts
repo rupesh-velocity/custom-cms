@@ -31,7 +31,7 @@ export const prisma = new Proxy({} as PrismaClient, {
     if (prop === 'then') return undefined;
 
     if (!prismaInstance) {
-      const url = process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL;
+      const url = process.env.NEON_DATABASE_URL || process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL;
       
       // If DATABASE_URL is missing, we are likely in a build phase where it is omitted.
       if (!url) {
