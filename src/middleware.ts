@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
       // Verify the JWT token
       const { payload } = await jwtVerify(token, secret);
       
-      if (payload.role !== 'Admin') {
+      if (String(payload.role).toLowerCase() !== 'admin') {
         return NextResponse.redirect(new URL('/my-account', request.url));
       }
       

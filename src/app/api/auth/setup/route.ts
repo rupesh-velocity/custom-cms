@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         password: hashedPassword,
         firstName,
         lastName: lastName || '',
-        role: 'ADMIN',
+        role: 'Admin',
       },
     });
 
