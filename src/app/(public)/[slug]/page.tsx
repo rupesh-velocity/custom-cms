@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { optimizeHtmlImages } from '@/lib/html-optimizer';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import { processSchemaVariables } from '@/lib/schema-parser';
+import { processSchemaVariables, formatSchemaGraph } from '@/lib/schema-parser';
 import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 import BlogSidebar from '@/components/BlogSidebar';
 import CopyLinkButton from '@/components/CopyLinkButton';
@@ -230,18 +230,15 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
       {(() => {
         if (!data.schemaJson) return null;
         const parsedSchemas = processSchemaVariables(data.schemaJson, data);
-        if (!parsedSchemas) return null;
+        const graphSchema = formatSchemaGraph(parsedSchemas);
+        if (!graphSchema) return null;
         
-        // Ensure it's an array for mapping
-        const schemasToRender = Array.isArray(parsedSchemas) ? parsedSchemas : [parsedSchemas];
-        
-        return schemasToRender.map((schema, index) => (
+        return (
           <script 
-            key={`schema-${index}`}
             type="application/ld+json" 
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} 
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(graphSchema) }} 
           />
-        ));
+        );
       })()}
       
       {/* Webmaster Tools Verification tags are now handled globally in layout.tsx */}

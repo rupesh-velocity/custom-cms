@@ -614,12 +614,73 @@ export default function SeoAnalyzer({
         delete fieldValues.questions;
       }
       
+      const schemaPropertyMap: Record<string, string> = {
+        'servicetype': 'serviceType',
+        'pricevaliduntil': 'priceValidUntil',
+        'operatingsystem': 'operatingSystem',
+        'applicationcategory': 'applicationCategory',
+        'reviewlocation': 'reviewLocation',
+        'eventattendancemode': 'eventAttendanceMode',
+        'startdate': 'startDate',
+        'enddate': 'endDate',
+        'eventstatus': 'eventStatus',
+        'performertype': 'performerType',
+        'performername': 'performerName',
+        'offerurl': 'offerUrl',
+        'inventorylevel': 'inventoryLevel',
+        'ratingvalue': 'ratingValue',
+        'ratingminimum': 'ratingMinimum',
+        'ratingmaximum': 'ratingMaximum',
+        'bestrating': 'bestRating',
+        'worstrating': 'worstRating',
+        'reviewcount': 'reviewCount',
+        'authorname': 'authorName',
+        'dateposted': 'datePosted',
+        'expiryposted': 'validThrough',
+        'hiringorganization': 'hiringOrganization',
+        'organizationurl': 'url',
+        'organizationlogo': 'logo',
+        'postingid': 'identifier',
+        'salarycurrency': 'salaryCurrency',
+        'employmenttype': 'employmentType',
+        'datecreated': 'dateCreated',
+        'musictype': 'musicType',
+        'jobtitle': 'jobTitle',
+        'productsku': 'sku',
+        'brandname': 'brand',
+        'preparationtime': 'prepTime',
+        'cookingtime': 'cookTime',
+        'totaltime': 'totalTime',
+        'recipeyield': 'recipeYield',
+        'recipeingredients': 'recipeIngredient',
+        'recipeinstructions': 'recipeInstructions',
+        'videodescription': 'videoDescription',
+        'videourl': 'videoUrl',
+        'contenturl': 'contentUrl',
+        'videouploaddate': 'uploadDate',
+        'instructiontype': 'instructionType',
+        'phonenumber': 'telephone',
+        'pricerange': 'priceRange',
+        'opendays': 'dayOfWeek',
+        'openingtime': 'opens',
+        'closingtime': 'closes',
+        'servescuisine': 'servesCuisine',
+        'menuurl': 'hasMenu',
+        'embedurl': 'embedUrl',
+        'streetaddress': 'streetAddress',
+        'postalcode': 'postalCode',
+        'addresslocality': 'addressLocality',
+        'addressregion': 'addressRegion',
+        'addresscountry': 'addressCountry'
+      };
+
       Object.keys(fieldValues).forEach(k => {
         if (k !== 'name' && k !== 'description' && k !== 'price' && k !== 'currency' && k !== 'availability') {
+          const properKey = schemaPropertyMap[k] || k;
           try {
-            graphNode[k] = JSON.parse(fieldValues[k]);
+            graphNode[properKey] = JSON.parse(fieldValues[k]);
           } catch {
-            graphNode[k] = fieldValues[k];
+            graphNode[properKey] = fieldValues[k];
           }
         }
       });

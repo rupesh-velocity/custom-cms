@@ -63,3 +63,48 @@ export function processSchemaVariables(schemaInput: any, postData: any): any {
 
   return walk(schemas);
 }
+
+/**
+ * Formats an array of schemas into a single @graph object with a root @context,
+ * stripping out redundant @context declarations from nested entities.
+ */
+export function formatSchemaGraph(parsedSchemas: any | any[]): any {
+  if (!parsedSchemas) return null;
+  
+  const schemasArray = Array.isArray(parsedSchemas) ? parsedSchemas : [parsedSchemas];
+  if (schemasArray.length === 0) return null;
+  
+  let graphItems: any[] = [];
+  
+  schemasArray.forEach(schema => {
+    if (schema && typeof schema === 'object' && schema['@graph'] && Array.isArray(schema['@graph'])) {
+      // If the user already provided a graph object, extract its items
+      graphItems = graphItems.concat(schema['@graph']);
+    } else if (schema && typeof schema === 'object') {
+      graphItems.push(schema);
+    }
+  });
+  
+  if (graphItems.length === 0) return null;
+  
+  // Recursively clean up @context from all child schemas
+  const cleanContext = (obj: any): any => {
+    if (Array.isArray(obj)) {
+      return obj.map(cleanContext);
+    }
+    if (obj !== null && typeof obj === 'object') {
+      const newObj: any = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (key === '@context') continue;
+        newObj[key] = cleanContext(value);
+      }
+      return newObj;
+    }
+    return obj;
+  };
+  
+  return {
+    "@context": "https://schema.org",
+    "@graph": graphItems.map(cleanContext)
+  };
+}
