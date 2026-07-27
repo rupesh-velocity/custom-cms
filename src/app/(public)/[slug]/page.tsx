@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { optimizeHtmlImages } from '@/lib/html-optimizer';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import { processSchemaVariables, formatSchemaGraph } from '@/lib/schema-parser';
+import { processSchemaVariables, formatSchemaGraph, generateBreadcrumbSchema } from '@/lib/schema-parser';
 import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 import BlogSidebar from '@/components/BlogSidebar';
 import CopyLinkButton from '@/components/CopyLinkButton';
@@ -13,6 +13,7 @@ import { generateToc } from '@/lib/toc';
 import TableOfContents from '@/components/TableOfContents';
 import ShopClient from '@/components/shop/ShopClient';
 import ContentRenderer from '@/components/ContentRenderer';
+import PageHeroBanner from '@/components/PageHeroBanner';
 
 const TwitterIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -122,9 +123,9 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
     }
   }
 
-  // 2. Fetch SEO global settings for optimizing HTML and adding webmaster tags
+  // 2. Fetch SEO and Breadcrumbs global settings
   const settings = await prisma.setting.findMany({
-    where: { key: { startsWith: 'seo_' } }
+    where: { OR: [{ key: { startsWith: 'seo_' } }, { key: { startsWith: 'breadcrumbs_' } }] }
   });
   
   const seoSettings = settings.reduce((acc: Record<string, string>, curr) => {
@@ -228,8 +229,28 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
   return (
     <>
       {(() => {
-        if (!data.schemaJson) return null;
-        const parsedSchemas = processSchemaVariables(data.schemaJson, data);
+        let parsedSchemas: any[] = [];
+        if (data.schemaJson) {
+          let processed = processSchemaVariables(data.schemaJson, data);
+          if (processed) {
+            if (Array.isArray(processed)) {
+              parsedSchemas = processed;
+            } else if (processed['@graph']) {
+              parsedSchemas = processed['@graph'];
+            } else {
+              parsedSchemas = [processed];
+            }
+          }
+        }
+
+        // Generate Breadcrumbs Schema
+        const breadcrumbSchema = generateBreadcrumbSchema(slug, data.title || '', seoSettings);
+        if (breadcrumbSchema) {
+          parsedSchemas.push(breadcrumbSchema);
+        }
+        
+        if (parsedSchemas.length === 0) return null;
+
         const graphSchema = formatSchemaGraph(parsedSchemas);
         if (!graphSchema) return null;
         
@@ -459,12 +480,14 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
         </main>
       ) : (
         <main className="w-full font-sans min-h-screen">
-          {data.title && !data.hideTitle && (
-            <div className="max-w-7xl mx-auto px-6 pt-16">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight font-outfit">{data.title}</h1>
-            </div>
-          )}
-          <ContentRenderer html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} className="mt-12 max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24" />
+          <PageHeroBanner 
+            title={data.title} 
+            image={data.featuredImage} 
+            description={data.heroDescription} 
+            hideTitle={data.hideTitle}
+          />
+          
+          <ContentRenderer html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} className={`max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24 ${data.featuredImage ? 'mt-16' : 'mt-12'}`} />
         </main>
       )}
     </>

@@ -13,6 +13,8 @@ interface ClassicEditorProps {
   contentHtml: string;
   setContentHtml: (val: string) => void;
   setContentText: (val: string) => void;
+  heroDescription?: string;
+  setHeroDescription?: (val: string) => void;
   isHomepage?: boolean;
 }
 
@@ -24,6 +26,8 @@ export default function ClassicEditor({
   contentHtml,
   setContentHtml,
   setContentText,
+  heroDescription = '',
+  setHeroDescription,
   isHomepage = false
 }: ClassicEditorProps) {
   const [activeTab, setActiveTab] = useState<'visual' | 'code'>('visual');
@@ -31,6 +35,7 @@ export default function ClassicEditor({
   const [tempSlug, setTempSlug] = useState(slug);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [origin, setOrigin] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
   const tipTapRef = useRef<{ insertImage: (url: string) => void }>(null);
   
   // Calculate word count
@@ -41,6 +46,7 @@ export default function ClassicEditor({
     if (typeof window !== 'undefined') {
       setOrigin(window.location.origin);
     }
+    setCurrentTime(new Date().toLocaleTimeString());
   }, [slug]);
 
   const handleSlugSave = () => {
@@ -65,6 +71,17 @@ export default function ClassicEditor({
         onChange={(e) => setTitle(e.target.value)}
         className="w-full text-[1.7em] font-medium border border-[#c3c4c7] bg-white px-3 py-2 outline-none focus:border-[#0085ba] focus:shadow-[0_0_0_1px_#0085ba] mb-2 placeholder:text-gray-400"
       />
+
+      {/* Hero Description Input (Optional, for pages) */}
+      {setHeroDescription && (
+        <textarea
+          placeholder="Hero Description (Optional Subtitle)"
+          value={heroDescription}
+          onChange={(e) => setHeroDescription(e.target.value)}
+          rows={2}
+          className="w-full text-base border border-[#c3c4c7] bg-white px-3 py-2 outline-none focus:border-[#0085ba] focus:shadow-[0_0_0_1px_#0085ba] mb-4 placeholder:text-gray-400 resize-y"
+        />
+      )}
 
       {/* Permalink */}
       {title && (
@@ -163,7 +180,7 @@ export default function ClassicEditor({
         {/* Footer Status Bar */}
         <div className="flex items-center justify-between px-3 py-1.5 bg-[#f1f1f1] border-t border-[#c3c4c7] text-[12px] text-[#50575e]">
           <div>Word count: {wordCount}</div>
-          <div>Draft saved at {new Date().toLocaleTimeString()}</div>
+          <div>{currentTime ? `Draft saved at ${currentTime}` : 'Saving...'}</div>
         </div>
       </div>
     </div>

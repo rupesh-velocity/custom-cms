@@ -42,6 +42,7 @@ export async function PATCH(req: Request, context: any) {
         schemaJson: data.schemaJson || null,
         seoScore: data.seoScore !== undefined ? data.seoScore : undefined,
         featuredImage: data.featuredImage,
+        heroDescription: data.heroDescription,
       },
     });
     return NextResponse.json(page);

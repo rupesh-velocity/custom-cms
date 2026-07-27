@@ -5,9 +5,12 @@ export async function GET(request: Request) {
   try {
     const settings = await prisma.setting.findMany({
       where: {
-        key: {
-          startsWith: 'seo_',
-        }
+        OR: [
+          { key: { startsWith: 'seo_' } },
+          { key: { startsWith: 'breadcrumbs_' } },
+          { key: { startsWith: 'llms_txt_' } },
+          { key: { startsWith: 'md_' } }
+        ]
       }
     });
 
@@ -31,19 +34,23 @@ export async function POST(request: Request) {
     // data is an object like { seo_nofollow_external: 'true', seo_robots_txt: '...' }
     // We will upsert each key
     
-    const transactions = Object.entries(data).map(([key, value]) => {
-      return prisma.setting.upsert({
+    // Save each setting sequentially to avoid SQLite transaction lock timeouts
+    for (const [key, value] of Object.entries(data)) {
+      await prisma.setting.upsert({
         where: { key },
         update: { value: String(value) },
         create: { key, value: String(value) },
       });
-    });
-
-    await prisma.$transaction(transactions);
+    }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error saving SEO settings:', error);
-    return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });
+    
+    return NextResponse.json({ 
+      error: 'Failed to save settings', 
+      details: error?.message || String(error),
+      stack: error?.stack
+    }, { status: 500 });
   }
 }

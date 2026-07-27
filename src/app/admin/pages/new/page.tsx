@@ -14,6 +14,7 @@ export default function NewPage() {
   const [title, setTitle] = useState('');
   const [contentHtml, setContentHtml] = useState('<p>Start writing your page here...</p>');
   const [contentText, setContentText] = useState('Start writing your page here...');
+  const [heroDescription, setHeroDescription] = useState('');
   
   const [focusKeyword, setFocusKeyword] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
@@ -62,7 +63,8 @@ export default function NewPage() {
           hideTitle,
           schemaJson,
           seoScore,
-          featuredImage
+          featuredImage,
+          heroDescription
         }),
       });
       if (res.ok) {
@@ -91,6 +93,8 @@ export default function NewPage() {
           contentHtml={contentHtml}
           setContentHtml={setContentHtml}
           setContentText={setContentText}
+          heroDescription={heroDescription}
+          setHeroDescription={setHeroDescription}
         />
         
         <div className="mt-4">

@@ -9,6 +9,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/:slug.md',
+        destination: '/api/md',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

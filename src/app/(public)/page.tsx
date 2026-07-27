@@ -5,7 +5,8 @@ import { optimizeHtmlImages } from '@/lib/html-optimizer';
 import { cookies } from 'next/headers';
 import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 import BlogSidebar from '@/components/BlogSidebar';
-import { processSchemaVariables, formatSchemaGraph } from '@/lib/schema-parser';
+import { processSchemaVariables, formatSchemaGraph, generateBreadcrumbSchema } from '@/lib/schema-parser';
+import ContentRenderer from '@/components/ContentRenderer';
 
 export const dynamic = 'force-dynamic';
 
@@ -109,8 +110,27 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
     return (
       <div className="min-h-screen bg-white">
         {(() => {
-          if (!page.schemaJson) return null;
-          const parsedSchemas = processSchemaVariables(page.schemaJson, page);
+          let parsedSchemas: any[] = [];
+          if (page.schemaJson) {
+            let processed = processSchemaVariables(page.schemaJson, page);
+            if (processed) {
+              if (Array.isArray(processed)) {
+                parsedSchemas = processed;
+              } else if (processed['@graph']) {
+                parsedSchemas = processed['@graph'];
+              } else {
+                parsedSchemas = [processed];
+              }
+            }
+          }
+
+          const breadcrumbSchema = generateBreadcrumbSchema('/', page.title || '', settings);
+          if (breadcrumbSchema) {
+            parsedSchemas.push(breadcrumbSchema);
+          }
+
+          if (parsedSchemas.length === 0) return null;
+
           const graphSchema = formatSchemaGraph(parsedSchemas);
           if (!graphSchema) return null;
           
@@ -125,7 +145,7 @@ export default async function Home(props: { searchParams: Promise<{ [key: string
           <PasswordProtectedForm id={page.id} type="page" title={page.title} />
         ) : (
           <main className="w-full">
-            <div dangerouslySetInnerHTML={{ __html: optimizeHtmlImages(page.contentHtml, settings, page.title) }} />
+            <ContentRenderer html={optimizeHtmlImages(page.contentHtml, settings, page.title)} className="w-full" />
           </main>
         )}
       </div>

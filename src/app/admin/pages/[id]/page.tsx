@@ -17,6 +17,7 @@ export default function EditPage() {
   const [title, setTitle] = useState('');
   const [contentHtml, setContentHtml] = useState('');
   const [contentText, setContentText] = useState('');
+  const [heroDescription, setHeroDescription] = useState('');
   
   const [focusKeyword, setFocusKeyword] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
@@ -66,6 +67,7 @@ export default function EditPage() {
         setSchemaJson(data.schemaJson || '');
         setSeoScore(data.seoScore || 0);
         setFeaturedImage(data.featuredImage || null);
+        setHeroDescription(data.heroDescription || '');
         
         // Check if this is the homepage
         fetch('/api/settings')
@@ -93,12 +95,7 @@ export default function EditPage() {
     setIsSaving(true);
     const finalStatus = overrideStatus || status;
     
-    // DEBUG: Show exactly what is being sent
-    if (schemaJson && schemaJson !== '[]') {
-      toast.success('Sending schema to DB! Length: ' + schemaJson.length);
-    } else {
-      toast.error('Warning: Schema is empty or []!');
-    }
+
 
     try {
       const res = await fetch(`/api/pages/${params?.id}`, {
@@ -122,7 +119,8 @@ export default function EditPage() {
           hideTitle,
           schemaJson,
           seoScore,
-          featuredImage
+          featuredImage,
+          heroDescription
         }),
       });
       if (res.ok) {
@@ -162,6 +160,8 @@ export default function EditPage() {
           contentHtml={contentHtml}
           setContentHtml={setContentHtml}
           setContentText={setContentText}
+          heroDescription={heroDescription}
+          setHeroDescription={setHeroDescription}
           isHomepage={isHomepage}
         />
         

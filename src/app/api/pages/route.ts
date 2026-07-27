@@ -49,14 +49,15 @@ export async function POST(req: Request) {
         hideTitle: data.hideTitle || false,
         schemaJson: data.schemaJson || null,
         seoScore: data.seoScore || 0,
-        authorId: authorId,
+        author: authorId ? { connect: { id: authorId } } : undefined,
         featuredImage: data.featuredImage || null,
+        heroDescription: data.heroDescription || null,
       },
     });
     return NextResponse.json(page);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ error: 'Error creating page' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Error creating page' }, { status: 500 });
   }
 }
 

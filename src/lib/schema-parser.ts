@@ -108,3 +108,57 @@ export function formatSchemaGraph(parsedSchemas: any | any[]): any {
     "@graph": graphItems.map(cleanContext)
   };
 }
+
+/**
+ * Generates a BreadcrumbList JSON-LD schema based on the site's breadcrumb settings
+ */
+export function generateBreadcrumbSchema(slug: string, title: string, settings: Record<string, string>): any | null {
+  if (settings['breadcrumbs_enabled'] !== 'true') return null;
+
+  const showHome = settings['breadcrumbs_show_home'] !== 'false';
+  const homeLabel = settings['breadcrumbs_home_label'] || 'Home';
+  const homeLink = settings['breadcrumbs_home_link'] || '/';
+  
+  const paths = slug.split('/').filter(p => p);
+  const items = [];
+  
+  let position = 1;
+  
+  if (showHome) {
+    items.push({
+      "@type": "ListItem",
+      "position": position++,
+      "name": homeLabel,
+      "item": `https://${process.env.NEXT_PUBLIC_SITE_DOMAIN || 'example.com'}${homeLink}`
+    });
+  }
+  
+  let currentPath = '';
+  paths.forEach((path, index) => {
+    currentPath += `/${path}`;
+    const isLast = index === paths.length - 1;
+    
+    // If it's the last item and we hide the title, we skip adding it if there are other items
+    if (isLast && settings['breadcrumbs_hide_title'] === 'true' && items.length > 0) {
+      return;
+    }
+    
+    const formattedPath = path.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    items.push({
+      "@type": "ListItem",
+      "position": position++,
+      "name": isLast ? title : formattedPath,
+      "item": `https://${process.env.NEXT_PUBLIC_SITE_DOMAIN || 'example.com'}${currentPath}`
+    });
+  });
+
+  if (items.length <= 1 && !showHome) {
+    return null;
+  }
+
+  return {
+    "@type": "BreadcrumbList",
+    "itemListElement": items
+  };
+}

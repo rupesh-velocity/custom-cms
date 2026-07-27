@@ -32,6 +32,33 @@ export default function SeoGeneralSettings() {
     seo_html_sitemap_include_posts: 'true',
     seo_sitemap_include_pages: 'true',
     seo_html_sitemap_include_pages: 'true',
+    breadcrumbs_enabled: 'false',
+    breadcrumbs_separator: '-',
+    breadcrumbs_show_home: 'true',
+    breadcrumbs_home_label: 'Home',
+    breadcrumbs_home_link: '/',
+    breadcrumbs_prefix: '',
+    breadcrumbs_hide_title: 'false',
+    llms_txt_enabled: 'true',
+    llms_txt_post_types_posts: 'true',
+    llms_txt_post_types_pages: 'true',
+    llms_txt_post_types_products: 'false',
+    llms_txt_post_types_courses: 'false',
+    llms_txt_taxonomies_categories: 'false',
+    llms_txt_limit: '50',
+    llms_txt_additional_content: '',
+    md_endpoints_enabled: 'true',
+    md_endpoints_posts: 'true',
+    md_endpoints_pages: 'true',
+    seo_custom_webmaster_tags: '',
+    seo_robots_txt: '',
+    seo_sitemap_links_per_page: '200',
+    seo_sitemap_images: 'true',
+    seo_sitemap_featured_images: 'false',
+    seo_sitemap_include_posts: 'true',
+    seo_html_sitemap_include_posts: 'true',
+    seo_sitemap_include_pages: 'true',
+    seo_html_sitemap_include_pages: 'true',
   });
 
   useEffect(() => {
@@ -64,7 +91,10 @@ export default function SeoGeneralSettings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)
       });
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(`Failed to save: ${errorData.details || res.statusText}`);
+      }
       toast.success('SEO Settings saved successfully');
     } catch (error) {
       console.error(error);
@@ -77,9 +107,14 @@ export default function SeoGeneralSettings() {
   const tabs = [
     { id: 'links', label: 'Links' },
     { id: 'images', label: 'Images' },
+    { id: 'breadcrumbs', label: 'Breadcrumbs' },
+    { id: 'llms', label: 'Edit llms.txt' },
+    { id: 'md', label: 'MD Endpoints' },
     { id: 'webmaster', label: 'Webmaster Tools' },
     { id: 'robots', label: 'Edit robots.txt' },
   ];
+  
+  const separators = ['-', '–', '—', '»', '|', '•', '/'];
 
   if (isLoading) {
     return <div className="p-8 flex justify-center text-gray-500">Loading settings...</div>;
@@ -268,6 +303,275 @@ export default function SeoGeneralSettings() {
                   </p>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'breadcrumbs' && (
+            <div className="space-y-8">
+              {/* Instructions Banner */}
+              <div className="bg-[#fff9e6] border-l-4 border-[#f0c33c] py-3 px-4 rounded-r-md text-[13px] text-gray-700">
+                <div className="mb-2">
+                  Use the following code in your theme template files or editor to display breadcrumbs.
+                </div>
+                <div className="flex flex-wrap items-center gap-2 font-mono">
+                  <span className="bg-[#f0f0f1] px-1.5 py-0.5 rounded border border-gray-200">import Breadcrumbs from '@/components/Breadcrumbs';</span>
+                  <span className="text-[#555] font-sans font-medium text-xs">THEN</span>
+                  <span className="bg-[#f0f0f1] px-1.5 py-0.5 rounded border border-gray-200">&lt;Breadcrumbs /&gt;</span>
+                  <span className="text-[#555] font-sans font-medium text-xs ml-1 mr-1">OR</span>
+                  <span className="bg-[#f0f0f1] px-1.5 py-0.5 rounded border border-gray-200">[breadcrumbs]</span>
+                </div>
+              </div>
+              
+              {/* Enable breadcrumbs function */}
+              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Enable breadcrumbs function</h3>
+                  <p className="text-gray-500 text-sm mt-1 max-w-xs">Enable to turn on breadcrumbs for the site and make the [breadcrumbs] shortcode available.</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={settings.breadcrumbs_enabled === 'true'}
+                  onClick={() => toggleBoolean('breadcrumbs_enabled')}
+                  className={`${
+                    settings.breadcrumbs_enabled === 'true' ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
+                >
+                  <span className={`${
+                    settings.breadcrumbs_enabled === 'true' ? 'translate-x-5' : 'translate-x-0'
+                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
+                </button>
+              </div>
+
+              {/* Separator Character */}
+              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 pt-2">Separator Character</h3>
+                  <p className="text-gray-500 text-sm mt-1 max-w-xs">Separator character or string that appears between breadcrumb items.</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {separators.map(sep => (
+                    <button
+                      key={sep}
+                      type="button"
+                      onClick={() => handleChange('breadcrumbs_separator', sep)}
+                      className={`w-10 h-10 flex items-center justify-center border rounded font-medium ${settings.breadcrumbs_separator === sep ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                    >
+                      {sep}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Show Homepage Link */}
+              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Show Homepage Link</h3>
+                  <p className="text-gray-500 text-sm mt-1 max-w-xs">Display homepage breadcrumb in trail.</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  onClick={() => toggleBoolean('breadcrumbs_show_home')}
+                  className={`${
+                    settings.breadcrumbs_show_home === 'true' ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
+                >
+                  <span className={`${
+                    settings.breadcrumbs_show_home === 'true' ? 'translate-x-5' : 'translate-x-0'
+                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
+                </button>
+              </div>
+
+              {/* Homepage label */}
+              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 pt-2">Homepage label</h3>
+                  <p className="text-gray-500 text-sm mt-1 max-w-xs">Label used for homepage link (first item) in breadcrumbs.</p>
+                </div>
+                <div className="w-1/2">
+                  <input
+                    type="text"
+                    value={settings.breadcrumbs_home_label}
+                    onChange={(e) => handleChange('breadcrumbs_home_label', e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Homepage Link */}
+              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 pt-2">Homepage Link</h3>
+                  <p className="text-gray-500 text-sm mt-1 max-w-xs">Link to use for homepage (first item) in breadcrumbs. Leave as / for relative site root.</p>
+                </div>
+                <div className="w-1/2">
+                  <input
+                    type="text"
+                    value={settings.breadcrumbs_home_link}
+                    onChange={(e) => handleChange('breadcrumbs_home_link', e.target.value)}
+                    placeholder="https://example.com"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Prefix Breadcrumb */}
+              <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-8">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 pt-2">Prefix Breadcrumb</h3>
+                  <p className="text-gray-500 text-sm mt-1 max-w-xs">Prefix for the breadcrumb path (e.g. "You are here: ").</p>
+                </div>
+                <div className="w-1/2">
+                  <input
+                    type="text"
+                    value={settings.breadcrumbs_prefix}
+                    onChange={(e) => handleChange('breadcrumbs_prefix', e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Hide Post Title */}
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Hide Post Title</h3>
+                  <p className="text-gray-500 text-sm mt-1 max-w-xs">Hide Post title from Breadcrumb.</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  onClick={() => toggleBoolean('breadcrumbs_hide_title')}
+                  className={`${
+                    settings.breadcrumbs_hide_title === 'true' ? 'bg-blue-600' : 'bg-gray-200'
+                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
+                >
+                  <span className={`${
+                    settings.breadcrumbs_hide_title === 'true' ? 'translate-x-5' : 'translate-x-0'
+                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`} />
+                </button>
+              </div>
+
+            </div>
+          )}
+
+          {activeTab === 'llms' && (
+            <div className="space-y-8">
+              <div className="bg-[#f0f6fc] border border-[#c8e1ff] text-[#333] p-4 rounded mb-6 text-sm">
+                Your llms.txt file is available at: <a href="/llms.txt" target="_blank" className="text-blue-600 hover:underline font-medium ml-1">
+                  {typeof window !== 'undefined' ? window.location.origin : ''}/llms.txt
+                </a>
+              </div>
+
+              {/* Select Post Types */}
+              <div className="flex items-start gap-12 border-b border-gray-100 pb-8">
+                <div className="w-1/3">
+                  <h3 className="text-sm font-semibold text-gray-900">Select Post Types</h3>
+                </div>
+                <div className="w-2/3">
+                  <button type="button" className="border border-gray-300 text-gray-600 text-sm px-4 py-1.5 rounded mb-4 hover:bg-gray-50">Select / Deselect All</button>
+                  <div className="grid grid-cols-2 gap-y-3">
+                    <label className="flex items-center gap-2 text-sm text-gray-700">
+                      <input type="checkbox" name="llms_txt_post_types_posts" checked={settings.llms_txt_post_types_posts === 'true'} onChange={(e) => handleChange('llms_txt_post_types_posts', e.target.checked ? 'true' : 'false')} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
+                      Posts
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-700">
+                      <input type="checkbox" name="llms_txt_post_types_pages" checked={settings.llms_txt_post_types_pages === 'true'} onChange={(e) => handleChange('llms_txt_post_types_pages', e.target.checked ? 'true' : 'false')} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
+                      Pages
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-700">
+                      <input type="checkbox" name="llms_txt_post_types_products" checked={settings.llms_txt_post_types_products === 'true'} onChange={(e) => handleChange('llms_txt_post_types_products', e.target.checked ? 'true' : 'false')} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
+                      Products
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-700">
+                      <input type="checkbox" name="llms_txt_post_types_courses" checked={settings.llms_txt_post_types_courses === 'true'} onChange={(e) => handleChange('llms_txt_post_types_courses', e.target.checked ? 'true' : 'false')} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
+                      Courses
+                    </label>
+                  </div>
+                  <p className="text-gray-500 text-xs mt-4">Select the post types to be included in the llms.txt file.</p>
+                </div>
+              </div>
+
+              {/* Select Taxonomies */}
+              <div className="flex items-start gap-12 border-b border-gray-100 pb-8">
+                <div className="w-1/3">
+                  <h3 className="text-sm font-semibold text-gray-900">Select Taxonomies</h3>
+                </div>
+                <div className="w-2/3">
+                  <button type="button" className="border border-gray-300 text-gray-600 text-sm px-4 py-1.5 rounded mb-4 hover:bg-gray-50">Select / Deselect All</button>
+                  <div className="grid grid-cols-2 gap-y-3">
+                    <label className="flex items-center gap-2 text-sm text-gray-700">
+                      <input type="checkbox" name="llms_txt_taxonomies_categories" checked={settings.llms_txt_taxonomies_categories === 'true'} onChange={(e) => handleChange('llms_txt_taxonomies_categories', e.target.checked ? 'true' : 'false')} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
+                      Categories
+                    </label>
+                  </div>
+                  <p className="text-gray-500 text-xs mt-4">Select the taxonomies to be included in the llms.txt file.</p>
+                </div>
+              </div>
+
+              {/* Posts/Terms Limit */}
+              <div className="flex items-start gap-12 border-b border-gray-100 pb-8">
+                <div className="w-1/3">
+                  <h3 className="text-sm font-semibold text-gray-900 pt-2">Posts/Terms Limit</h3>
+                </div>
+                <div className="w-2/3">
+                  <input
+                    type="number"
+                    name="llms_txt_limit"
+                    value={settings.llms_txt_limit}
+                    onChange={(e) => handleChange('llms_txt_limit', e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none"
+                  />
+                  <p className="text-gray-500 text-xs mt-2">Maximum number of links to include for each post type.</p>
+                </div>
+              </div>
+
+              {/* Additional Content */}
+              <div className="flex items-start gap-12">
+                <div className="w-1/3">
+                  <h3 className="text-sm font-semibold text-gray-900 pt-2">Additional Content</h3>
+                </div>
+                <div className="w-2/3">
+                  <textarea
+                    rows={6}
+                    name="llms_txt_additional_content"
+                    value={settings.llms_txt_additional_content}
+                    onChange={(e) => handleChange('llms_txt_additional_content', e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {activeTab === 'md' && (
+            <div className="space-y-8">
+              {/* MD Endpoints Settings */}
+              <div className="flex items-start gap-12 border-b border-gray-100 pb-8">
+                <div className="w-1/3">
+                  <h3 className="text-sm font-semibold text-gray-900">Markdown (.md) Endpoints</h3>
+                  <p className="text-gray-500 text-xs mt-1">Allow AI agents to fetch the raw text of pages by appending .md to the URL.</p>
+                </div>
+                <div className="w-2/3">
+                  <div className="space-y-4">
+                    <label className="flex items-center gap-2 text-sm text-gray-900 font-medium">
+                      <input type="checkbox" name="md_endpoints_enabled" checked={settings.md_endpoints_enabled === 'true'} onChange={(e) => handleChange('md_endpoints_enabled', e.target.checked ? 'true' : 'false')} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
+                      Enable .md Endpoints Global Feature
+                    </label>
+                    <div className="pl-6 space-y-3">
+                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                        <input type="checkbox" name="md_endpoints_pages" checked={settings.md_endpoints_pages === 'true'} onChange={(e) => handleChange('md_endpoints_pages', e.target.checked ? 'true' : 'false')} className="w-4 h-4 text-blue-600 rounded border-gray-300" disabled={settings.md_endpoints_enabled !== 'true'} />
+                        Allow for Pages
+                      </label>
+                      <label className="flex items-center gap-2 text-sm text-gray-700">
+                        <input type="checkbox" name="md_endpoints_posts" checked={settings.md_endpoints_posts === 'true'} onChange={(e) => handleChange('md_endpoints_posts', e.target.checked ? 'true' : 'false')} className="w-4 h-4 text-blue-600 rounded border-gray-300" disabled={settings.md_endpoints_enabled !== 'true'} />
+                        Allow for Posts
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

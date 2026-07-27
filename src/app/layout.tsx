@@ -111,7 +111,7 @@ export default async function RootLayout({
     >
       <head>
         {settingsObj.custom_css && (
-          <style dangerouslySetInnerHTML={{ __html: settingsObj.custom_css }} />
+          <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: settingsObj.custom_css }} />
         )}
         {settingsObj.seo_norton_verify && (
           <meta name="norton-safeweb-site-verification" content={settingsObj.seo_norton_verify} />
