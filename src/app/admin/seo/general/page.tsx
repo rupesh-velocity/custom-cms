@@ -50,15 +50,6 @@ export default function SeoGeneralSettings() {
     md_endpoints_enabled: 'true',
     md_endpoints_posts: 'true',
     md_endpoints_pages: 'true',
-    seo_custom_webmaster_tags: '',
-    seo_robots_txt: '',
-    seo_sitemap_links_per_page: '200',
-    seo_sitemap_images: 'true',
-    seo_sitemap_featured_images: 'false',
-    seo_sitemap_include_posts: 'true',
-    seo_html_sitemap_include_posts: 'true',
-    seo_sitemap_include_pages: 'true',
-    seo_html_sitemap_include_pages: 'true',
   });
 
   useEffect(() => {
