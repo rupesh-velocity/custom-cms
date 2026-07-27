@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   });
 
   const settings = settingsRecords.reduce((acc: Record<string, string>, setting) => {
-    acc[setting.key] = setting.value;
+    acc[setting.key] = setting.value || '';
     return acc;
   }, {});
 
