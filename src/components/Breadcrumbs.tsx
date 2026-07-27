@@ -25,7 +25,7 @@ export default function Breadcrumbs({ theme = 'light' }: { theme?: 'light' | 'da
       .catch(() => {});
   }, []);
 
-  if (!settings || !settings.enabled) return null;
+  if (!settings || !settings.enabled || !pathname) return null;
 
   const paths = pathname.split('/').filter(p => p);
   
