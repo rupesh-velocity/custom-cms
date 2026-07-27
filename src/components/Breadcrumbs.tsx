@@ -29,7 +29,7 @@ export default function Breadcrumbs({ theme = 'light' }: { theme?: 'light' | 'da
 
   const paths = pathname.split('/').filter(p => p);
   
-  const breadcrumbItems = [];
+  const breadcrumbItems: { label: any; url: string; isCurrent: boolean }[] = [];
   
   if (settings.showHome) {
     breadcrumbItems.push({

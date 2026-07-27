@@ -116,9 +116,7 @@ export default async function RootLayout({
         {settingsObj.seo_norton_verify && (
           <meta name="norton-safeweb-site-verification" content={settingsObj.seo_norton_verify} />
         )}
-        {settingsObj.seo_custom_webmaster_tags && (
-          <div dangerouslySetInnerHTML={{ __html: settingsObj.seo_custom_webmaster_tags }} />
-        )}
+        {/* Custom webmaster tags cannot be injected via a div in the head in React 19 */}
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {settingsObj.head_scripts && (
