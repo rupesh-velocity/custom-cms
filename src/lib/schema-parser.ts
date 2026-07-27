@@ -120,7 +120,7 @@ export function generateBreadcrumbSchema(slug: string, title: string, settings: 
   const homeLink = settings['breadcrumbs_home_link'] || '/';
   
   const paths = slug.split('/').filter(p => p);
-  const items = [];
+  const items: any[] = [];
   
   let position = 1;
   
