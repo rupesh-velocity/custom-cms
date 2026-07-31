@@ -5,6 +5,7 @@ import { optimizeHtmlImages } from '@/lib/html-optimizer';
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { processSchemaVariables, formatSchemaGraph, generateBreadcrumbSchema } from '@/lib/schema-parser';
+import { resolveSeoVariables } from '@/lib/seo-variables';
 import PasswordProtectedForm from '@/components/PasswordProtectedForm';
 import BlogSidebar from '@/components/BlogSidebar';
 import CopyLinkButton from '@/components/CopyLinkButton';
@@ -245,6 +246,36 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
     shopItems = [...normalizedCourses, ...normalizedProducts].sort((a, b) => 
       a.title.localeCompare(b.title)
     );
+  }
+
+  // 4. Fetch HTML Sitemap data if enabled and this is the designated page
+  let sitemapData = { posts: [] as any[], pages: [] as any[] };
+  const isHtmlSitemapPage = data.__type === 'page' && seoSettings['seo_sitemap_html_enable'] === 'true' && seoSettings['seo_sitemap_html_format'] === 'page' && seoSettings['seo_sitemap_html_page'] === String(data.id);
+
+  if (isHtmlSitemapPage) {
+     const orderBy: any = seoSettings['seo_sitemap_html_sort'] === 'modified_date' ? { updatedAt: 'desc' } : 
+                     seoSettings['seo_sitemap_html_sort'] === 'alphabetical' ? { title: 'asc' } :
+                     seoSettings['seo_sitemap_html_sort'] === 'id' ? { id: 'asc' } :
+                     { publishedAt: 'desc' };
+
+     sitemapData.posts = await prisma.post.findMany({
+       where: { status: 'Published', noIndex: false },
+       orderBy: orderBy.publishedAt ? { createdAt: 'desc' } : orderBy, // Fallback for publishedAt if null
+       select: { id: true, title: true, seoTitle: true, slug: true, publishedAt: true, updatedAt: true, createdAt: true }
+     });
+     
+     sitemapData.pages = await prisma.page.findMany({
+       where: { status: 'Published', noIndex: false },
+       orderBy: orderBy.publishedAt ? { createdAt: 'desc' } : orderBy,
+       select: { id: true, title: true, seoTitle: true, slug: true, publishedAt: true, updatedAt: true, createdAt: true }
+     });
+     
+     // Correctly sort by publishedAt explicitly since it might be null and Prisma sorting with nulls can be tricky
+     if (seoSettings['seo_sitemap_html_sort'] === 'published_date' || !seoSettings['seo_sitemap_html_sort']) {
+       const sortByDateDesc = (a: any, b: any) => new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime();
+       sitemapData.posts.sort(sortByDateDesc);
+       sitemapData.pages.sort(sortByDateDesc);
+     }
   }
 
   return (
@@ -509,7 +540,79 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
             breadcrumbSettings={initialBreadcrumbSettings}
           />
           
-          <ContentRenderer html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} className={`max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24 ${data.featuredImage ? 'mt-16' : 'mt-12'}`} />
+          <ContentRenderer html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} className={`max-w-7xl mx-auto px-6 prose prose-lg max-w-none ${isHtmlSitemapPage ? 'pb-12' : 'pb-24'} ${data.featuredImage ? 'mt-16' : 'mt-12'}`} />
+          
+          {isHtmlSitemapPage && (
+            <div className="max-w-7xl mx-auto px-6 pb-24">
+              {(() => {
+                const getResolvedTitle = (item: any, isPost: boolean) => {
+                  if (seoSettings['seo_sitemap_html_titles'] !== 'seo_titles') return item.title;
+                  let titleFormat = item.seoTitle || '';
+                  if (!titleFormat) {
+                    titleFormat = isPost ? (seoSettings['seo_post_title'] || '%title% %sep% %sitename%') : (seoSettings['seo_page_title'] || '%title% %sep% %sitename%');
+                  }
+                  
+                  return resolveSeoVariables(titleFormat, {
+                    title: item.title,
+                    siteName: seoSettings['site_title'] || 'Custom CMS',
+                    separator: seoSettings['seo_separator'] || '-',
+                    siteDesc: seoSettings['site_tagline'] || '',
+                    capitalizeTitles: seoSettings['seo_capitalize_titles'] === 'true'
+                  });
+                };
+
+                return (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12">
+                    <h2 className="text-3xl font-bold font-outfit mb-8 text-gray-900 border-b border-gray-100 pb-4">HTML Sitemap</h2>
+                    
+                    <div className="grid md:grid-cols-2 gap-12">
+                      <div>
+                        <h3 className="text-xl font-bold text-[#5e3fde] mb-6 flex items-center gap-2">
+                          <span className="w-8 h-8 rounded-lg bg-[#5e3fde]/10 flex items-center justify-center text-sm">📄</span> 
+                          Pages
+                        </h3>
+                        <ul className="space-y-3">
+                          {sitemapData.pages.map(p => (
+                            <li key={p.id} className="flex flex-col gap-1">
+                              <Link href={`/${p.slug === 'home' ? '' : p.slug}`} className="text-gray-700 hover:text-[#5e3fde] hover:underline font-medium">
+                                {getResolvedTitle(p, false)}
+                              </Link>
+                              {seoSettings['seo_sitemap_html_dates'] === 'true' && (
+                                <span className="text-xs text-gray-400">
+                                   {new Date(p.publishedAt || p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div>
+                        <h3 className="text-xl font-bold text-[#5e3fde] mb-6 flex items-center gap-2">
+                          <span className="w-8 h-8 rounded-lg bg-[#5e3fde]/10 flex items-center justify-center text-sm">📝</span> 
+                          Posts
+                        </h3>
+                        <ul className="space-y-3">
+                          {sitemapData.posts.map(p => (
+                            <li key={p.id} className="flex flex-col gap-1">
+                              <Link href={`/${p.slug}`} className="text-gray-700 hover:text-[#5e3fde] hover:underline font-medium">
+                                {getResolvedTitle(p, true)}
+                              </Link>
+                              {seoSettings['seo_sitemap_html_dates'] === 'true' && (
+                                <span className="text-xs text-gray-400">
+                                   {new Date(p.publishedAt || p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
         </main>
       )}
     </>

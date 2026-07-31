@@ -10,13 +10,20 @@ export default function SitemapSettings() {
   const [isSaving, setIsSaving] = useState(false);
   const [origin, setOrigin] = useState('');
   const [initialSettings, setInitialSettings] = useState<Record<string, string>>({});
+  const [pagesList, setPagesList] = useState<any[]>([]);
 
   const [settings, setSettings] = useState<Record<string, string>>({
     seo_sitemap_links_per_page: '200',
-    seo_sitemap_images: 'true',
+    seo_sitemap_images: 'false',
     seo_sitemap_include_featured_images: 'false',
     seo_sitemap_exclude_posts: '',
     seo_sitemap_exclude_terms: '',
+    seo_sitemap_html_enable: 'false',
+    seo_sitemap_html_format: 'page',
+    seo_sitemap_html_page: '',
+    seo_sitemap_html_sort: 'published_date',
+    seo_sitemap_html_dates: 'false',
+    seo_sitemap_html_titles: 'item_titles',
     seo_sitemap_include_posts: 'true',
     seo_sitemap_include_pages: 'true',
   });
@@ -38,6 +45,13 @@ export default function SitemapSettings() {
         toast.error('Failed to load settings');
         setIsLoading(false);
       });
+
+    fetch('/api/pages')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setPagesList(data);
+      })
+      .catch(console.error);
   }, []);
 
   const handleChange = (key: string, value: string) => {
@@ -304,7 +318,121 @@ export default function SitemapSettings() {
                 </div>
               )}
 
-              {activeTab !== 'general' && activeTab !== 'posts' && activeTab !== 'pages' && (
+              {activeTab === 'html_sitemap' && (
+                <div className="p-8">
+                  <h2 className="text-xl font-medium text-gray-800 mb-2">HTML Sitemap</h2>
+                  <p className="text-gray-500 mb-8 text-[13px]">
+                    This tab contains settings related to the HTML sitemap.
+                  </p>
+
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-[250px_1fr] gap-8 items-start border-b border-gray-100 pb-6">
+                      <div className="text-[14px] font-medium text-gray-700">HTML Sitemap</div>
+                      <div>
+                        <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                          <input type="checkbox" checked={settings.seo_sitemap_html_enable === 'true'} onChange={() => toggleBoolean('seo_sitemap_html_enable')} className="sr-only peer" />
+                          <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                        </label>
+                        <p className="text-[13px] text-gray-500 mt-1">Enable the HTML sitemap.</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-[250px_1fr] gap-8 items-start border-b border-gray-100 pb-6">
+                      <div className="text-[14px] font-medium text-gray-700">Display Format</div>
+                      <div>
+                        <div className="inline-flex rounded-md shadow-sm mb-2">
+                          <button
+                            onClick={() => handleChange('seo_sitemap_html_format', 'shortcode')}
+                            className={`px-4 py-2 text-sm font-medium border rounded-l-md ${settings.seo_sitemap_html_format === 'shortcode' ? 'bg-[#0085ba] text-white border-[#0085ba]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                          >
+                            Shortcode
+                          </button>
+                          <button
+                            onClick={() => handleChange('seo_sitemap_html_format', 'page')}
+                            className={`px-4 py-2 text-sm font-medium border-t border-b border-r rounded-r-md ${settings.seo_sitemap_html_format === 'page' ? 'bg-[#0085ba] text-white border-[#0085ba]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                          >
+                            Page
+                          </button>
+                        </div>
+                        <p className="text-[13px] text-gray-500 mt-1">Choose how you want to display the HTML sitemap.</p>
+                      </div>
+                    </div>
+
+                    {settings.seo_sitemap_html_format === 'page' && (
+                      <div className="grid grid-cols-[250px_1fr] gap-8 items-start border-b border-gray-100 pb-6">
+                        <div className="text-[14px] font-medium text-gray-700">Page</div>
+                        <div>
+                          <select
+                            value={settings.seo_sitemap_html_page}
+                            onChange={(e) => handleChange('seo_sitemap_html_page', e.target.value)}
+                            className="w-full max-w-md p-2.5 bg-white border border-gray-300 rounded text-[13px] focus:outline-none focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba]"
+                          >
+                            <option value="">Select a page...</option>
+                            {pagesList.map(page => (
+                              <option key={page.id} value={page.id}>{page.title}</option>
+                            ))}
+                          </select>
+                          <p className="text-[13px] text-gray-500 mt-2">
+                            Select the page to display the HTML sitemap. Once the settings are saved, the sitemap will be displayed below the content of the selected page.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-[250px_1fr] gap-8 items-start border-b border-gray-100 pb-6">
+                      <div className="text-[14px] font-medium text-gray-700">Sort By</div>
+                      <div>
+                        <select
+                          value={settings.seo_sitemap_html_sort}
+                          onChange={(e) => handleChange('seo_sitemap_html_sort', e.target.value)}
+                          className="w-full max-w-md p-2.5 bg-white border border-gray-300 rounded text-[13px] focus:outline-none focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba]"
+                        >
+                          <option value="published_date">Published Date</option>
+                          <option value="modified_date">Modified Date</option>
+                          <option value="alphabetical">Alphabetical</option>
+                          <option value="id">Post ID</option>
+                        </select>
+                        <p className="text-[13px] text-gray-500 mt-2">Choose how you want to sort the items in the HTML sitemap.</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-[250px_1fr] gap-8 items-start border-b border-gray-100 pb-6">
+                      <div className="text-[14px] font-medium text-gray-700">Show Dates</div>
+                      <div>
+                        <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                          <input type="checkbox" checked={settings.seo_sitemap_html_dates === 'true'} onChange={() => toggleBoolean('seo_sitemap_html_dates')} className="sr-only peer" />
+                          <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                        </label>
+                        <p className="text-[13px] text-gray-500 mt-1">Show published dates for each post &amp; page.</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-[250px_1fr] gap-8 items-start pb-6">
+                      <div className="text-[14px] font-medium text-gray-700">Item Titles</div>
+                      <div>
+                        <div className="inline-flex rounded-md shadow-sm mb-2">
+                          <button
+                            onClick={() => handleChange('seo_sitemap_html_titles', 'item_titles')}
+                            className={`px-4 py-2 text-sm font-medium border rounded-l-md ${settings.seo_sitemap_html_titles === 'item_titles' ? 'bg-[#0085ba] text-white border-[#0085ba]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                          >
+                            Item Titles
+                          </button>
+                          <button
+                            onClick={() => handleChange('seo_sitemap_html_titles', 'seo_titles')}
+                            className={`px-4 py-2 text-sm font-medium border-t border-b border-r rounded-r-md ${settings.seo_sitemap_html_titles === 'seo_titles' ? 'bg-[#0085ba] text-white border-[#0085ba]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                          >
+                            SEO Titles
+                          </button>
+                        </div>
+                        <p className="text-[13px] text-gray-500 mt-1">Show the post/term titles, or the SEO titles in the HTML sitemap.</p>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {activeTab !== 'general' && activeTab !== 'posts' && activeTab !== 'pages' && activeTab !== 'html_sitemap' && (
                 <div className="p-12 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50 mx-6 mt-6">
                   <h3 className="text-lg font-medium text-gray-700 mb-2">{activeTabInfo.label} Settings</h3>
                   <p>These settings are not yet implemented in this demo.</p>
