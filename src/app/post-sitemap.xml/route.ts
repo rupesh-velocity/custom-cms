@@ -10,23 +10,40 @@ export async function GET(request: Request) {
     const appUrl = `${protocol}://${host}`;
     
     // Check if posts are enabled in sitemap
-    const setting = await prisma.setting.findUnique({
-      where: { key: 'seo_sitemap_include_posts' }
+    const settings = await prisma.setting.findMany({
+      where: { key: { in: [
+        'seo_sitemap_include_posts', 
+        'seo_sitemap_images', 
+        'seo_sitemap_include_featured_images', 
+        'seo_sitemap_exclude_posts'
+      ] } }
     });
+    const settingMap = settings.reduce((acc: any, s: any) => ({ ...acc, [s.key]: s.value }), {});
     
-    if (setting?.value === 'false') {
+    if (settingMap['seo_sitemap_include_posts'] === 'false') {
       return new NextResponse('Sitemap disabled for posts', { status: 404 });
     }
+
+    const excludeIds = (settingMap['seo_sitemap_exclude_posts'] || '')
+      .split(',')
+      .map((id: string) => parseInt(id.trim()))
+      .filter((id: number) => !isNaN(id));
+
+    const includeImages = settingMap['seo_sitemap_images'] !== 'false';
+    const includeFeaturedImages = settingMap['seo_sitemap_include_featured_images'] === 'true';
 
     const posts = await prisma.post.findMany({
       where: { 
         status: 'Published',
-        noIndex: false
+        noIndex: false,
+        ...(excludeIds.length > 0 ? { id: { notIn: excludeIds } } : {})
       },
       select: {
+        id: true,
         slug: true,
         updatedAt: true,
-        contentHtml: true
+        contentHtml: true,
+        featuredImage: true
       },
       // You can add pagination using seo_sitemap_links_per_page here
       take: 1000
@@ -42,7 +59,7 @@ export async function GET(request: Request) {
       xml += `    <lastmod>${post.updatedAt.toISOString()}</lastmod>\n`;
       
       // Extract images
-      if (post.contentHtml) {
+      if (includeImages && post.contentHtml) {
         const imgRegex = /<img[^>]+src="([^">]+)"/g;
         let match;
         while ((match = imgRegex.exec(post.contentHtml)) !== null) {
@@ -52,6 +69,14 @@ export async function GET(request: Request) {
           xml += `      <image:loc>${absoluteImgSrc}</image:loc>\n`;
           xml += `    </image:image>\n`;
         }
+      }
+      
+      // Add featured image
+      if (includeFeaturedImages && post.featuredImage) {
+        const absoluteImgSrc = post.featuredImage.startsWith('/') ? `${appUrl}${post.featuredImage}` : post.featuredImage;
+        xml += `    <image:image>\n`;
+        xml += `      <image:loc>${absoluteImgSrc}</image:loc>\n`;
+        xml += `    </image:image>\n`;
       }
       
       xml += `  </url>\n`;

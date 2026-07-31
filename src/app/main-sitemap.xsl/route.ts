@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export const revalidate = 0;
 
 export async function GET() {
+  const setting = await prisma.setting.findUnique({
+    where: { key: 'seo_sitemap_images' }
+  });
+  const showImages = setting?.value !== 'false';
+
   const xsl = `<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" 
   xmlns:html="http://www.w3.org/TR/REC-html40"
@@ -26,7 +32,7 @@ export async function GET() {
             background-color: #f6f7f7;
           }
           #header {
-            background-color: #3b82f6; /* Blue matching Rank Math style */
+            background-color: #3b82f6;
             padding: 30px 40px;
             color: #fff;
           }
@@ -137,7 +143,7 @@ export async function GET() {
               <thead>
                 <tr>
                   <th>URL</th>
-                  <th>Images</th>
+                  ${showImages ? '<th>Images</th>' : ''}
                   <th>Last Mod.</th>
                 </tr>
               </thead>
@@ -150,9 +156,10 @@ export async function GET() {
                       </xsl:variable>
                       <a href="{$itemURL}"><xsl:value-of select="sitemap:loc"/></a>
                     </td>
+                    ${showImages ? `
                     <td>
                       <xsl:value-of select="count(image:image)"/>
-                    </td>
+                    </td>` : ''}
                     <td>
                       <xsl:value-of select="concat(substring(sitemap:lastmod, 1, 10), ' ', substring(sitemap:lastmod, 12, 5), ' +00:00')"/>
                     </td>

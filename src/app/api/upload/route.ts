@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { prisma } from '@/lib/prisma';
+import { join } from 'path';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 
 // Cloudinary config is automatically picked up from CLOUDINARY_URL env var
 // You can also explicitly configure it if needed, but CLOUDINARY_URL is standard.
@@ -49,7 +51,8 @@ export async function POST(req: Request) {
           const uploadStream = cloudinary.uploader.upload_stream(
             { 
               folder: 'custom-cms',
-              public_id: publicId
+              public_id: publicId,
+              resource_type: 'auto'
             },
             (error, result) => {
               if (error) reject(error);
@@ -62,12 +65,24 @@ export async function POST(req: Request) {
         const result = uploadResult as any;
         finalUrl = result.secure_url;
       } catch (err) {
-        console.error('Cloudinary upload failed, falling back to base64', err);
-        finalUrl = `data:${file.type || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
+        console.error('Cloudinary upload failed, falling back to local file system', err);
+        const uploadDir = join(process.cwd(), 'public', 'uploads');
+        if (!existsSync(uploadDir)) {
+          mkdirSync(uploadDir, { recursive: true });
+        }
+        const filePath = join(uploadDir, finalFileName);
+        writeFileSync(filePath, buffer);
+        finalUrl = `/uploads/${finalFileName}`;
       }
     } else {
-      // Fallback: store as base64 data URI if no external storage is configured
-      finalUrl = `data:${file.type || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
+      // Fallback to local file system if no Cloudinary URL
+      const uploadDir = join(process.cwd(), 'public', 'uploads');
+      if (!existsSync(uploadDir)) {
+        mkdirSync(uploadDir, { recursive: true });
+      }
+      const filePath = join(uploadDir, finalFileName);
+      writeFileSync(filePath, buffer);
+      finalUrl = `/uploads/${finalFileName}`;
     }
     
     // Create Media record in the database

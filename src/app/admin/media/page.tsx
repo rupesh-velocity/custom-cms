@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Upload, Trash2, Image as ImageIcon, Search, CheckSquare, Square } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Search, CheckSquare, Square, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Media {
@@ -20,6 +20,7 @@ export default function MediaLibrary() {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMediaIds, setSelectedMediaIds] = useState<number[]>([]);
@@ -42,6 +43,28 @@ export default function MediaLibrary() {
   useEffect(() => {
     fetchMedia();
   }, [fetchMedia]);
+
+  useEffect(() => {
+    if (selectedMedia?.mimeType === 'application/pdf' && selectedMedia.url.startsWith('data:application/pdf;base64,')) {
+      try {
+        const base64 = selectedMedia.url.split(',')[1];
+        const binaryString = window.atob(base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        setPdfBlobUrl(url);
+        return () => URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error('Failed to convert base64 to blob URL', e);
+        setPdfBlobUrl(selectedMedia.url);
+      }
+    } else {
+      setPdfBlobUrl(selectedMedia?.url || null);
+    }
+  }, [selectedMedia]);
 
   const handleUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -273,7 +296,7 @@ export default function MediaLibrary() {
                 <img src={item.url} alt={item.filename} className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center justify-center p-4">
-                  <ImageIcon className="w-12 h-12 text-gray-400 mb-2" />
+                  <FileText className="w-12 h-12 text-gray-400 mb-2" />
                   <span className="text-[11px] text-gray-500 text-center break-all line-clamp-2">{item.filename}</span>
                 </div>
               )}
@@ -297,9 +320,11 @@ export default function MediaLibrary() {
             <div className="flex-1 bg-gray-100 p-8 flex items-center justify-center overflow-hidden border-r border-gray-200">
               {selectedMedia.mimeType.startsWith('image/') ? (
                 <img src={selectedMedia.url} alt={selectedMedia.filename} className="max-w-full max-h-full object-contain shadow-sm" />
+              ) : selectedMedia.mimeType === 'application/pdf' ? (
+                <iframe src={pdfBlobUrl || selectedMedia.url} className="w-full h-full border-0" title={selectedMedia.filename} />
               ) : (
                 <div className="flex flex-col items-center">
-                  <ImageIcon className="w-24 h-24 text-gray-400 mb-4" />
+                  <FileText className="w-24 h-24 text-gray-400 mb-4" />
                   <span className="text-gray-500">{selectedMedia.filename}</span>
                 </div>
               )}
