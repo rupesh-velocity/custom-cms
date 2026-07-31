@@ -18,11 +18,14 @@ model Post {
   redirectUrl     String?
   redirectType    String?
   noIndex         Boolean    @default(false)
+  seoRobots       String?
+  seoAdvancedRobots String?
   status          String     @default("Draft")
   visibility      String     @default("Public")
   password        String?
   schemaJson      String?
   seoScore        Int        @default(0)
+  isPillar        Boolean    @default(false)
   authorId        Int?
   author          User?      @relation(fields: [authorId], references: [id])
   categories      Category[]
@@ -44,12 +47,15 @@ model Page {
   redirectUrl     String?
   redirectType    String?
   noIndex         Boolean   @default(false)
+  seoRobots       String?
+  seoAdvancedRobots String?
   status          String    @default("Draft")
   visibility      String    @default("Public")
   password        String?
   hideTitle       Boolean   @default(false)
   schemaJson      String?
   seoScore        Int       @default(0)
+  isPillar        Boolean   @default(false)
   authorId        Int?
   author          User?     @relation(fields: [authorId], references: [id])
   featuredImage   String?

@@ -7,6 +7,8 @@ import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
 
+import { generateFullMetadata } from '@/lib/seo-metadata';
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const category = await prisma.category.findUnique({ where: { slug } });
@@ -17,13 +19,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
-  return {
+  return generateFullMetadata({
     title: `${category.name} Archives`,
+    rawTitle: `${category.name} Archives`,
     description: `Browse all posts in the ${category.name} category.`,
-    alternates: {
-      canonical: `/category/${category.slug}`,
-    }
-  };
+    rawContentText: `Browse all posts in the ${category.name} category.`,
+    category: category.name,
+    type: 'website',
+    url: `/category/${category.slug}`,
+  });
 }
 
 export default async function CategoryPage(props: { params: Promise<{ slug: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {

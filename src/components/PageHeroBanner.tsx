@@ -5,12 +5,14 @@ export default function PageHeroBanner({
   title, 
   image, 
   description,
-  hideTitle
+  hideTitle,
+  breadcrumbSettings
 }: { 
   title: string; 
   image?: string | null;
   description?: string | null;
   hideTitle?: boolean;
+  breadcrumbSettings?: any;
 }) {
   // Split title to style the last word
   const words = title.trim().split(' ');
@@ -57,7 +59,7 @@ export default function PageHeroBanner({
 
         {/* Breadcrumbs under Description */}
         <div className="mt-0">
-          <Breadcrumbs theme="dark" />
+          <Breadcrumbs theme="dark" initialSettings={breadcrumbSettings} />
         </div>
       </div>
     </div>

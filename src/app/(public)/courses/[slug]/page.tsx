@@ -4,6 +4,27 @@ import { jwtVerify } from 'jose';
 import { notFound } from 'next/navigation';
 import CourseViewerClient from './CourseViewerClient';
 import CourseLandingClient from './CourseLandingClient';
+import { generateFullMetadata } from '@/lib/seo-metadata';
+import { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const course = await prisma.course.findUnique({ where: { slug } });
+  
+  if (!course) {
+    return { title: 'Course Not Found' };
+  }
+
+  return generateFullMetadata({
+    title: course.title,
+    rawTitle: course.title,
+    description: course.contentText?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
+    rawContentText: course.contentText?.replace(/<[^>]*>?/gm, '').substring(0, 160) || '',
+    image: course.featuredImage || '',
+    type: 'website',
+    url: `/courses/${slug}`,
+  });
+}
 
 export default async function CoursePage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;

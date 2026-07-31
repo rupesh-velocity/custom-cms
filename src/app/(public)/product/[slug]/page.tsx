@@ -2,6 +2,27 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProductClient from './ProductClient';
+import { generateFullMetadata } from '@/lib/seo-metadata';
+import { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await prisma.product.findFirst({ where: { slug } });
+  
+  if (!product) {
+    return { title: 'Product Not Found' };
+  }
+
+  return generateFullMetadata({
+    title: product.title,
+    rawTitle: product.title,
+    description: product.description?.replace(/<[^>]*>?/gm, '').substring(0, 160),
+    rawContentText: product.description?.replace(/<[^>]*>?/gm, '').substring(0, 160),
+    image: product.featuredImage,
+    type: 'website',
+    url: `/product/${slug}`,
+  });
+}
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;

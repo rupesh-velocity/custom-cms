@@ -107,14 +107,16 @@ export default function ClassicSidebar({
     <div className="w-full max-w-[280px] font-sans">
       <Accordion id="publish" title="Publish" expanded={expanded.publish} toggleAccordion={() => toggleAccordion('publish')} noPadding>
         <div className="p-3 bg-white">
-          <div className="flex justify-between mb-4">
-            <button 
-              onClick={() => onPublish('Draft')}
-              disabled={isSaving}
-              className="bg-white border border-[#5e3fde] text-[#5e3fde] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f6f7f7] disabled:opacity-50"
-            >
-              Save Draft
-            </button>
+          <div className={`flex ${status !== 'Published' ? 'justify-between' : 'justify-end'} mb-4`}>
+            {status !== 'Published' && (
+              <button 
+                onClick={() => onPublish('Draft')}
+                disabled={isSaving}
+                className="bg-white border border-[#5e3fde] text-[#5e3fde] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f6f7f7] disabled:opacity-50"
+              >
+                Save Draft
+              </button>
+            )}
             <button className="bg-[#f3f5f6] border border-[#0071a1] text-[#0071a1] px-3 py-1 rounded-[3px] text-[13px] hover:bg-[#f1f1f1]">
               Preview
             </button>

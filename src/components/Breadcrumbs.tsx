@@ -4,11 +4,12 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-export default function Breadcrumbs({ theme = 'light' }: { theme?: 'light' | 'dark' }) {
+export default function Breadcrumbs({ theme = 'light', initialSettings }: { theme?: 'light' | 'dark', initialSettings?: any }) {
   const pathname = usePathname();
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<any>(initialSettings || null);
   
   useEffect(() => {
+    if (initialSettings) return; // Skip network request if server already provided the data!
     fetch('/api/settings')
       .then(res => res.json())
       .then(data => {

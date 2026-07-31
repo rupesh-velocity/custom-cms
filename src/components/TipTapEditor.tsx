@@ -23,7 +23,7 @@ const TipTapEditor = forwardRef<{ insertImage: (url: string) => void }, { conten
     content,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-base focus:outline-none min-h-[400px] p-4 max-w-none text-[#32373c]',
+        class: 'prose prose-sm sm:prose lg:prose-base focus:outline-none min-h-[400px] p-4 !max-w-none w-full text-[#32373c]',
       },
     },
     onUpdate: ({ editor }) => {

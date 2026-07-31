@@ -48,6 +48,7 @@ export async function POST(req: Request) {
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         schemaJson: data.schemaJson || null,
         seoScore: data.seoScore || 0,
+        isPillar: data.isPillar || false,
         authorId: authorId,
         featuredImage: data.featuredImage || null,
         ...(data.categoryIds !== undefined && {

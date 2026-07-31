@@ -3,6 +3,8 @@ import Header from '@/components/Header';
 import { Toaster } from 'react-hot-toast';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   let enableProducts = false;
   let dbError = null;

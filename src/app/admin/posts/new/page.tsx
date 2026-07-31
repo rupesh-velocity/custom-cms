@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ClassicEditor from '@/components/ClassicEditor';
 import ClassicSidebar from '@/components/ClassicSidebar';
+import LinkSuggestionsSidebar from '@/components/LinkSuggestionsSidebar';
 import SeoAnalyzer from '@/components/SeoAnalyzer';
 import toast from 'react-hot-toast';
 
@@ -23,6 +24,7 @@ export default function NewPost() {
   
   const [focusKeyword, setFocusKeyword] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
+
   const [slug, setSlug] = useState('');
   const [status, setStatus] = useState('Draft');
   const [visibility, setVisibility] = useState('Public');
@@ -30,8 +32,19 @@ export default function NewPost() {
   const [publishDate, setPublishDate] = useState('');
   
   const [seoScore, setSeoScore] = useState(0);
+  const [isPillar, setIsPillar] = useState(false);
   
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
+  const [globalSettings, setGlobalSettings] = useState<any>({});
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) setGlobalSettings(data);
+      })
+      .catch(console.error);
+  }, []);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
 
   const handlePublish = async (overrideStatus?: string) => {
@@ -62,6 +75,7 @@ export default function NewPost() {
           publishedAt: publishDate ? publishDate : undefined,
           schemaJson,
           seoScore,
+          isPillar,
           featuredImage,
           categoryIds
         }),
@@ -94,28 +108,25 @@ export default function NewPost() {
           setContentText={setContentText}
         />
         
-        <div className="mt-4">
-          <SeoAnalyzer 
-            title={title}
-            setTitle={setTitle}
-            slug={slug}
-            setSlug={setSlug}
-            redirectUrl={redirectUrl}
-            setRedirectUrl={setRedirectUrl}
-            redirectType={redirectType}
-            setRedirectType={setRedirectType}
-            noIndex={noIndex}
-            setNoIndex={setNoIndex}
-            schemaJson={schemaJson}
-            setSchemaJson={setSchemaJson}
-            metaDescription={metaDescription}
-            setMetaDescription={setMetaDescription}
-            content={contentText}
-            focusKeyword={focusKeyword}
-            setFocusKeyword={setFocusKeyword}
-            onScoreChange={setSeoScore}
-          />
-        </div>
+        {globalSettings?.seo_post_add_seo_controls !== 'false' && (
+          <div className="mt-4">
+            <SeoAnalyzer 
+              title={title} setTitle={setTitle}
+              slug={slug} setSlug={setSlug}
+              metaDescription={metaDescription} setMetaDescription={setMetaDescription}
+              content={contentText}
+              focusKeyword={focusKeyword} setFocusKeyword={setFocusKeyword}
+              redirectUrl={redirectUrl} setRedirectUrl={setRedirectUrl}
+              redirectType={redirectType} setRedirectType={setRedirectType}
+              noIndex={noIndex} setNoIndex={setNoIndex}
+              schemaJson={schemaJson} setSchemaJson={setSchemaJson}
+              onScoreChange={setSeoScore}
+              isPost={true}
+              featuredImage={featuredImage}
+              globalSettings={globalSettings}
+            />
+          </div>
+        )}
       </div>
 
       <div className="w-[280px] shrink-0">
@@ -137,6 +148,15 @@ export default function NewPost() {
           categoryIds={categoryIds}
           setCategoryIds={setCategoryIds}
           isPost={true}
+        />
+        <LinkSuggestionsSidebar 
+          globalSettings={globalSettings} 
+          isPost={true} 
+          title={title} 
+          slug={slug} 
+          focusKeyword={focusKeyword} 
+          isPillar={isPillar}
+          setIsPillar={setIsPillar}
         />
       </div>
     </div>

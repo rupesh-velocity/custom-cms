@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import "./globals.css";
 import { prisma } from '@/lib/prisma';
+import LocalSeoSchema from '@/components/seo/LocalSeoSchema';
+import { generateFullMetadata } from '@/lib/seo-metadata';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,52 +34,13 @@ const poppins = Poppins({
   display: 'swap',
 });
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+// export const dynamic = 'force-dynamic';
+// export const runtime = 'nodejs';
 
 export async function generateMetadata(): Promise<Metadata> {
-  let settings: any[] = [];
-  
-  try {
-    settings = await prisma.setting.findMany({
-      where: {
-        key: { in: [
-          'site_title', 'site_tagline', 'site_icon', 
-          'seo_google_verify', 'seo_bing_verify', 'seo_baidu_verify', 
-          'seo_yandex_verify', 'seo_pinterest_verify' // norton doesn't have native Next.js support, we'll put it in other
-        ] }
-      }
-    });
-  } catch (error) {
-    console.warn("Could not fetch metadata settings during build (Prisma skipped)");
-  }
-  
-  const settingsObj = settings.reduce((acc: any, setting: any) => {
-    acc[setting.key] = setting.value;
-    return acc;
-  }, {});
-
-  const title = settingsObj.site_title || 'Custom CMS';
-  const description = settingsObj.site_tagline || 'A custom CMS built with Next.js';
-  
-  return {
-    title,
-    description,
-    icons: settingsObj.site_icon ? [
-      { rel: 'icon', url: settingsObj.site_icon },
-      { rel: 'apple-touch-icon', url: settingsObj.site_icon },
-    ] : undefined,
-    verification: {
-      google: settingsObj.seo_google_verify,
-      yahoo: settingsObj.seo_bing_verify, // Next.js uses yahoo/yandex/google
-      yandex: settingsObj.seo_yandex_verify,
-      other: {
-        'msvalidate.01': settingsObj.seo_bing_verify,
-        'baidu-site-verification': settingsObj.seo_baidu_verify,
-        'p:domain_verify': settingsObj.seo_pinterest_verify,
-      },
-    },
-  };
+  return generateFullMetadata({
+    type: 'website'
+  });
 }
 
 export default async function RootLayout({
@@ -116,7 +79,7 @@ export default async function RootLayout({
         {settingsObj.seo_norton_verify && (
           <meta name="norton-safeweb-site-verification" content={settingsObj.seo_norton_verify} />
         )}
-        {/* Custom webmaster tags cannot be injected via a div in the head in React 19 */}
+        <LocalSeoSchema />
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {settingsObj.head_scripts && (

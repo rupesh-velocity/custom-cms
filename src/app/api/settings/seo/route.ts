@@ -34,14 +34,17 @@ export async function POST(request: Request) {
     // data is an object like { seo_nofollow_external: 'true', seo_robots_txt: '...' }
     // We will upsert each key
     
-    // Save each setting sequentially to avoid SQLite transaction lock timeouts
-    for (const [key, value] of Object.entries(data)) {
-      await prisma.setting.upsert({
+    const operations = Object.entries(data).map(([key, value]) => {
+      return prisma.setting.upsert({
         where: { key },
         update: { value: String(value) },
         create: { key, value: String(value) },
       });
-    }
+    });
+    
+    // Execute all upserts in parallel (using connection pool) to prevent transaction timeouts 
+    // and make the save process significantly faster than sequential.
+    await Promise.all(operations);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

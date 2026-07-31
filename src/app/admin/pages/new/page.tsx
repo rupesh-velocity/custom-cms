@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import ClassicEditor from '@/components/ClassicEditor';
 import ClassicSidebar from '@/components/ClassicSidebar';
+import LinkSuggestionsSidebar from '@/components/LinkSuggestionsSidebar';
 import SeoAnalyzer from '@/components/SeoAnalyzer';
 import toast from 'react-hot-toast';
 
@@ -24,6 +25,7 @@ export default function NewPage() {
   const [noIndex, setNoIndex] = useState(false);
   const [schemaJson, setSchemaJson] = useState('');
   const [slug, setSlug] = useState('');
+
   const [status, setStatus] = useState('Draft');
   const [visibility, setVisibility] = useState('Public');
   const [password, setPassword] = useState('');
@@ -31,8 +33,18 @@ export default function NewPage() {
   const [hideTitle, setHideTitle] = useState(false);
   
   const [seoScore, setSeoScore] = useState(0);
-  
+  const [isPillar, setIsPillar] = useState(false);
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
+  const [globalSettings, setGlobalSettings] = useState<any>({});
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) setGlobalSettings(data);
+      })
+      .catch(console.error);
+  }, []);
 
   const handlePublish = async (overrideStatus?: string) => {
     if (!title) {
@@ -63,6 +75,7 @@ export default function NewPage() {
           hideTitle,
           schemaJson,
           seoScore,
+          isPillar,
           featuredImage,
           heroDescription
         }),
@@ -97,28 +110,32 @@ export default function NewPage() {
           setHeroDescription={setHeroDescription}
         />
         
-        <div className="mt-4">
-          <SeoAnalyzer 
-            title={title}
-            setTitle={setTitle}
-            slug={slug}
-            setSlug={setSlug}
-            metaDescription={metaDescription}
-            setMetaDescription={setMetaDescription}
-            content={contentText}
-            focusKeyword={focusKeyword}
-            setFocusKeyword={setFocusKeyword}
-            redirectUrl={redirectUrl}
-            setRedirectUrl={setRedirectUrl}
-            redirectType={redirectType}
-            setRedirectType={setRedirectType}
-            noIndex={noIndex}
-            setNoIndex={setNoIndex}
-            schemaJson={schemaJson}
-            setSchemaJson={setSchemaJson}
-            onScoreChange={setSeoScore}
-          />
-        </div>
+        {globalSettings?.seo_page_add_seo_controls !== 'false' && (
+          <div className="mt-4">
+            <SeoAnalyzer 
+              title={title}
+              setTitle={setTitle}
+              slug={slug}
+              setSlug={setSlug}
+              metaDescription={metaDescription}
+              setMetaDescription={setMetaDescription}
+              content={contentText}
+              focusKeyword={focusKeyword}
+              setFocusKeyword={setFocusKeyword}
+              redirectUrl={redirectUrl}
+              setRedirectUrl={setRedirectUrl}
+              redirectType={redirectType}
+              setRedirectType={setRedirectType}
+              noIndex={noIndex}
+              setNoIndex={setNoIndex}
+              schemaJson={schemaJson}
+              setSchemaJson={setSchemaJson}
+              onScoreChange={setSeoScore}
+              featuredImage={featuredImage}
+              globalSettings={globalSettings}
+            />
+          </div>
+        )}
       </div>
 
       <div className="w-[280px] shrink-0">
@@ -140,6 +157,15 @@ export default function NewPage() {
           featuredImage={featuredImage}
           setFeaturedImage={setFeaturedImage}
           isPost={false}
+        />
+        <LinkSuggestionsSidebar 
+          globalSettings={globalSettings} 
+          isPost={false} 
+          title={title} 
+          slug={slug} 
+          focusKeyword={focusKeyword} 
+          isPillar={isPillar}
+          setIsPillar={setIsPillar}
         />
       </div>
     </div>

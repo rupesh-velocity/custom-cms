@@ -7,8 +7,9 @@ import {
   XCircle, CheckCircle2, HelpCircle, TrendingUp, X, Star,
   Book, GraduationCap, Database, Calendar, List, CheckSquare, 
   Film, Music, User, Mic, ShoppingCart, Utensils, UtensilsCrossed, 
-  Settings, LayoutGrid, Video, PlusCircle, Info, Search, Eye, Trash2, Edit2, Copy
+  Settings, LayoutGrid, Video, PlusCircle, Info, Search, Eye, Trash2, Edit2, Copy, Link as LinkIcon
 } from 'lucide-react';
+import { resolveSeoVariables, getResolvedLength } from '@/lib/seo-variables';
 
 export interface SchemaNode {
   id: string;
@@ -39,19 +40,33 @@ interface SeoAnalyzerProps {
   schemaJson?: string;
   setSchemaJson?: (val: string) => void;
   onScoreChange?: (score: number) => void;
+  seoRobots?: string | null;
+  setSeoRobots?: (val: string | null) => void;
+  seoAdvancedRobots?: string | null;
+  setSeoAdvancedRobots?: (val: string | null) => void;
+  globalSettings?: any;
+  isPost?: boolean;
+  featuredImage?: string | null;
+  customFieldsText?: string;
 }
 
 const resolveVariables = (str: string, props: Partial<SeoAnalyzerProps>) => {
   if (typeof str !== 'string') return str;
+  
+  const siteName = props.globalSettings?.site_title || 'Custom CMS';
+  const siteUrl = props.globalSettings?.site_url || 'http://localhost:3000';
+  const siteIcon = props.globalSettings?.site_icon || `${siteUrl}/logo.png`;
+  const defaultThumbnail = props.featuredImage || props.globalSettings?.seo_og_thumbnail || `${siteUrl}/thumbnail.png`;
+
   return str
     .replace(/%seo_title%/g, props.seoTitle || props.title || '')
     .replace(/%seo_description%/g, props.metaDescription || '')
     .replace(/%url%/g, props.redirectUrl || '')
-    .replace(/%name%/g, 'Velocity Consultancy')
-    .replace(/%org_name%/g, 'Velocity Consultancy')
-    .replace(/%org_url%/g, 'https://www.velocityconsultancy.com')
-    .replace(/%org_logo%/g, 'https://www.velocityconsultancy.com/logo.png')
-    .replace(/%post_thumbnail%/g, 'https://www.velocityconsultancy.com/thumbnail.png')
+    .replace(/%name%/g, siteName)
+    .replace(/%org_name%/g, siteName)
+    .replace(/%org_url%/g, siteUrl)
+    .replace(/%org_logo%/g, siteIcon)
+    .replace(/%post_thumbnail%/g, defaultThumbnail)
     .replace(/%date\(Y-m-d\)%/g, new Date().toISOString().split('T')[0])
     .replace(/%keywords%/g, props.focusKeyword || '');
 };
@@ -140,6 +155,24 @@ const mapSchemaType = (t: any): string => {
   const found = Object.entries(schemaTypeMap).find(([k, v]) => v === t);
   return found ? found[0] : (t || '');
 };
+
+const SEO_VARIABLES = [
+  { label: 'Title', tag: 'title', desc: 'Title of the current post or page' },
+  { label: 'Site Name', tag: 'sitename', desc: 'Your global website name' },
+  { label: 'Separator', tag: 'sep', desc: 'The separator symbol' },
+  { label: 'Site Description', tag: 'sitedesc', desc: 'Your global website tagline/description' },
+  { label: 'Excerpt', tag: 'excerpt', desc: 'The summary or description of the current post' },
+  { label: 'Current Date', tag: 'currentdate', desc: 'The current server date' },
+  { label: 'Current Day', tag: 'currentday', desc: 'The current server day of the week' },
+  { label: 'Current Month', tag: 'currentmonth', desc: 'The current server month' },
+  { label: 'Current Year', tag: 'currentyear', desc: 'The current server year' },
+  { label: 'Author Name', tag: 'name', desc: 'The display name of the author' },
+  { label: 'Author ID', tag: 'userid', desc: 'The database ID of the author' },
+  { label: 'Category', tag: 'category', desc: 'The primary category' },
+  { label: 'Post ID', tag: 'id', desc: 'The unique database ID of the post' },
+  { label: 'Post Date', tag: 'date', desc: 'The date the post was published' },
+  { label: 'Modified Date', tag: 'modified', desc: 'The date the post was last updated' },
+];
 
 const schemaFieldDefinitions: Record<string, SchemaField[]> = {
   'Article': [
@@ -398,7 +431,12 @@ const Accordion = ({ title, errors, expanded, onToggle, checks }: any) => (
 export default function SeoAnalyzer({
   title, setTitle, slug, setSlug, metaDescription, setMetaDescription, content, focusKeyword, setFocusKeyword,
   seoTitle, setSeoTitle, redirectUrl, setRedirectUrl, redirectType, setRedirectType, noIndex, setNoIndex,
-  schemaJson = '', setSchemaJson, onScoreChange
+  seoRobots, setSeoRobots,
+  seoAdvancedRobots, setSeoAdvancedRobots,
+  globalSettings,
+  schemaJson = '', setSchemaJson, onScoreChange, isPost = false,
+  featuredImage = null,
+  customFieldsText = ''
 }: SeoAnalyzerProps) {
   const [activeTab, setActiveTab] = useState('general');
   const [isSnippetExpanded, setIsSnippetExpanded] = useState(false);
@@ -410,6 +448,21 @@ export default function SeoAnalyzer({
     title: false,
     content: false,
   });
+
+  const [isTitleVarsOpen, setIsTitleVarsOpen] = useState(false);
+  const [isDescVarsOpen, setIsDescVarsOpen] = useState(false);
+  const [liveSettings, setLiveSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) {
+          setLiveSettings(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Advanced Tab State
   const [isRedirect, setIsRedirect] = useState(!!redirectUrl);
@@ -513,6 +566,8 @@ export default function SeoAnalyzer({
   const [schemas, setSchemas] = useState<any[]>([]);
   const [schemaData, setSchemaData] = useState<Record<string, string>>({});
   const [customTemplates, setCustomTemplates] = useState<any[]>([]);
+
+
 
   useEffect(() => {
     fetch('/api/schema-templates')
@@ -687,7 +742,7 @@ export default function SeoAnalyzer({
       baseObj = schemaObj;
     }
 
-    const resolvedObj = resolveObjectVariables(baseObj, { title, seoTitle, metaDescription, redirectUrl, focusKeyword });
+    const resolvedObj = resolveObjectVariables(baseObj, { title, seoTitle, metaDescription, redirectUrl, focusKeyword, featuredImage, globalSettings });
     const filteredObj = removeEmptyFields(resolvedObj);
     
     if (filteredObj && filteredObj["@graph"] && Array.isArray(filteredObj["@graph"]) && filteredObj["@graph"].length > 0) {
@@ -710,8 +765,25 @@ export default function SeoAnalyzer({
           setSchemas([parsed]);
         }
       } catch(e) {}
+    } else if ((!schemaJson || schemaJson === '[]') && schemas.length === 0 && Object.keys(globalSettings || {}).length > 0) {
+      const defaultSchemaType = isPost ? globalSettings.seo_post_schema_type : globalSettings.seo_page_schema_type;
+      
+      if (defaultSchemaType && defaultSchemaType !== 'None') {
+        const schemaObj = {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": defaultSchemaType
+            }
+          ]
+        };
+        setSchemas([schemaObj]);
+        if (setSchemaJson) {
+          setSchemaJson(JSON.stringify([schemaObj], null, 2));
+        }
+      }
     }
-  }, [schemaJson]);
+  }, [schemaJson, schemas.length, globalSettings, isPost, setSchemaJson]);
 
   const updateSchemas = (newSchemas: any[]) => {
     setSchemas(newSchemas);
@@ -781,7 +853,8 @@ export default function SeoAnalyzer({
   const safeKeyword = primaryKeyword.toLowerCase();
   const safeTitle = (seoTitle || title).toLowerCase();
   const safeDesc = metaDescription.toLowerCase();
-  const safeContent = content.toLowerCase();
+  const fullContent = customFieldsText ? content + ' ' + customFieldsText : content;
+  const safeContent = fullContent.toLowerCase();
   const safeSlug = slug.toLowerCase();
 
   const hasKeyword = safeKeyword.length > 0;
@@ -790,7 +863,7 @@ export default function SeoAnalyzer({
   const keywordInDesc = hasKeyword && safeDesc.includes(safeKeyword);
   const normalizedSlug = safeSlug.replace(/[-_]/g, ' ');
   const keywordInSlug = hasKeyword && normalizedSlug.includes(safeKeyword);
-  const plainTextContent = content.replace(/<[^>]*>?/gm, '').toLowerCase();
+  const plainTextContent = fullContent.replace(/<[^>]*>?/gm, '').toLowerCase();
   const keywordAtStartContent = hasKeyword && plainTextContent.substring(0, 150).includes(safeKeyword);
   const keywordInContent = hasKeyword && plainTextContent.includes(safeKeyword);
   
@@ -807,7 +880,7 @@ export default function SeoAnalyzer({
   ];
   const basicErrors = basicChecks.filter(c => !c.pass).length;
 
-  const headings: string[] = content.match(/<h[2-6][^>]*>([\s\S]*?)<\/h[2-6]>/ig) || [];
+  const headings: string[] = fullContent.match(/<h[2-6][^>]*>([\s\S]*?)<\/h[2-6]>/ig) || [];
   const keywordInH2 = hasKeyword && headings.some(h => h.toLowerCase().includes(safeKeyword)); 
   const keywordInImageAlt = hasKeyword && safeContent.includes(`alt="`) && safeContent.includes(safeKeyword);
   
@@ -816,7 +889,7 @@ export default function SeoAnalyzer({
   const densityGood = parseFloat(keywordDensity) > 0.5 && parseFloat(keywordDensity) < 2.5;
   
   const urlLengthGood = slug.length > 0 && slug.length <= 75;
-  const hrefMatches: string[] = content.match(/href="([^"]+)"/ig) || [];
+  const hrefMatches: string[] = fullContent.match(/href="([^"]+)"/ig) || [];
   let hasInternalLinks = false;
   let hasOutboundLinks = false;
   
@@ -878,6 +951,33 @@ export default function SeoAnalyzer({
   if (score > 50) scoreColor = 'bg-yellow-100 text-yellow-700 border-yellow-200';
   if (score >= 80) scoreColor = 'bg-green-100 text-green-700 border-green-200';
 
+  const seoContext = {
+    title,
+    siteName: liveSettings?.site_title || 'Velocity Consultancy',
+    separator: liveSettings?.seo_separator || '-',
+    excerpt: content.replace(/<[^>]*>?/gm, '').substring(0, 160),
+    siteDesc: liveSettings?.site_tagline || 'Digital Marketing & Web Agency',
+    authorName: 'Admin', // Fallback for preview
+    authorId: '1',
+    category: 'Uncategorized', // Fallback for preview
+    postId: '123',
+    postDate: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    modifiedDate: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  };
+  const fallbackTitle = isPost 
+    ? (globalSettings?.seo_post_title || '%title% %sep% %sitename%')
+    : (globalSettings?.seo_page_title || '%title% %sep% %sitename%');
+
+  const fallbackDesc = isPost
+    ? (globalSettings?.seo_post_desc || '%excerpt%')
+    : (globalSettings?.seo_page_desc || '%excerpt%');
+
+  const activeSeoTitle = seoTitle || fallbackTitle;
+  const activeMetaDesc = metaDescription || fallbackDesc;
+
+  const resolvedTitleLength = getResolvedLength(activeSeoTitle, seoContext);
+  const resolvedDescLength = getResolvedLength(activeMetaDesc, seoContext);
+
   return (
     <div className="w-full bg-white border border-[#c3c4c7] shadow-sm font-sans mb-8">
       {/* Meta Box Header */}
@@ -904,25 +1004,123 @@ export default function SeoAnalyzer({
             <h3 className="text-[13px] font-semibold text-[#1d2327] mb-3">Preview</h3>
             <div className="mb-4">
               <div className="text-[13px] text-[#006621] truncate mb-1">{origin || 'http://localhost:3000'}/{slug || 'sample-page'}/ <span className="text-gray-400">⋮</span></div>
-              <div className="text-[18px] text-[#1a0dab] font-medium hover:underline cursor-pointer truncate mb-1">{seoTitle || title || 'Sample Page - Test'}</div>
-              <div className="text-[13px] text-[#545454] leading-snug line-clamp-2">{metaDescription || "This is an example page. It's different from a blog post because it will stay in one place and will show up in your site navigation (in most themes)."}</div>
+              <div className="text-[18px] text-[#1a0dab] font-medium hover:underline cursor-pointer truncate mb-1">
+                {resolveSeoVariables(activeSeoTitle, seoContext) || title || 'Sample Page - Test'}
+              </div>
+              <div className="text-[13px] text-[#545454] leading-snug line-clamp-2">
+                {resolveSeoVariables(activeMetaDesc, seoContext) || "This is an example page. It's different from a blog post because it will stay in one place and will show up in your site navigation."}
+              </div>
             </div>
             <button type="button" onClick={() => setIsSnippetExpanded(!isSnippetExpanded)} className="bg-[#0085ba] text-white text-[13px] px-4 py-1.5 rounded-[3px] hover:bg-[#0073aa] transition-colors">Edit Snippet</button>
             {isSnippetExpanded && (
               <div className="mt-4 p-4 bg-[#f9f9f9] border border-[#e2e4e7] rounded-sm space-y-4">
-                <div>
-                  <label className="block text-[13px] font-semibold text-[#1d2327] mb-1">Title</label>
-                  <input type="text" placeholder={title || 'Sample Page - Test'} value={seoTitle !== undefined ? seoTitle : ''} onChange={(e) => setSeoTitle && setSeoTitle(e.target.value)} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
-                  <div className={`h-1 mt-1 rounded-full ${(seoTitle || title).length > 40 && (seoTitle || title).length < 60 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${Math.min(100, ((seoTitle || title).length / 60) * 100)}%` }} />
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="flex items-center gap-2 text-[13px] font-semibold text-[#1d2327]">
+                      Title
+                      {!seoTitle && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-normal">Inheriting Global</span>}
+                    </label>
+                    <span className="text-[11px] text-gray-500">
+                      {Math.max(0, 60 - resolvedTitleLength)} characters remaining
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder={fallbackTitle} 
+                      value={seoTitle || ''} 
+                      onChange={(e) => setSeoTitle && setSeoTitle(e.target.value)} 
+                      className="w-full border border-[#8c8f94] rounded-[3px] pl-3 pr-8 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" 
+                    />
+                    <div className="absolute right-2 top-2">
+                      <ChevronDown className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" onClick={() => {
+                        setIsTitleVarsOpen(!isTitleVarsOpen);
+                        setIsDescVarsOpen(false);
+                      }} />
+                    </div>
+                    {isTitleVarsOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-sm shadow-xl z-50 max-h-60 overflow-y-auto" onMouseLeave={() => setIsTitleVarsOpen(false)}>
+                        {SEO_VARIABLES.map(v => (
+                          <div 
+                            key={v.tag}
+                            onClick={() => {
+                              if (setSeoTitle) {
+                                setSeoTitle((seoTitle || '') + (seoTitle ? ' ' : '') + `%${v.tag}%`);
+                              }
+                              setIsTitleVarsOpen(false);
+                            }}
+                            className="flex items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer group"
+                          >
+                            <div className="flex flex-col">
+                              <span className="text-[13px] font-semibold text-gray-800">{v.label}</span>
+                              <span className="text-[11px] text-gray-500 italic">{v.desc}</span>
+                            </div>
+                            <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-1 rounded group-hover:bg-gray-200">{v.tag}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className={`h-1 mt-1 rounded-full ${resolvedTitleLength > 40 && resolvedTitleLength <= 60 ? 'bg-green-500' : resolvedTitleLength > 60 ? 'bg-red-500' : 'bg-yellow-500'}`} style={{ width: `${Math.min(100, (resolvedTitleLength / 60) * 100)}%` }} />
                 </div>
-                <div>
-                  <label className="block text-[13px] font-semibold text-[#1d2327] mb-1">Permalink</label>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[13px] font-semibold text-[#1d2327]">Permalink</label>
+                    <span className="text-[11px] text-gray-500">
+                      {Math.max(0, 75 - slug.length)} characters remaining
+                    </span>
+                  </div>
                   <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
+                  <div className={`h-1 mt-1 rounded-full ${slug.length > 0 && slug.length <= 75 ? 'bg-green-500' : slug.length > 75 ? 'bg-red-500' : 'bg-gray-300'}`} style={{ width: `${Math.min(100, (slug.length / 75) * 100)}%` }} />
                 </div>
-                <div>
-                  <label className="block text-[13px] font-semibold text-[#1d2327] mb-1">Description</label>
-                  <textarea value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} rows={3} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none" />
-                  <div className={`h-1 mt-1 rounded-full ${metaDescription.length > 120 && metaDescription.length < 160 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${Math.min(100, (metaDescription.length / 160) * 100)}%` }} />
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="flex items-center gap-2 text-[13px] font-semibold text-[#1d2327]">
+                      Description
+                      {!metaDescription && <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-normal">Inheriting Global</span>}
+                    </label>
+                    <span className="text-[11px] text-gray-500">
+                      {Math.max(0, 160 - resolvedDescLength)} characters remaining
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <textarea 
+                      placeholder={fallbackDesc}
+                      value={metaDescription || ''} 
+                      onChange={(e) => setMetaDescription && setMetaDescription(e.target.value)} 
+                      rows={3} 
+                      className="w-full border border-[#8c8f94] rounded-[3px] pl-3 pr-8 py-1.5 text-[13px] focus:border-[#0085ba] focus:ring-1 focus:ring-[#0085ba] outline-none resize-y" 
+                    />
+                    <div className="absolute right-2 top-2">
+                      <ChevronDown className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" onClick={() => {
+                        setIsDescVarsOpen(!isDescVarsOpen);
+                        setIsTitleVarsOpen(false);
+                      }} />
+                    </div>
+                    {isDescVarsOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-sm shadow-xl z-50 max-h-60 overflow-y-auto" onMouseLeave={() => setIsDescVarsOpen(false)}>
+                        {SEO_VARIABLES.map(v => (
+                          <div 
+                            key={v.tag}
+                            onClick={() => {
+                              if (setMetaDescription) {
+                                setMetaDescription((metaDescription || '') + (metaDescription ? ' ' : '') + `%${v.tag}%`);
+                              }
+                              setIsDescVarsOpen(false);
+                            }}
+                            className="flex items-center justify-between p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer group"
+                          >
+                            <div className="flex flex-col">
+                              <span className="text-[13px] font-semibold text-gray-800">{v.label}</span>
+                              <span className="text-[11px] text-gray-500 italic">{v.desc}</span>
+                            </div>
+                            <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-1 rounded group-hover:bg-gray-200">{v.tag}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className={`h-1 mt-1 rounded-full ${resolvedDescLength > 120 && resolvedDescLength <= 160 ? 'bg-green-500' : resolvedDescLength > 160 ? 'bg-red-500' : resolvedDescLength > 0 ? 'bg-yellow-500' : 'bg-gray-300'}`} style={{ width: `${Math.min(100, (resolvedDescLength / 160) * 100)}%` }} />
                 </div>
               </div>
             )}
@@ -946,6 +1144,8 @@ export default function SeoAnalyzer({
               <div className={`absolute right-1 top-1 bottom-1 px-3 flex items-center justify-center font-semibold text-[13px] rounded-[2px] border bg-white z-10 ${scoreColor}`}>{score} / 100</div>
             </div>
             <div className="text-[11px] text-gray-500 mt-1">Add up to 5 focus keywords.</div>
+
+
           </div>
           <Accordion title="Basic SEO" errors={basicErrors} expanded={expanded.basic} onToggle={() => toggleAccordion('basic')} checks={basicChecks} />
           <Accordion title="Additional" errors={additionalErrors} expanded={expanded.additional} onToggle={() => toggleAccordion('additional')} checks={additionalChecks} />
@@ -958,37 +1158,191 @@ export default function SeoAnalyzer({
         <div className="bg-white p-5 space-y-6">
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-4 text-[13px] font-semibold text-[#1d2327] uppercase">Robots Meta</div>
-            <div className="col-span-8 grid grid-cols-2 gap-3 text-[13px] text-[#1d2327]">
-              <label className="flex items-center gap-2"><input type="checkbox" checked={!noIndex} onChange={handleIndexToggle} className="text-[#0085ba]" /> Index <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-              <label className="flex items-center gap-2"><input type="checkbox" checked={noIndex} onChange={handleNoIndexToggle} className="text-[#0085ba]" /> No Index <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-              <label className="flex items-center gap-2"><input type="checkbox" className="text-[#0085ba]" /> Nofollow <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-              <label className="flex items-center gap-2"><input type="checkbox" className="text-[#0085ba]" /> No Archive <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-              <label className="flex items-center gap-2"><input type="checkbox" className="text-[#0085ba]" /> No Image Index <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-              <label className="flex items-center gap-2"><input type="checkbox" className="text-[#0085ba]" /> No Snippet <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
+            <div className="col-span-8">
+              {(() => {
+                const isInherited = seoRobots == null;
+                const localRobots = seoRobots ? seoRobots.split(',').filter(Boolean) : [];
+                const specificGlobalRobots = isPost ? globalSettings?.seo_post_robots : globalSettings?.seo_page_robots;
+                const specificGlobalRobotsValid = specificGlobalRobots && specificGlobalRobots !== 'default' ? specificGlobalRobots : null;
+                const globalRobotsStr = specificGlobalRobotsValid || globalSettings?.seo_global_robots || 'index';
+                const globalRobots = globalRobotsStr.split(',').filter(Boolean);
+                
+                return (
+                  <>
+                    <div className="grid grid-cols-2 gap-3 text-[13px] text-[#1d2327]">
+                      {['Index', 'No Index', 'No Follow', 'No Archive', 'No Image Index', 'No Snippet'].map(robot => {
+                        const val = robot.toLowerCase().replace(' ', '');
+                        const isChecked = isInherited ? globalRobots.includes(val) : localRobots.includes(val);
+
+                        return (
+                          <label key={robot} className={`flex items-center gap-2 ${isInherited ? 'opacity-70' : ''}`}>
+                            <input 
+                              type="checkbox" 
+                              checked={isChecked}
+                              onChange={(e) => {
+                                if (!setSeoRobots) return;
+                                
+                                let newRobots = isInherited ? [...globalRobots] : [...localRobots];
+                                
+                                if (e.target.checked) {
+                                  newRobots.push(val);
+                                  if (val === 'index') newRobots = newRobots.filter(r => r !== 'noindex');
+                                  if (val === 'noindex') newRobots = newRobots.filter(r => r !== 'index');
+                                } else {
+                                  newRobots = newRobots.filter(r => r !== val);
+                                }
+                                
+                                newRobots = Array.from(new Set(newRobots));
+                                setSeoRobots(newRobots.join(','));
+                              }}
+                              className="text-[#0085ba]" 
+                            /> 
+                            {robot} {isInherited && <span className="text-[10px] bg-gray-100 px-1 rounded text-gray-500 ml-1">Default</span>} <HelpCircle className="w-3.5 h-3.5 text-gray-400" />
+                          </label>
+                        );
+                      })}
+                    </div>
+                    
+                    {!isInherited && (
+                      <button 
+                        type="button" 
+                        onClick={() => setSeoRobots && setSeoRobots(null)} 
+                        className="mt-3 text-[12px] text-red-600 hover:underline flex items-center gap-1"
+                      >
+                        <X className="w-3 h-3" /> Reset to Global Default
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
           <hr className="border-[#e2e4e7]" />
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-4 text-[13px] font-semibold text-[#1d2327] uppercase">Advanced Robots Meta</div>
-            <div className="col-span-8 space-y-3 text-[13px] text-[#1d2327]">
-              <div className="flex items-center gap-4">
-                 <label className="flex items-center gap-2 w-40"><input type="checkbox" className="text-[#0085ba]" /> Max Snippet <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-                 <input type="text" defaultValue="-1" className="border border-[#8c8f94] rounded-[3px] px-3 py-1 w-24 outline-none" />
-              </div>
-              <div className="flex items-center gap-4">
-                 <label className="flex items-center gap-2 w-40"><input type="checkbox" className="text-[#0085ba]" /> Max Video Preview <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-                 <input type="text" defaultValue="-1" className="border border-[#8c8f94] rounded-[3px] px-3 py-1 w-24 outline-none" />
-              </div>
-              <div className="flex items-center gap-4">
-                 <label className="flex items-center gap-2 w-40"><input type="checkbox" className="text-[#0085ba]" /> Max Image Preview <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></label>
-                 <select className="border border-[#8c8f94] rounded-[3px] px-3 py-1 w-32 outline-none"><option>Large</option><option>Standard</option><option>None</option></select>
-              </div>
+            <div className="col-span-8">
+              {(() => {
+                const isAdvancedInherited = seoAdvancedRobots == null;
+                const parseAdvanced = (str: string | null | undefined) => {
+                  if (!str) return {};
+                  const obj: Record<string, string> = {};
+                  str.split(',').forEach(pair => {
+                    const [k, v] = pair.split(':');
+                    if (k && v) obj[k] = v;
+                  });
+                  return obj;
+                };
+                
+                const localAdvanced = parseAdvanced(seoAdvancedRobots);
+                
+                const specificPrefix = isPost ? 'seo_post_adv_' : 'seo_page_adv_';
+                const specificAdvanced: Record<string, string> = {};
+                if (globalSettings?.[specificPrefix + 'snippet_val']) specificAdvanced['max-snippet'] = globalSettings[specificPrefix + 'snippet_val'];
+                if (globalSettings?.[specificPrefix + 'video_val']) specificAdvanced['max-video-preview'] = globalSettings[specificPrefix + 'video_val'];
+                if (globalSettings?.[specificPrefix + 'image_val']) specificAdvanced['max-image-preview'] = globalSettings[specificPrefix + 'image_val'].toLowerCase();
+                
+                const globalPrefix = 'seo_global_adv_';
+                const fallbackAdvanced: Record<string, string> = {};
+                if (globalSettings?.[globalPrefix + 'snippet'] === 'true' && globalSettings?.[globalPrefix + 'snippet_val']) fallbackAdvanced['max-snippet'] = globalSettings[globalPrefix + 'snippet_val'];
+                if (globalSettings?.[globalPrefix + 'video'] === 'true' && globalSettings?.[globalPrefix + 'video_val']) fallbackAdvanced['max-video-preview'] = globalSettings[globalPrefix + 'video_val'];
+                if (globalSettings?.[globalPrefix + 'image'] === 'true' && globalSettings?.[globalPrefix + 'image_val']) fallbackAdvanced['max-image-preview'] = globalSettings[globalPrefix + 'image_val'].toLowerCase();
+
+                const globalAdvanced = Object.keys(specificAdvanced).length > 0 ? specificAdvanced : fallbackAdvanced;
+                const currentAdvanced = isAdvancedInherited ? globalAdvanced : localAdvanced;
+                
+                const handleAdvancedChange = (key: string, checked: boolean, value: string) => {
+                  if (!setSeoAdvancedRobots) return;
+                  let newAdvanced = { ...currentAdvanced };
+                  if (checked) {
+                    newAdvanced[key] = value;
+                  } else {
+                    delete newAdvanced[key];
+                  }
+                  
+                  const newStr = Object.entries(newAdvanced).map(([k, v]) => `${k}:${v}`).join(',');
+                  setSeoAdvancedRobots(newStr); // If empty, saves as "" which is a valid explicit override
+                };
+
+                return (
+                  <>
+                    <div className="space-y-3 text-[13px] text-[#1d2327]">
+                      <div className={`flex items-center gap-4 ${isAdvancedInherited ? 'opacity-70' : ''}`}>
+                         <label className="flex items-center gap-2 w-40">
+                           <input 
+                             type="checkbox" 
+                             checked={'max-snippet' in currentAdvanced} 
+                             onChange={e => handleAdvancedChange('max-snippet', e.target.checked, '-1')}
+                             className="text-[#0085ba]" 
+                           /> 
+                           Max Snippet {isAdvancedInherited && <span className="text-[10px] bg-gray-100 px-1 rounded text-gray-500 ml-1">Default</span>} <HelpCircle className="w-3.5 h-3.5 text-gray-400" />
+                         </label>
+                         <input 
+                           type="text" 
+                           value={currentAdvanced['max-snippet'] || ''} 
+                           onChange={e => handleAdvancedChange('max-snippet', true, e.target.value)}
+                           disabled={!('max-snippet' in currentAdvanced)}
+                           className="border border-[#8c8f94] rounded-[3px] px-3 py-1 w-24 outline-none disabled:bg-gray-100" 
+                         />
+                      </div>
+                      <div className={`flex items-center gap-4 ${isAdvancedInherited ? 'opacity-70' : ''}`}>
+                         <label className="flex items-center gap-2 w-40">
+                           <input 
+                             type="checkbox" 
+                             checked={'max-video-preview' in currentAdvanced} 
+                             onChange={e => handleAdvancedChange('max-video-preview', e.target.checked, '-1')}
+                             className="text-[#0085ba]" 
+                           /> 
+                           Max Video Preview {isAdvancedInherited && <span className="text-[10px] bg-gray-100 px-1 rounded text-gray-500 ml-1">Default</span>} <HelpCircle className="w-3.5 h-3.5 text-gray-400" />
+                         </label>
+                         <input 
+                           type="text" 
+                           value={currentAdvanced['max-video-preview'] || ''}
+                           onChange={e => handleAdvancedChange('max-video-preview', true, e.target.value)}
+                           disabled={!('max-video-preview' in currentAdvanced)}
+                           className="border border-[#8c8f94] rounded-[3px] px-3 py-1 w-24 outline-none disabled:bg-gray-100" 
+                         />
+                      </div>
+                      <div className={`flex items-center gap-4 ${isAdvancedInherited ? 'opacity-70' : ''}`}>
+                         <label className="flex items-center gap-2 w-40">
+                           <input 
+                             type="checkbox" 
+                             checked={'max-image-preview' in currentAdvanced} 
+                             onChange={e => handleAdvancedChange('max-image-preview', e.target.checked, 'large')}
+                             className="text-[#0085ba]" 
+                           /> 
+                           Max Image Preview {isAdvancedInherited && <span className="text-[10px] bg-gray-100 px-1 rounded text-gray-500 ml-1">Default</span>} <HelpCircle className="w-3.5 h-3.5 text-gray-400" />
+                         </label>
+                         <select 
+                           value={currentAdvanced['max-image-preview'] || 'large'}
+                           onChange={e => handleAdvancedChange('max-image-preview', true, e.target.value)}
+                           disabled={!('max-image-preview' in currentAdvanced)}
+                           className="border border-[#8c8f94] rounded-[3px] px-3 py-1 w-32 outline-none disabled:bg-gray-100"
+                         >
+                           <option value="large">Large</option>
+                           <option value="standard">Standard</option>
+                           <option value="none">None</option>
+                         </select>
+                      </div>
+                    </div>
+                    
+                    {!isAdvancedInherited && (
+                      <button 
+                        type="button" 
+                        onClick={() => setSeoAdvancedRobots && setSeoAdvancedRobots(null)} 
+                        className="mt-3 text-[12px] text-red-600 hover:underline flex items-center gap-1"
+                      >
+                        <X className="w-3 h-3" /> Reset to Global Default
+                      </button>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
           <hr className="border-[#e2e4e7]" />
           <div className="grid grid-cols-12 gap-4 items-center">
              <div className="col-span-4 text-[13px] font-semibold text-[#1d2327] flex items-center gap-1">Canonical URL <HelpCircle className="w-3.5 h-3.5 text-gray-400" /></div>
-             <div className="col-span-8"><input type="text" placeholder={`${origin || 'http://localhost:3000'}/sample-page/`} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#0085ba]" /></div>
+             <div className="col-span-8"><input type="text" placeholder={`${globalSettings?.site_url || origin || 'http://localhost:3000'}/${slug || ''}`} className="w-full border border-[#8c8f94] rounded-[3px] px-3 py-2 text-[13px] outline-none focus:border-[#0085ba]" /></div>
           </div>
           <hr className="border-[#e2e4e7]" />
           <div className="grid grid-cols-12 gap-4 items-start">

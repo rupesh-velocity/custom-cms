@@ -197,6 +197,9 @@ export default function Sidebar({ enableProducts = false }: { enableProducts?: b
               <Link href="/admin/seo/general" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/general') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 General Settings
               </Link>
+              <Link href="/admin/seo/titles-meta" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/titles-meta') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Titles & Meta
+              </Link>
               <Link href="/admin/seo/redirections" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/redirections') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Redirections
               </Link>

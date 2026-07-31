@@ -10,6 +10,9 @@ import ContentRenderer from '@/components/ContentRenderer';
 
 export const dynamic = 'force-dynamic';
 
+import { resolveSeoVariables } from '@/lib/seo-variables';
+import { generateFullMetadata } from '@/lib/seo-metadata';
+
 export async function generateMetadata() {
   const settingsRecords = await prisma.setting.findMany({
     where: { key: { in: ['homepage_displays', 'homepage_page_id'] } }
@@ -19,25 +22,33 @@ export async function generateMetadata() {
     return acc;
   }, {});
 
+  const seoContext: any = {
+    type: 'website',
+  };
+
   if (settings.homepage_displays === 'static_page' && settings.homepage_page_id) {
     const pageId = parseInt(settings.homepage_page_id);
-    const page = await prisma.page.findUnique({ where: { id: pageId } });
+    const page = await prisma.page.findUnique({ 
+      where: { id: pageId },
+      include: { author: true } 
+    });
     if (page) {
-      return {
-        title: page.seoTitle || page.title,
-        description: page.metaDescription || (page.contentText ? page.contentText.substring(0, 160) : ''),
-        robots: {
-          index: !page.noIndex,
-          follow: true,
-        }
-      };
+      seoContext.title = page.seoTitle;
+      seoContext.rawTitle = page.title;
+      seoContext.description = page.metaDescription;
+      seoContext.rawContentText = page.contentText;
+      seoContext.authorName = page.author ? `${page.author.firstName || ''} ${page.author.lastName || ''}`.trim() || page.author.username : '';
+      seoContext.authorId = page.authorId?.toString() || '';
+      seoContext.postId = page.id.toString();
+      seoContext.postDate = page.publishedAt ? new Date(page.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : page.createdAt ? new Date(page.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+      seoContext.modifiedDate = page.updatedAt ? new Date(page.updatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+      seoContext.noIndex = page.noIndex;
+      seoContext.image = page.featuredImage;
+      seoContext.isPost = false;
     }
   }
 
-  return {
-    title: 'Velocity CMS',
-    description: 'A powerful headless CMS built with Next.js',
-  };
+  return generateFullMetadata(seoContext);
 }
 
 export default async function Home(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {

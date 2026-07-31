@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import ClassicEditor from '@/components/ClassicEditor';
 import ClassicSidebar from '@/components/ClassicSidebar';
+import LinkSuggestionsSidebar from '@/components/LinkSuggestionsSidebar';
 import SeoAnalyzer from '@/components/SeoAnalyzer';
 import toast from 'react-hot-toast';
 
@@ -30,9 +31,14 @@ export default function EditPost() {
   const [redirectUrl, setRedirectUrl] = useState('');
   const [redirectType, setRedirectType] = useState('301');
   const [noIndex, setNoIndex] = useState(false);
+  const [seoRobots, setSeoRobots] = useState<string | null>(null);
+
+  const [seoAdvancedRobots, setSeoAdvancedRobots] = useState<string | null>(null);
   const [schemaJson, setSchemaJson] = useState('');
+  const [globalSettings, setGlobalSettings] = useState<any>({});
   
   const [seoScore, setSeoScore] = useState(0);
+  const [isPillar, setIsPillar] = useState(false);
 
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
@@ -62,8 +68,11 @@ export default function EditPost() {
         setRedirectUrl(data.redirectUrl || '');
         setRedirectType(data.redirectType || '301');
         setNoIndex(data.noIndex || false);
+        setSeoRobots(data.seoRobots || null);
+        setSeoAdvancedRobots(data.seoAdvancedRobots || null);
         setSchemaJson(data.schemaJson || '');
         setSeoScore(data.seoScore || 0);
+        setIsPillar(data.isPillar || false);
         setFeaturedImage(data.featuredImage || null);
         if (data.categories && Array.isArray(data.categories)) {
           setCategoryIds(data.categories.map((c: any) => c.id));
@@ -74,6 +83,16 @@ export default function EditPost() {
         console.error(err);
         setIsLoading(false);
       });
+      
+    // Fetch global settings
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) {
+          setGlobalSettings(data);
+        }
+      })
+      .catch(console.error);
   }, [params?.id, router]);
 
   const handleUpdate = async (overrideStatus?: string) => {
@@ -107,12 +126,15 @@ export default function EditPost() {
           redirectUrl,
           redirectType,
           noIndex,
+          seoRobots,
+          seoAdvancedRobots,
           status: finalStatus,
           visibility,
           password,
           publishedAt: publishDate,
           schemaJson,
           seoScore,
+          isPillar,
           featuredImage,
           categoryIds
         }),
@@ -156,30 +178,28 @@ export default function EditPost() {
           setContentText={setContentText}
         />
         
-        <div className="mt-4">
-          <SeoAnalyzer 
-            title={title}
-            setTitle={setTitle}
-            slug={slug}
-            setSlug={setSlug}
-            metaDescription={metaDescription}
-            setMetaDescription={setMetaDescription}
+        {globalSettings?.seo_post_add_seo_controls !== 'false' && (
+          <div className="mt-4">
+            <SeoAnalyzer 
+            title={title} setTitle={setTitle}
+            slug={slug} setSlug={setSlug}
+            metaDescription={metaDescription} setMetaDescription={setMetaDescription}
             content={contentHtml}
-            focusKeyword={focusKeyword}
-            setFocusKeyword={setFocusKeyword}
-            seoTitle={seoTitle}
-            setSeoTitle={setSeoTitle}
-            redirectUrl={redirectUrl}
-            setRedirectUrl={setRedirectUrl}
-            redirectType={redirectType}
-            setRedirectType={setRedirectType}
-            noIndex={noIndex}
-            setNoIndex={setNoIndex}
-            schemaJson={schemaJson}
-            setSchemaJson={setSchemaJson}
+            focusKeyword={focusKeyword} setFocusKeyword={setFocusKeyword}
+            seoTitle={seoTitle} setSeoTitle={setSeoTitle}
+            redirectUrl={redirectUrl} setRedirectUrl={setRedirectUrl}
+            redirectType={redirectType} setRedirectType={setRedirectType}
+            noIndex={noIndex} setNoIndex={setNoIndex}
+            seoRobots={seoRobots} setSeoRobots={setSeoRobots}
+            seoAdvancedRobots={seoAdvancedRobots} setSeoAdvancedRobots={setSeoAdvancedRobots}
+            globalSettings={globalSettings}
+            schemaJson={schemaJson} setSchemaJson={setSchemaJson}
             onScoreChange={setSeoScore}
+            isPost={true}
+            featuredImage={featuredImage}
           />
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="w-[280px] shrink-0">
@@ -200,6 +220,15 @@ export default function EditPost() {
           categoryIds={categoryIds}
           setCategoryIds={setCategoryIds}
           isPost={true}
+        />
+        <LinkSuggestionsSidebar 
+          globalSettings={globalSettings} 
+          isPost={true} 
+          title={title} 
+          slug={slug} 
+          focusKeyword={focusKeyword} 
+          isPillar={isPillar}
+          setIsPillar={setIsPillar}
         />
       </div>
     </div>

@@ -53,6 +53,8 @@ async function getPageOrPost(slug: string) {
   return null;
 }
 
+import { generateFullMetadata } from '@/lib/seo-metadata';
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const data = await getPageOrPost(slug);
@@ -64,17 +66,25 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
-  return {
-    title: data.seoTitle || data.title,
+  const seoContext: any = {
+    title: data.seoTitle,
+    rawTitle: data.title,
     description: data.metaDescription,
-    alternates: {
-      canonical: `/${data.slug}`,
-    },
-    robots: {
-      index: !data.noIndex,
-      follow: !data.noIndex,
-    }
+    rawContentText: data.contentText,
+    authorName: data.author ? `${data.author.firstName || ''} ${data.author.lastName || ''}`.trim() || data.author.username : '',
+    authorId: data.authorId?.toString() || '',
+    category: data.categories && data.categories.length > 0 ? data.categories[0].name : '',
+    postId: data.id?.toString() || '',
+    postDate: data.publishedAt ? new Date(data.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : data.createdAt ? new Date(data.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '',
+    modifiedDate: data.updatedAt ? new Date(data.updatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '',
+    isPost: data.__type === 'post',
+    type: data.__type === 'post' ? 'article' : 'website',
+    noIndex: data.noIndex,
+    image: data.featuredImage,
+    url: `/${slug}`,
   };
+
+  return generateFullMetadata(seoContext);
 }
 
 export default async function PublicPage(props: { params: Promise<{ slug: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
@@ -132,6 +142,17 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
     acc[curr.key] = curr.value || '';
     return acc;
   }, {});
+
+  const breadcrumbSettingsMap = settings.filter(s => s.key.startsWith('breadcrumbs_')).reduce((acc: any, curr) => { acc[curr.key] = curr.value; return acc; }, {});
+  const initialBreadcrumbSettings = {
+    enabled: breadcrumbSettingsMap.breadcrumbs_enabled === 'true',
+    separator: breadcrumbSettingsMap.breadcrumbs_separator || '-',
+    showHome: breadcrumbSettingsMap.breadcrumbs_show_home !== 'false',
+    homeLabel: breadcrumbSettingsMap.breadcrumbs_home_label || 'Home',
+    homeLink: breadcrumbSettingsMap.breadcrumbs_home_link || '/',
+    prefix: breadcrumbSettingsMap.breadcrumbs_prefix || '',
+    hideTitle: breadcrumbSettingsMap.breadcrumbs_hide_title === 'true'
+  };
 
   // 3. Fetch blog settings if this is the posts page
   let posts: any[] = [];
@@ -485,6 +506,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
             image={data.featuredImage} 
             description={data.heroDescription} 
             hideTitle={data.hideTitle}
+            breadcrumbSettings={initialBreadcrumbSettings}
           />
           
           <ContentRenderer html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} className={`max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24 ${data.featuredImage ? 'mt-16' : 'mt-12'}`} />

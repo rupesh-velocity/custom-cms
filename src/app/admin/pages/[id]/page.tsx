@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import ClassicEditor from '@/components/ClassicEditor';
 import ClassicSidebar from '@/components/ClassicSidebar';
+import LinkSuggestionsSidebar from '@/components/LinkSuggestionsSidebar';
 import SeoAnalyzer from '@/components/SeoAnalyzer';
 import toast from 'react-hot-toast';
 
@@ -22,6 +23,7 @@ export default function EditPage() {
   const [focusKeyword, setFocusKeyword] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
   const [slug, setSlug] = useState('');
+
   const [status, setStatus] = useState('Draft');
   const [visibility, setVisibility] = useState('Public');
   const [password, setPassword] = useState('');
@@ -32,9 +34,14 @@ export default function EditPage() {
   const [redirectUrl, setRedirectUrl] = useState('');
   const [redirectType, setRedirectType] = useState('301');
   const [noIndex, setNoIndex] = useState(false);
+
+  const [seoRobots, setSeoRobots] = useState<string | null>(null);
+  const [seoAdvancedRobots, setSeoAdvancedRobots] = useState<string | null>(null);
   const [schemaJson, setSchemaJson] = useState('');
+  const [globalSettings, setGlobalSettings] = useState<any>({});
   
   const [seoScore, setSeoScore] = useState(0);
+  const [isPillar, setIsPillar] = useState(false);
   const [isHomepage, setIsHomepage] = useState(false);
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
 
@@ -64,8 +71,11 @@ export default function EditPage() {
         setRedirectUrl(data.redirectUrl || '');
         setRedirectType(data.redirectType || '301');
         setNoIndex(data.noIndex || false);
+        setSeoRobots(data.seoRobots || null);
+        setSeoAdvancedRobots(data.seoAdvancedRobots || null);
         setSchemaJson(data.schemaJson || '');
         setSeoScore(data.seoScore || 0);
+        setIsPillar(data.isPillar || false);
         setFeaturedImage(data.featuredImage || null);
         setHeroDescription(data.heroDescription || '');
         
@@ -79,6 +89,16 @@ export default function EditPage() {
             setIsLoading(false);
           })
           .catch(() => setIsLoading(false));
+          
+        // Fetch global settings
+        fetch('/api/settings')
+          .then(res => res.json())
+          .then(data => {
+            if (!data.error) {
+              setGlobalSettings(data);
+            }
+          })
+          .catch(console.error);
       })
       .catch(err => {
         console.error(err);
@@ -112,6 +132,8 @@ export default function EditPage() {
           redirectUrl,
           redirectType,
           noIndex,
+          seoRobots,
+          seoAdvancedRobots,
           status: finalStatus,
           visibility,
           password,
@@ -119,6 +141,7 @@ export default function EditPage() {
           hideTitle,
           schemaJson,
           seoScore,
+          isPillar,
           featuredImage,
           heroDescription
         }),
@@ -128,7 +151,8 @@ export default function EditPage() {
         toast.success('Page updated successfully!');
         router.refresh();
       } else {
-        toast.error('Failed to update page.');
+        const errorData = await res.json().catch(() => ({}));
+        toast.error(`Failed to update page: ${errorData.error || 'Unknown error'}`);
       }
     } catch (e) {
       console.error(e);
@@ -165,30 +189,27 @@ export default function EditPage() {
           isHomepage={isHomepage}
         />
         
-        <div className="mt-4">
-          <SeoAnalyzer 
-            title={title}
-            setTitle={setTitle}
-            slug={slug}
-            setSlug={setSlug}
-            metaDescription={metaDescription}
-            setMetaDescription={setMetaDescription}
-            content={contentHtml}
-            focusKeyword={focusKeyword}
-            setFocusKeyword={setFocusKeyword}
-            seoTitle={seoTitle}
-            setSeoTitle={setSeoTitle}
-            redirectUrl={redirectUrl}
-            setRedirectUrl={setRedirectUrl}
-            redirectType={redirectType}
-            setRedirectType={setRedirectType}
-            noIndex={noIndex}
-            setNoIndex={setNoIndex}
-            schemaJson={schemaJson}
-            setSchemaJson={setSchemaJson}
-            onScoreChange={setSeoScore}
-          />
-        </div>
+        {globalSettings?.seo_page_add_seo_controls !== 'false' && (
+          <div className="mt-4">
+            <SeoAnalyzer 
+              title={title} setTitle={setTitle}
+              slug={slug} setSlug={setSlug}
+              metaDescription={metaDescription} setMetaDescription={setMetaDescription}
+              content={contentHtml}
+              focusKeyword={focusKeyword} setFocusKeyword={setFocusKeyword}
+              seoTitle={seoTitle} setSeoTitle={setSeoTitle}
+              redirectUrl={redirectUrl} setRedirectUrl={setRedirectUrl}
+              redirectType={redirectType} setRedirectType={setRedirectType}
+              noIndex={noIndex} setNoIndex={setNoIndex}
+              seoRobots={seoRobots} setSeoRobots={setSeoRobots}
+              seoAdvancedRobots={seoAdvancedRobots} setSeoAdvancedRobots={setSeoAdvancedRobots}
+              globalSettings={globalSettings}
+              schemaJson={schemaJson} setSchemaJson={setSchemaJson}
+              onScoreChange={setSeoScore}
+              featuredImage={featuredImage}
+            />
+          </div>
+        )}
       </div>
 
       <div className="w-[280px] shrink-0">
@@ -209,6 +230,15 @@ export default function EditPage() {
           featuredImage={featuredImage}
           setFeaturedImage={setFeaturedImage}
           isPost={false}
+        />
+        <LinkSuggestionsSidebar 
+          globalSettings={globalSettings} 
+          isPost={false} 
+          title={title} 
+          slug={slug} 
+          focusKeyword={focusKeyword} 
+          isPillar={isPillar}
+          setIsPillar={setIsPillar}
         />
       </div>
     </div>

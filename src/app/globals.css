@@ -37,16 +37,6 @@ body {
 }
 
 /* Hero Banner Typography */
-.inner-hero-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 55px;
-  line-height: 64px;
-  font-weight: 500;
-}
-
-.inner-hero-title-accent {
-  color: #E81A7B;
-}
 
 .inner-hero-subtitle {
   font-family: 'Inter', sans-serif;

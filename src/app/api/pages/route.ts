@@ -49,6 +49,7 @@ export async function POST(req: Request) {
         hideTitle: data.hideTitle || false,
         schemaJson: data.schemaJson || null,
         seoScore: data.seoScore || 0,
+        isPillar: data.isPillar || false,
         author: authorId ? { connect: { id: authorId } } : undefined,
         featuredImage: data.featuredImage || null,
         heroDescription: data.heroDescription || null,

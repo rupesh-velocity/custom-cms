@@ -34,6 +34,8 @@ export async function PATCH(req: Request, context: any) {
         redirectUrl: data.redirectUrl,
         redirectType: data.redirectType,
         noIndex: data.noIndex,
+        seoRobots: data.seoRobots !== undefined ? data.seoRobots : undefined,
+        seoAdvancedRobots: data.seoAdvancedRobots !== undefined ? data.seoAdvancedRobots : undefined,
         status: data.status,
         visibility: data.visibility,
         password: data.password,
@@ -41,14 +43,15 @@ export async function PATCH(req: Request, context: any) {
         hideTitle: data.hideTitle || false,
         schemaJson: data.schemaJson || null,
         seoScore: data.seoScore !== undefined ? data.seoScore : undefined,
+        isPillar: data.isPillar !== undefined ? data.isPillar : undefined,
         featuredImage: data.featuredImage,
         heroDescription: data.heroDescription,
       },
     });
     return NextResponse.json(page);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ error: 'Error updating page' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Error updating page' }, { status: 500 });
   }
 }
 
