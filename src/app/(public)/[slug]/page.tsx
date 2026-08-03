@@ -134,9 +134,15 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
     }
   }
 
-  // 2. Fetch SEO and Breadcrumbs global settings
+  // 2. Fetch SEO, Breadcrumbs, and Site global settings
   const settings = await prisma.setting.findMany({
-    where: { OR: [{ key: { startsWith: 'seo_' } }, { key: { startsWith: 'breadcrumbs_' } }] }
+    where: { 
+      OR: [
+        { key: { startsWith: 'seo_' } }, 
+        { key: { startsWith: 'breadcrumbs_' } },
+        { key: { in: ['site_title', 'site_tagline'] } }
+      ] 
+    }
   });
   
   const seoSettings = settings.reduce((acc: Record<string, string>, curr) => {
