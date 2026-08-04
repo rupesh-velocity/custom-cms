@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 
-export default function AttributeTermsPage({ params }: { params: { id: string } }) {
+export default function AttributeTermsPage({ params }: { params: Promise<{ id: string }> }) {
+  const unwrappedParams = React.use(params);
+  const id = unwrappedParams.id;
   const [attribute, setAttribute] = useState<any>(null);
   const [terms, setTerms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,13 +18,13 @@ export default function AttributeTermsPage({ params }: { params: { id: string } 
   
   useEffect(() => {
     fetchData();
-  }, [params?.id]);
+  }, [id]);
 
   const fetchData = async () => {
     try {
       const [attrRes, termsRes] = await Promise.all([
-        fetch(`/api/products/attributes/${params?.id}`),
-        fetch(`/api/products/attributes/${params?.id}/terms`)
+        fetch(`/api/products/attributes/${id}`),
+        fetch(`/api/products/attributes/${id}/terms`)
       ]);
       const attrData = await attrRes.json();
       const termsData = await termsRes.json();
@@ -39,7 +41,7 @@ export default function AttributeTermsPage({ params }: { params: { id: string } 
     e.preventDefault();
     setIsSaving(true);
     try {
-      const res = await fetch(`/api/products/attributes/${params?.id}/terms`, {
+      const res = await fetch(`/api/products/attributes/${id}/terms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, slug, description })
@@ -63,7 +65,7 @@ export default function AttributeTermsPage({ params }: { params: { id: string } 
   const handleDelete = async (termId: number) => {
     if (!confirm('Are you sure you want to delete this term?')) return;
     try {
-      const res = await fetch(`/api/products/attributes/${params?.id}/terms/${termId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/products/attributes/${id}/terms/${termId}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchData();
       } else {

@@ -111,6 +111,22 @@ export default function TitlesAndMetaSettings() {
     seo_page_bulk_editing: 'false',
     seo_page_custom_fields: '',
     seo_page_default_watermark: '',
+    // Portfolios
+    seo_portfolio_title: '%title% %sep% %sitename%',
+    seo_portfolio_desc: '%excerpt%',
+    seo_portfolio_schema_type: 'Article',
+    seo_portfolio_headline: '%seo_title%',
+    seo_portfolio_schema_desc: '%seo_description%',
+    seo_portfolio_autodetect_video: 'false',
+    seo_portfolio_robots: 'default',
+    seo_portfolio_advanced_robots: 'default',
+    seo_portfolio_link_suggestions: 'false',
+    seo_portfolio_link_suggestion_titles: 'false',
+    seo_portfolio_slack_enhanced: 'false',
+    seo_portfolio_add_seo_controls: 'true',
+    seo_portfolio_bulk_editing: 'false',
+    seo_portfolio_custom_fields: '',
+    seo_portfolio_default_watermark: '',
     // Attachments
     seo_attachment_title: '%title% %page% %sep% %sitename%',
     seo_attachment_desc: '%excerpt%',
@@ -1097,6 +1113,170 @@ export default function TitlesAndMetaSettings() {
             </div>
           )}
 
+          {activeTab === 'portfolios' && (
+            <div>
+              <div className="bg-white rounded-md shadow-sm border border-gray-200">
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Single Portfolio Title</label>
+                  </div>
+                  <div className="col-span-8">
+                    <SeoVariableInput
+                      value={settings.seo_portfolio_title || ''}
+                      onChange={(val) => handleChange('seo_portfolio_title', val)}
+                      placeholder="%title% %sep% %sitename%"
+                    />
+                    <div className="mt-2">
+                      <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Example</span>
+                      <p className="text-[14px] font-semibold text-[#1a0dab] mt-1">My Amazing Portfolio Project - My Website</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Single Portfolio Description</label>
+                  </div>
+                  <div className="col-span-8">
+                    <SeoVariableInput
+                      value={settings.seo_portfolio_desc || ''}
+                      onChange={(val) => handleChange('seo_portfolio_desc', val)}
+                      placeholder="%excerpt%"
+                    />
+                    <div className="mt-2">
+                      <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Example</span>
+                      <p className="text-[13px] text-gray-600 mt-1">Discover the creative process and results of our latest portfolio project showcasing design and development skills.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Schema Type</label>
+                  </div>
+                  <div className="col-span-8">
+                    <SearchableSelect 
+                      value={settings.seo_portfolio_schema_type || 'Article'} 
+                      onChange={(val) => handleChange('seo_portfolio_schema_type', val)}
+                      options={schemaOptions}
+                    />
+                    <p className="text-[12px] text-gray-500 mt-2">Default rich snippet selected when creating a new portfolio item.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Headline</label>
+                  </div>
+                  <div className="col-span-8">
+                    <SeoVariableInput
+                      value={settings.seo_portfolio_headline || ''}
+                      onChange={(val) => handleChange('seo_portfolio_headline', val)}
+                      placeholder="%seo_title%"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Description</label>
+                  </div>
+                  <div className="col-span-8">
+                    <SeoVariableInput
+                      value={settings.seo_portfolio_schema_desc || ''}
+                      onChange={(val) => handleChange('seo_portfolio_schema_desc', val)}
+                      placeholder="%seo_description%"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Autodetect Video</label>
+                  </div>
+                  <div className="col-span-8">
+                    <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                        <input type="checkbox" checked={settings.seo_portfolio_autodetect_video === 'true'} onChange={() => toggleBoolean('seo_portfolio_autodetect_video')} className="sr-only peer" />
+                        <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                    </label>
+                    <p className="text-[13px] text-gray-500">Populate automatic Video Schema by auto-detecting any video in the content.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Portfolio Robots Meta</label>
+                  </div>
+                  <div className="col-span-8">
+                    <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                        <input type="checkbox" checked={settings.seo_portfolio_robots !== 'default'} onChange={() => handleChange('seo_portfolio_robots', settings.seo_portfolio_robots === 'default' ? 'Index' : 'default')} className="sr-only peer" />
+                        <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                    </label>
+                    <p className="text-[13px] text-gray-500 mb-4">Select custom robots meta for single Portfolio pages. Otherwise the default meta will be used.</p>
+                    
+                    {settings.seo_portfolio_robots !== 'default' && (
+                      <div className="grid grid-cols-2 gap-4">
+                        {['Index', 'No Index', 'No Follow', 'No Archive', 'No Image Index', 'No Snippet'].map(robot => {
+                          const currentRobots = settings.seo_portfolio_robots ? settings.seo_portfolio_robots.split(',') : [];
+                          return (
+                            <label key={robot} className="flex items-center gap-2">
+                              <input 
+                                type="checkbox" 
+                                checked={currentRobots.includes(robot)}
+                                onChange={(e) => {
+                                  let newRobots = [...currentRobots];
+                                  if (e.target.checked) {
+                                    if (robot === 'Index') newRobots = newRobots.filter(r => r !== 'No Index');
+                                    if (robot === 'No Index') newRobots = newRobots.filter(r => r !== 'Index');
+                                    newRobots.push(robot);
+                                  } else {
+                                    newRobots = newRobots.filter(r => r !== robot);
+                                  }
+                                  newRobots = Array.from(new Set(newRobots));
+                                  handleChange('seo_portfolio_robots', newRobots.join(','));
+                                }}
+                                className="w-4 h-4 text-[#0085ba] rounded border-gray-300 focus:ring-[#0085ba]" 
+                              />
+                              <span className="text-[13px] text-gray-700 flex items-center gap-1">{robot}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Add SEO Controls</label>
+                  </div>
+                  <div className="col-span-8">
+                    <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                        <input type="checkbox" checked={settings.seo_portfolio_add_seo_controls === 'true'} onChange={() => toggleBoolean('seo_portfolio_add_seo_controls')} className="sr-only peer" />
+                        <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                    </label>
+                    <p className="text-[13px] text-gray-500">Add SEO controls for the editor screen to customize SEO options for portfolios.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100 last:border-0">
+                  <div className="col-span-4">
+                    <label className="text-[14px] font-bold text-gray-700">Custom Fields</label>
+                  </div>
+                  <div className="col-span-8">
+                    <textarea
+                      value={settings.seo_portfolio_custom_fields || ''}
+                      onChange={(e) => handleChange('seo_portfolio_custom_fields', e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-[14px] min-h-[100px] outline-none"
+                    />
+                    <p className="text-[12px] text-gray-500 mt-2">List of custom fields name to include in the Portfolio analysis. Add one per line.</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
           {activeTab === 'attachments' && (
             <div>
               <div className="bg-white rounded-md shadow-sm border border-gray-200">
@@ -1303,34 +1483,10 @@ export default function TitlesAndMetaSettings() {
           )}
 
           {activeTab === 'portfolios' && (
-            <div className="divide-y divide-gray-100">
-              <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
-                <div className="col-span-4">
-                  <label className="text-[14px] font-bold text-gray-700">Single Portfolio Title</label>
-                </div>
-                <div className="col-span-8">
-                  <SeoVariableInput
-                    value={settings.seo_portfolio_title || ''}
-                    onChange={(val) => handleChange('seo_portfolio_title', val)}
-                    placeholder="%title% %sep% %sitename%"
-                  />
-                  <p className="text-[12px] text-gray-500 mt-2">Title format used for single portfolio pages.</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
-                <div className="col-span-4">
-                  <label className="text-[14px] font-bold text-gray-700">Single Portfolio Description</label>
-                </div>
-                <div className="col-span-8">
-                  <SeoVariableInput
-                    value={settings.seo_portfolio_description || ''}
-                    onChange={(val) => handleChange('seo_portfolio_description', val)}
-                    placeholder="%excerpt%"
-                    multiline={true}
-                  />
-                  <p className="text-[12px] text-gray-500 mt-2">Description format used for single portfolio pages.</p>
-                </div>
+            <div className="p-8 flex items-center justify-center">
+              <div className="w-full max-w-3xl border border-dashed border-gray-300 rounded-md py-12 px-6 text-center bg-gray-50/50">
+                <h3 className="text-[#1d2327] text-lg font-medium mb-3">Portfolios Settings</h3>
+                <p className="text-gray-500 text-[14px]">These settings are not yet implemented in this demo.</p>
               </div>
             </div>
           )}

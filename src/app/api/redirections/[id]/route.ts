@@ -13,13 +13,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         destinationUrl: data.destinationUrl,
         redirectType: data.redirectType,
         status: data.status,
+        isTrashed: data.isTrashed !== undefined ? data.isTrashed : undefined,
       }
     });
 
     return NextResponse.json(redirection);
   } catch (error) {
     console.error('Error updating redirection:', error);
-    return NextResponse.json({ error: 'Failed to update redirection' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update redirection', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 

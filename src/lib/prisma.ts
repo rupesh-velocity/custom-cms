@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
+// Types are imported using import type to completely remove them from runtime execution
+import type { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = global as unknown as { prismaClientV3: PrismaClient }
 
@@ -13,11 +12,11 @@ const mockPrisma = new Proxy({}, {
       get(t, p) {
         if (p === 'then') return undefined;
         return new Proxy(mockFunc, {
-          apply() { return Promise.reject(new Error("Prisma skipped during build")); }
+          apply() { return Promise.resolve([]); }
         });
       },
       apply() {
-        return Promise.reject(new Error("Prisma skipped during build"));
+        return Promise.resolve([]);
       }
     });
   }
@@ -33,20 +32,25 @@ export const prisma = new Proxy({} as PrismaClient, {
     if (!prismaInstance) {
       const url = process.env.NEON_DATABASE_URL || process.env.PRISMA_DATABASE_URL || process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || process.env.POSTGRES_URL;
       
-      // If DATABASE_URL is missing, we are likely in a build phase where it is omitted.
-      if (!url) {
+      // Check for build phase using explicit flag
+      if (process.env.npm_lifecycle_event === 'build' || process.env.IS_NEXT_BUILD === 'true' || !url) {
         return Reflect.get(mockPrisma, prop);
       }
       
+      // Inline requires to prevent top-level execution during Next.js module tracing
+      const { PrismaClient } = require('@prisma/client');
+      const { PrismaPg } = require('@prisma/adapter-pg');
+      const { Pool } = require('pg');
+
       const pool = new Pool({ connectionString: url });
       const adapter = new PrismaPg(pool);
       
       prismaInstance = new PrismaClient({ adapter });
       if (process.env.NODE_ENV !== 'production') {
-        globalForPrisma.prismaClientV3 = prismaInstance;
+        globalForPrisma.prismaClientV3 = prismaInstance as PrismaClient;
       }
     }
 
-    return Reflect.get(prismaInstance, prop);
+    return Reflect.get(prismaInstance!, prop);
   }
 });

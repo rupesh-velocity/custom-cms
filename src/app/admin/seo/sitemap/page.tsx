@@ -26,6 +26,10 @@ export default function SitemapSettings() {
     seo_sitemap_html_titles: 'item_titles',
     seo_sitemap_include_posts: 'true',
     seo_sitemap_include_pages: 'true',
+    seo_sitemap_include_categories: 'true',
+    seo_sitemap_empty_categories: 'false',
+    seo_sitemap_include_tags: 'false',
+    seo_sitemap_include_kml: 'true',
   });
 
   useEffect(() => {
@@ -358,7 +362,7 @@ export default function SitemapSettings() {
                       </div>
                     </div>
 
-                    {settings.seo_sitemap_html_format === 'page' && (
+                    {settings.seo_sitemap_html_format === 'page' ? (
                       <div className="grid grid-cols-[250px_1fr] gap-8 items-start border-b border-gray-100 pb-6">
                         <div className="text-[14px] font-medium text-gray-700">Page</div>
                         <div>
@@ -374,6 +378,18 @@ export default function SitemapSettings() {
                           </select>
                           <p className="text-[13px] text-gray-500 mt-2">
                             Select the page to display the HTML sitemap. Once the settings are saved, the sitemap will be displayed below the content of the selected page.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-[250px_1fr] gap-8 items-start border-b border-gray-100 pb-6">
+                        <div className="text-[14px] font-medium text-gray-700">Shortcode</div>
+                        <div>
+                          <div className="w-full max-w-md p-2.5 bg-gray-50 border border-gray-200 rounded text-[13px] text-gray-700 font-mono select-all flex items-center justify-between group">
+                            <span>[html_sitemap]</span>
+                          </div>
+                          <p className="text-[13px] text-gray-500 mt-2">
+                            Copy and paste this shortcode into any post or page content to display the HTML sitemap.
                           </p>
                         </div>
                       </div>
@@ -432,7 +448,89 @@ export default function SitemapSettings() {
                 </div>
               )}
 
-              {activeTab !== 'general' && activeTab !== 'posts' && activeTab !== 'pages' && activeTab !== 'html_sitemap' && (
+              {activeTab === 'categories' && (
+                <div className="divide-y divide-gray-100">
+                  <div className="bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-200 mx-6 mt-6 mb-2">
+                    <p className="text-sm">
+                      Sitemap URL: <a href="/category-sitemap.xml" target="_blank" className="underline hover:text-blue-900">{origin}/category-sitemap.xml</a>
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                    <div className="col-span-4">
+                      <label className="text-[14px] font-bold text-gray-700">Include in Sitemap</label>
+                    </div>
+                    <div className="col-span-8">
+                      <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                        <input type="checkbox" checked={settings.seo_sitemap_include_categories === 'true'} onChange={() => toggleBoolean('seo_sitemap_include_categories')} className="sr-only peer" />
+                        <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                      </label>
+                      <p className="text-[12px] text-gray-500 mt-1">Include archive pages for terms of this taxonomy in the XML sitemap.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                    <div className="col-span-4">
+                      <label className="text-[14px] font-bold text-gray-700">Include Empty Terms</label>
+                    </div>
+                    <div className="col-span-8">
+                      <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                        <input type="checkbox" checked={settings.seo_sitemap_empty_categories === 'true'} onChange={() => toggleBoolean('seo_sitemap_empty_categories')} className="sr-only peer" />
+                        <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                      </label>
+                      <p className="text-[12px] text-gray-500 mt-1">Include archive pages of terms that have no posts associated.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'tags' && (
+                <div className="divide-y divide-gray-100">
+                  <div className="bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-200 mx-6 mt-6 mb-2">
+                    <p className="text-sm">
+                      Sitemap URL: <a href="/post_tag-sitemap.xml" target="_blank" className="underline hover:text-blue-900">{origin}/post_tag-sitemap.xml</a>
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                    <div className="col-span-4">
+                      <label className="text-[14px] font-bold text-gray-700">Include in Sitemap</label>
+                    </div>
+                    <div className="col-span-8">
+                      <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                        <input type="checkbox" checked={settings.seo_sitemap_include_tags === 'true'} onChange={() => toggleBoolean('seo_sitemap_include_tags')} className="sr-only peer" />
+                        <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                      </label>
+                      <p className="text-[12px] text-gray-500 mt-1">Include archive pages for terms of this taxonomy in the XML sitemap.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'local_sitemap' && (
+                <div className="divide-y divide-gray-100">
+                  <div className="bg-blue-50 text-blue-800 p-4 rounded-lg border border-blue-200 mx-6 mt-6 mb-2">
+                    <p className="text-sm">
+                      Your Locations KML file can be found here: <a href="/locations.kml" target="_blank" className="underline hover:text-blue-900">{origin}/locations.kml</a>
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-12 gap-8 py-6 px-6 border-b border-gray-100">
+                    <div className="col-span-4">
+                      <label className="text-[14px] font-bold text-gray-700">Include KML File in the Sitemap</label>
+                    </div>
+                    <div className="col-span-8">
+                      <label className="relative inline-block w-[42px] h-[22px] align-middle select-none transition duration-200 ease-in cursor-pointer mb-2">
+                        <input type="checkbox" checked={settings.seo_sitemap_include_kml === 'true'} onChange={() => toggleBoolean('seo_sitemap_include_kml')} className="sr-only peer" />
+                        <div className="w-full h-full bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:bg-[#0085ba]"></div>
+                      </label>
+                      <p className="text-[12px] text-gray-500 mt-1">locations.kml Sitemap is generated automatically when the Local SEO module is enabled, and the geo-coordinates are added.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab !== 'general' && activeTab !== 'posts' && activeTab !== 'pages' && activeTab !== 'html_sitemap' && activeTab !== 'categories' && activeTab !== 'tags' && activeTab !== 'local_sitemap' && (
                 <div className="p-12 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-lg bg-gray-50 mx-6 mt-6">
                   <h3 className="text-lg font-medium text-gray-700 mb-2">{activeTabInfo.label} Settings</h3>
                   <p>These settings are not yet implemented in this demo.</p>

@@ -135,22 +135,27 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
 
   const menuTree = primaryMenu ? buildTree(primaryMenu.items, null, homepageSlug) : [];
 
-  // Check Auth State
-  const cookieStore = await cookies();
-  const token = cookieStore.get('cms_session')?.value;
+  // Check Auth State (Skip during static build to prevent workStore invariants)
   let isAuthenticated = false;
   let userRole = '';
   
-  if (token) {
+  if (process.env.npm_lifecycle_event !== 'build') {
     try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_super_secret_key_change_in_production');
-      const { payload } = await jwtVerify(token, secret);
-      isAuthenticated = true;
-      userRole = payload.role as string;
-    } catch (e) {}
+      const cookieStore = await cookies();
+      const token = cookieStore.get('cms_session')?.value;
+      
+      if (token) {
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_super_secret_key_change_in_production');
+        const { payload } = await jwtVerify(token, secret);
+        isAuthenticated = true;
+        userRole = payload.role as string;
+      }
+    } catch (e) {
+      // Silently fail if auth verification fails
+    }
   }
 
-  const isCustomerOrSubscriber = isAuthenticated && userRole !== 'Admin';
+  const isCustomerOrSubscriber = isAuthenticated && userRole?.toLowerCase() !== 'admin';
 
   return (
     <header className="site-header h-auto">
@@ -181,25 +186,23 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
           
           <div className="hidden lg:flex items-center gap-6">
             {isAuthenticated ? (
-              userRole !== 'Admin' && (
-                <div className="relative group flex items-center cursor-pointer">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde] py-2">
-                    <User size={16} /> <span className="hidden sm:inline">My Account</span>
-                    <ChevronDown size={14} className="opacity-70 transition-transform" />
-                  </div>
-                  
-                  <div className="absolute top-full right-0 hidden group-hover:block min-w-[160px] bg-white border border-gray-100 shadow-xl rounded-lg py-2 z-50">
-                    <Link href="/my-account" className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#5e3fde]">
-                      Dashboard
-                    </Link>
-                    <form action="/api/users/logout" method="POST" className="block w-full">
-                      <button type="submit" className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 font-medium">
-                        Logout
-                      </button>
-                    </form>
-                  </div>
+              <div className="relative group flex items-center cursor-pointer">
+                <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde] py-2">
+                  <User size={16} /> <span className="hidden sm:inline">My Account</span>
+                  <ChevronDown size={14} className="opacity-70 transition-transform" />
                 </div>
-              )
+                
+                <div className="absolute top-full right-0 hidden group-hover:block min-w-[160px] bg-white border border-gray-100 shadow-xl rounded-lg py-2 z-50">
+                  <Link href={userRole.toLowerCase() === 'admin' ? "/admin/" : "/my-account/"} className="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#5e3fde]">
+                    Dashboard
+                  </Link>
+                  <form action="/api/users/logout" method="POST" className="block w-full">
+                    <button type="submit" className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 font-medium">
+                      Logout
+                    </button>
+                  </form>
+                </div>
+              </div>
             ) : (
               <Link href="/login" className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-[#5e3fde]">
                 <LogIn size={16} /> Login

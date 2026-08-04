@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
+import { RootHeadSettings, RootBodyScripts } from '@/components/RootSettings';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,5 +14,12 @@ export default async function LoginLayout({ children }: { children: React.ReactN
     console.error("Error checking user count:", error);
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <RootHeadSettings />
+      <RootBodyScripts position="top" />
+      {children}
+      <RootBodyScripts position="bottom" />
+    </>
+  );
 }

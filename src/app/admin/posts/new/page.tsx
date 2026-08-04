@@ -46,6 +46,7 @@ export default function NewPost() {
       .catch(console.error);
   }, []);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
+  const [tagIds, setTagIds] = useState<number[]>([]);
 
   const handlePublish = async (overrideStatus?: string) => {
     if (!title) {
@@ -73,11 +74,11 @@ export default function NewPost() {
           visibility,
           password,
           publishedAt: publishDate ? publishDate : undefined,
-          schemaJson,
           seoScore,
           isPillar,
           featuredImage,
-          categoryIds
+          categoryIds,
+          tagIds
         }),
       });
       if (res.ok) {
@@ -147,6 +148,8 @@ export default function NewPost() {
           setFeaturedImage={setFeaturedImage}
           categoryIds={categoryIds}
           setCategoryIds={setCategoryIds}
+          tagIds={tagIds}
+          setTagIds={setTagIds}
           isPost={true}
         />
         <LinkSuggestionsSidebar 

@@ -11,14 +11,20 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Path is required' }, { status: 400 });
     }
 
+    const pathWithoutSlash = path.startsWith('/') ? path.slice(1) : path;
+    const pathWithSlash = path.startsWith('/') ? path : `/${path}`;
+
     // Try exact match first (both relative path and absolute fullUrl)
     let redirection = await prisma.redirection.findFirst({
       where: {
         OR: [
           { sourceUrl: path },
+          { sourceUrl: pathWithoutSlash },
+          { sourceUrl: pathWithSlash },
           ...(fullUrl ? [{ sourceUrl: fullUrl }] : [])
         ],
-        status: true
+        status: true,
+        isTrashed: false
       }
     });
 
@@ -27,20 +33,34 @@ export async function GET(request: Request) {
       const caseInsensitiveRedirects = await prisma.redirection.findMany({
         where: {
           ignoreCase: true,
-          status: true
+          status: true,
+          isTrashed: false
         }
       });
       
       const lowerPath = path.toLowerCase();
+      const lowerPathWithoutSlash = lowerPath.startsWith('/') ? lowerPath.slice(1) : lowerPath;
+      const lowerPathWithSlash = lowerPath.startsWith('/') ? lowerPath : `/${lowerPath}`;
       const lowerFullUrl = fullUrl ? fullUrl.toLowerCase() : '';
       
       redirection = caseInsensitiveRedirects.find(r => 
         r.sourceUrl.toLowerCase() === lowerPath || 
+        r.sourceUrl.toLowerCase() === lowerPathWithoutSlash ||
+        r.sourceUrl.toLowerCase() === lowerPathWithSlash ||
         (lowerFullUrl && r.sourceUrl.toLowerCase() === lowerFullUrl)
       ) || null;
     }
 
     if (redirection) {
+      // Fire-and-forget background update for metrics
+      prisma.redirection.update({
+        where: { id: redirection.id },
+        data: {
+          hits: { increment: 1 },
+          lastAccessed: new Date()
+        }
+      }).catch(e => console.error('Failed to update redirect metrics', e));
+
       return NextResponse.json({
         destinationUrl: redirection.destinationUrl,
         redirectType: redirection.redirectType

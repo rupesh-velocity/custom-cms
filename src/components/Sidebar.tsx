@@ -59,6 +59,9 @@ export default function Sidebar({ enableProducts = false }: { enableProducts?: b
               <Link href="/admin/categories" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/categories') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Categories
               </Link>
+              <Link href="/admin/tags" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/tags') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Tags
+              </Link>
             </div>
           </div>
         </div>
@@ -202,6 +205,9 @@ export default function Sidebar({ enableProducts = false }: { enableProducts?: b
               </Link>
               <Link href="/admin/seo/redirections" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/redirections') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Redirections
+              </Link>
+              <Link href="/admin/seo/404-monitor" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/404-monitor') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                404 Monitor
               </Link>
               <Link href="/admin/seo/sitemap" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname.startsWith('/admin/seo/sitemap') ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Sitemap Settings

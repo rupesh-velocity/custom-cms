@@ -23,6 +23,8 @@ interface ClassicSidebarProps {
   setFeaturedImage?: (val: string | null) => void;
   categoryIds?: number[];
   setCategoryIds?: (val: number[]) => void;
+  tagIds?: number[];
+  setTagIds?: (val: number[]) => void;
   isPost?: boolean;
 }
 
@@ -30,11 +32,13 @@ export default function ClassicSidebar({
   status, setStatus, onPublish, isSaving, score, hideTitle, setHideTitle, 
   visibility = 'Public', setVisibility, password, setPassword, 
   publishDate, setPublishDate, isNew = false,
-  featuredImage, setFeaturedImage, categoryIds = [], setCategoryIds, isPost = false
+  featuredImage, setFeaturedImage, categoryIds = [], setCategoryIds, 
+  tagIds = [], setTagIds, isPost = false
 }: ClassicSidebarProps) {
   const [expanded, setExpanded] = useState({
     publish: true,
     categories: true,
+    tags: true,
     contentAI: false,
     pageAttributes: false,
     linkSuggestions: false,
@@ -53,11 +57,19 @@ export default function ClassicSidebar({
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
 
+  const [tags, setTags] = useState<{id: number, name: string}[]>([]);
+  const [newTagName, setNewTagName] = useState('');
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const [showAddTag, setShowAddTag] = useState(false);
+
 
   useEffect(() => {
     if (isPost) {
       fetch('/api/categories').then(res => res.json()).then(data => {
         if (Array.isArray(data)) setCategories(data);
+      });
+      fetch('/api/tags').then(res => res.json()).then(data => {
+        if (Array.isArray(data)) setTags(data);
       });
     }
   }, [isPost]);
@@ -93,6 +105,51 @@ export default function ClassicSidebar({
     } else {
       setCategoryIds([...categoryIds, id]);
     }
+  };
+
+  const handleAddTags = async () => {
+    if (!newTagName.trim()) return;
+    setIsCreatingTag(true);
+    
+    const tagNames = newTagName.split(',').map(t => t.trim()).filter(Boolean);
+    const newTagIds = [...tagIds];
+
+    for (const tagName of tagNames) {
+      // Find existing tag (case-insensitive)
+      const existingTag = tags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
+      if (existingTag) {
+        if (!newTagIds.includes(existingTag.id)) {
+          newTagIds.push(existingTag.id);
+        }
+      } else {
+        // Create new tag
+        try {
+          const res = await fetch('/api/tags', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: tagName })
+          });
+          if (res.ok) {
+            const newTag = await res.json();
+            setTags(prev => [...prev.filter(t => t.id !== newTag.id), newTag].sort((a, b) => a.name.localeCompare(b.name)));
+            newTagIds.push(newTag.id);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+    
+    if (setTagIds) {
+      setTagIds(newTagIds);
+    }
+    setNewTagName('');
+    setIsCreatingTag(false);
+  };
+
+  const removeTag = (id: number) => {
+    if (!setTagIds) return;
+    setTagIds(tagIds.filter(tId => tId !== id));
   };
 
   const toggleAccordion = (section: keyof typeof expanded) => {
@@ -258,6 +315,52 @@ export default function ClassicSidebar({
               + Add New Category
             </button>
           )}
+        </Accordion>
+      )}
+
+      {isPost && (
+        <Accordion id="tags" title="Tags" expanded={expanded.tags} toggleAccordion={() => toggleAccordion('tags')}>
+          <div className="flex gap-2 mb-2">
+            <input 
+              type="text" 
+              value={newTagName}
+              onChange={e => setNewTagName(e.target.value)}
+              className="flex-1 border border-[#8c8f94] rounded-[3px] px-2 py-1.5 text-[13px] outline-none"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddTags();
+                }
+              }}
+            />
+            <button 
+              onClick={(e) => { e.preventDefault(); handleAddTags(); }}
+              disabled={isCreatingTag || !newTagName.trim()}
+              className="border border-[#8c8f94] text-[#1d2327] bg-[#f3f5f6] px-3 py-1.5 rounded-[3px] text-[13px] hover:bg-[#f1f1f1] disabled:opacity-50"
+            >
+              Add
+            </button>
+          </div>
+          <p className="text-[12px] text-gray-500 mb-3 italic">Separate tags with commas</p>
+          
+          <div className="flex flex-wrap gap-2">
+            {tagIds.map(id => {
+              const tag = tags.find(t => t.id === id);
+              if (!tag) return null;
+              return (
+                <div key={id} className="flex items-center gap-1 text-[13px] text-[#1d2327]">
+                  <button 
+                    onClick={(e) => { e.preventDefault(); removeTag(id); }}
+                    className="text-[#0071a1] hover:text-red-500 rounded-full bg-gray-100 p-0.5 hover:bg-gray-200 transition-colors flex items-center justify-center w-5 h-5"
+                    title="Remove tag"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                  </button>
+                  {tag.name}
+                </div>
+              );
+            })}
+          </div>
         </Accordion>
       )}
 

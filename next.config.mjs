@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  trailingSlash: true,
   serverExternalPackages: ['@prisma/client', 'prisma'],
   images: {
     remotePatterns: [

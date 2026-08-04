@@ -257,8 +257,11 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
   // 4. Fetch HTML Sitemap data if enabled and this is the designated page
   let sitemapData = { posts: [] as any[], pages: [] as any[] };
   const isHtmlSitemapPage = data.__type === 'page' && seoSettings['seo_sitemap_html_enable'] === 'true' && seoSettings['seo_sitemap_html_format'] === 'page' && seoSettings['seo_sitemap_html_page'] === String(data.id);
+  const hasShortcode = seoSettings['seo_sitemap_html_enable'] === 'true' && seoSettings['seo_sitemap_html_format'] === 'shortcode' && (data.contentHtml || '').includes('[html_sitemap]');
 
-  if (isHtmlSitemapPage) {
+  let finalHtmlContent = data.contentHtml;
+
+  if (isHtmlSitemapPage || hasShortcode) {
      const orderBy: any = seoSettings['seo_sitemap_html_sort'] === 'modified_date' ? { updatedAt: 'desc' } : 
                      seoSettings['seo_sitemap_html_sort'] === 'alphabetical' ? { title: 'asc' } :
                      seoSettings['seo_sitemap_html_sort'] === 'id' ? { id: 'asc' } :
@@ -281,6 +284,65 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
        const sortByDateDesc = (a: any, b: any) => new Date(b.publishedAt || b.createdAt).getTime() - new Date(a.publishedAt || a.createdAt).getTime();
        sitemapData.posts.sort(sortByDateDesc);
        sitemapData.pages.sort(sortByDateDesc);
+     }
+
+     const getResolvedTitle = (item: any, isPost: boolean) => {
+       if (seoSettings['seo_sitemap_html_titles'] !== 'seo_titles') return item.title;
+       let titleFormat = item.seoTitle || '';
+       if (!titleFormat) {
+         titleFormat = isPost ? (seoSettings['seo_post_title'] || '%title% %sep% %sitename%') : (seoSettings['seo_page_title'] || '%title% %sep% %sitename%');
+       }
+       return resolveSeoVariables(titleFormat, {
+         title: item.title,
+         siteName: seoSettings['site_title'] || 'Custom CMS',
+         separator: seoSettings['seo_separator'] || '-',
+         siteDesc: seoSettings['site_tagline'] || '',
+         capitalizeTitles: seoSettings['seo_capitalize_titles'] === 'true'
+       });
+     };
+
+     let pagesHtml = sitemapData.pages.map(p => `
+       <li class="flex flex-col gap-1 mb-3">
+         <a href="/${p.slug === 'home' ? '' : p.slug}" class="text-gray-700 hover:text-[#5e3fde] hover:underline font-medium decoration-[#5e3fde] underline-offset-2">
+           ${getResolvedTitle(p, false)}
+         </a>
+         ${seoSettings['seo_sitemap_html_dates'] === 'true' ? `<span class="text-xs text-gray-400">${new Date(p.publishedAt || p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>` : ''}
+       </li>
+     `).join('');
+
+     let postsHtml = sitemapData.posts.map(p => `
+       <li class="flex flex-col gap-1 mb-3">
+         <a href="/${p.slug}" class="text-gray-700 hover:text-[#5e3fde] hover:underline font-medium decoration-[#5e3fde] underline-offset-2">
+           ${getResolvedTitle(p, true)}
+         </a>
+         ${seoSettings['seo_sitemap_html_dates'] === 'true' ? `<span class="text-xs text-gray-400">${new Date(p.publishedAt || p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>` : ''}
+       </li>
+     `).join('');
+
+     const sitemapHtml = `
+       <div class="html-sitemap-container bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12 my-8 not-prose w-full">
+         <h2 class="text-3xl font-bold font-outfit mb-8 text-gray-900 border-b border-gray-100 pb-4">HTML Sitemap</h2>
+         <div class="grid md:grid-cols-2 gap-12">
+           <div>
+             <h3 class="text-xl font-bold text-[#5e3fde] mb-6 flex items-center gap-2">
+               <span class="w-8 h-8 rounded-lg bg-[#5e3fde]/10 flex items-center justify-center text-sm">📄</span> Pages
+             </h3>
+             <ul class="space-y-3 m-0 p-0 list-none">${pagesHtml}</ul>
+           </div>
+           <div>
+             <h3 class="text-xl font-bold text-[#5e3fde] mb-6 flex items-center gap-2">
+               <span class="w-8 h-8 rounded-lg bg-[#5e3fde]/10 flex items-center justify-center text-sm">📝</span> Posts
+             </h3>
+             <ul class="space-y-3 m-0 p-0 list-none">${postsHtml}</ul>
+           </div>
+         </div>
+       </div>
+     `;
+
+     if (hasShortcode) {
+       finalHtmlContent = (finalHtmlContent || '').replace(/\<p\>\[html_sitemap\]\<\/p\>|\[html_sitemap\]/g, sitemapHtml);
+     } else if (isHtmlSitemapPage) {
+       finalHtmlContent = (finalHtmlContent || '') + sitemapHtml;
      }
   }
 
@@ -464,7 +526,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
               <div className="p-8 md:p-12 lg:px-16 pt-12 md:pt-16">
                 
                 {(() => {
-                  const optimizedHtml = optimizeHtmlImages(data.contentHtml, seoSettings, data.title);
+                  const optimizedHtml = optimizeHtmlImages(finalHtmlContent, seoSettings, data.title);
                   const { processedHtml, headings } = generateToc(optimizedHtml);
                   return (
                     <>
@@ -521,9 +583,9 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold tracking-tight font-outfit mb-6 leading-tight">
                 {data.title}
               </h1>
-              {data.contentHtml && data.contentHtml.trim() !== '<p></p>' && (
+              {finalHtmlContent && finalHtmlContent.trim() !== '<p></p>' && (
                 <ContentRenderer 
-                  html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} 
+                  html={optimizeHtmlImages(finalHtmlContent, seoSettings, data.title)} 
                   className="text-xl text-gray-300 max-w-3xl font-medium leading-relaxed prose prose-invert prose-p:mb-0 text-left w-full"
                 />
               )}
@@ -546,79 +608,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
             breadcrumbSettings={initialBreadcrumbSettings}
           />
           
-          <ContentRenderer html={optimizeHtmlImages(data.contentHtml, seoSettings, data.title)} className={`max-w-7xl mx-auto px-6 prose prose-lg max-w-none ${isHtmlSitemapPage ? 'pb-12' : 'pb-24'} ${data.featuredImage ? 'mt-16' : 'mt-12'}`} />
-          
-          {isHtmlSitemapPage && (
-            <div className="max-w-7xl mx-auto px-6 pb-24">
-              {(() => {
-                const getResolvedTitle = (item: any, isPost: boolean) => {
-                  if (seoSettings['seo_sitemap_html_titles'] !== 'seo_titles') return item.title;
-                  let titleFormat = item.seoTitle || '';
-                  if (!titleFormat) {
-                    titleFormat = isPost ? (seoSettings['seo_post_title'] || '%title% %sep% %sitename%') : (seoSettings['seo_page_title'] || '%title% %sep% %sitename%');
-                  }
-                  
-                  return resolveSeoVariables(titleFormat, {
-                    title: item.title,
-                    siteName: seoSettings['site_title'] || 'Custom CMS',
-                    separator: seoSettings['seo_separator'] || '-',
-                    siteDesc: seoSettings['site_tagline'] || '',
-                    capitalizeTitles: seoSettings['seo_capitalize_titles'] === 'true'
-                  });
-                };
-
-                return (
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12">
-                    <h2 className="text-3xl font-bold font-outfit mb-8 text-gray-900 border-b border-gray-100 pb-4">HTML Sitemap</h2>
-                    
-                    <div className="grid md:grid-cols-2 gap-12">
-                      <div>
-                        <h3 className="text-xl font-bold text-[#5e3fde] mb-6 flex items-center gap-2">
-                          <span className="w-8 h-8 rounded-lg bg-[#5e3fde]/10 flex items-center justify-center text-sm">📄</span> 
-                          Pages
-                        </h3>
-                        <ul className="space-y-3">
-                          {sitemapData.pages.map(p => (
-                            <li key={p.id} className="flex flex-col gap-1">
-                              <Link href={`/${p.slug === 'home' ? '' : p.slug}`} className="text-gray-700 hover:text-[#5e3fde] hover:underline font-medium">
-                                {getResolvedTitle(p, false)}
-                              </Link>
-                              {seoSettings['seo_sitemap_html_dates'] === 'true' && (
-                                <span className="text-xs text-gray-400">
-                                   {new Date(p.publishedAt || p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                </span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h3 className="text-xl font-bold text-[#5e3fde] mb-6 flex items-center gap-2">
-                          <span className="w-8 h-8 rounded-lg bg-[#5e3fde]/10 flex items-center justify-center text-sm">📝</span> 
-                          Posts
-                        </h3>
-                        <ul className="space-y-3">
-                          {sitemapData.posts.map(p => (
-                            <li key={p.id} className="flex flex-col gap-1">
-                              <Link href={`/${p.slug}`} className="text-gray-700 hover:text-[#5e3fde] hover:underline font-medium">
-                                {getResolvedTitle(p, true)}
-                              </Link>
-                              {seoSettings['seo_sitemap_html_dates'] === 'true' && (
-                                <span className="text-xs text-gray-400">
-                                   {new Date(p.publishedAt || p.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                </span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
+          <ContentRenderer html={optimizeHtmlImages(finalHtmlContent, seoSettings, data.title)} className={`max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24 ${data.featuredImage ? 'mt-16' : 'mt-12'}`} />
         </main>
       )}
     </>

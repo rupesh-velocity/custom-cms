@@ -42,6 +42,7 @@ export default function EditPost() {
 
   const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
+  const [tagIds, setTagIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (!params?.id) return;
@@ -77,6 +78,9 @@ export default function EditPost() {
         if (data.categories && Array.isArray(data.categories)) {
           setCategoryIds(data.categories.map((c: any) => c.id));
         }
+        if (data.tags && Array.isArray(data.tags)) {
+          setTagIds(data.tags.map((t: any) => t.id));
+        }
         setIsLoading(false);
       })
       .catch(err => {
@@ -103,13 +107,6 @@ export default function EditPost() {
     
     setIsSaving(true);
     const finalStatus = overrideStatus || status;
-    
-    // DEBUG: Show exactly what is being sent
-    if (schemaJson && schemaJson !== '[]') {
-      toast.success('Sending schema to DB! Length: ' + schemaJson.length);
-    } else {
-      toast.error('Warning: Schema is empty or []!');
-    }
 
     try {
       const res = await fetch(`/api/posts/${params?.id}`, {
@@ -136,7 +133,8 @@ export default function EditPost() {
           seoScore,
           isPillar,
           featuredImage,
-          categoryIds
+          categoryIds,
+          tagIds
         }),
       });
       if (res.ok) {
@@ -219,6 +217,8 @@ export default function EditPost() {
           setFeaturedImage={setFeaturedImage}
           categoryIds={categoryIds}
           setCategoryIds={setCategoryIds}
+          tagIds={tagIds}
+          setTagIds={setTagIds}
           isPost={true}
         />
         <LinkSuggestionsSidebar 

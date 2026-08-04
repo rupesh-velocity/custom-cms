@@ -55,6 +55,11 @@ export async function POST(req: Request) {
           categories: {
             connect: data.categoryIds.map((id: number) => ({ id }))
           }
+        }),
+        ...(data.tagIds !== undefined && {
+          tags: {
+            connect: data.tagIds.map((id: number) => ({ id }))
+          }
         })
       },
     });
@@ -68,7 +73,7 @@ export async function POST(req: Request) {
 export async function GET() {
   const posts = await prisma.post.findMany({
     orderBy: { createdAt: 'desc' },
-    include: { categories: true },
+    include: { categories: true, tags: true },
   });
   return NextResponse.json(posts);
 }

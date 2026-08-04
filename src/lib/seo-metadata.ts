@@ -22,30 +22,46 @@ export interface PageSeoContext {
   isPost?: boolean;
 }
 
+import { unstable_noStore as noStore } from 'next/cache';
+
 export async function generateFullMetadata(context: PageSeoContext): Promise<Metadata> {
+  noStore();
   let settingsRecords: any[] = [];
-  try {
-    settingsRecords = await prisma.setting.findMany({
-      where: {
-        key: {
-          in: [
-            'site_title', 'site_tagline', 'site_icon', 'site_url',
-            'seo_separator', 'seo_capitalize_titles', 
-            'seo_page_title', 'seo_post_title',
-            'seo_global_robots', 'seo_global_advanced_robots',
-            'seo_page_robots', 'seo_page_advanced_robots',
-            'seo_post_robots', 'seo_post_advanced_robots',
-            'seo_og_thumbnail', 'seo_twitter_card',
-            'seo_social_fb_url', 'seo_social_twitter_username',
-            'seo_google_verify', 'seo_bing_verify', 'seo_baidu_verify', 
-            'seo_yandex_verify', 'seo_pinterest_verify',
-            'seo_page_slack_enhanced', 'seo_post_slack_enhanced'
-          ]
+  
+  if (process.env.npm_lifecycle_event === 'build' || process.env.IS_NEXT_BUILD === 'true') {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const data = fs.readFileSync(path.join(process.cwd(), 'src/settings.json'), 'utf-8');
+      const parsed = JSON.parse(data);
+      settingsRecords = Object.keys(parsed).map(key => ({ key, value: parsed[key] }));
+    } catch (e) {
+      console.warn('Could not read settings.json during build');
+    }
+  } else {
+    try {
+      settingsRecords = await prisma.setting.findMany({
+        where: {
+          key: {
+            in: [
+              'site_title', 'site_tagline', 'site_icon', 'site_url',
+              'seo_separator', 'seo_capitalize_titles', 
+              'seo_page_title', 'seo_post_title',
+              'seo_global_robots', 'seo_global_advanced_robots',
+              'seo_page_robots', 'seo_page_advanced_robots',
+              'seo_post_robots', 'seo_post_advanced_robots',
+              'seo_og_thumbnail', 'seo_twitter_card',
+              'seo_social_fb_url', 'seo_social_twitter_username',
+              'seo_google_verify', 'seo_bing_verify', 'seo_baidu_verify', 
+              'seo_yandex_verify', 'seo_pinterest_verify',
+              'seo_page_slack_enhanced', 'seo_post_slack_enhanced'
+            ]
+          }
         }
-      }
-    });
-  } catch (error) {
-    console.warn("Could not fetch global SEO settings during build.");
+      });
+    } catch (error) {
+      console.warn("Could not fetch global SEO settings during runtime.");
+    }
   }
 
   const settings = settingsRecords.reduce((acc: any, setting: any) => {

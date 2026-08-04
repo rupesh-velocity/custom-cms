@@ -11,12 +11,25 @@ type Redirection = {
   destinationUrl: string;
   redirectType: string;
   status: boolean;
+  isTrashed: boolean;
+  hits: number;
+  lastAccessed: string | null;
+  category: string;
+  createdAt: string;
 };
 
 export default function RedirectionsPage() {
   const [redirections, setRedirections] = useState<Redirection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Filters
+  const [activeFilter, setActiveFilter] = useState<'All' | 'Active' | 'Inactive' | 'Trash'>('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Selection and Bulk Actions
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkAction, setBulkAction] = useState('');
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,22 +118,153 @@ export default function RedirectionsPage() {
     }
   };
 
+  const handleTrash = async (id: number) => {
+    if (!window.confirm('Are you sure you want to move this to trash?')) return;
+    
+    try {
+      const res = await fetch(`/api/redirections/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isTrashed: true })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.details || 'Failed to trash');
+      }
+      
+      toast.success('Moved to trash');
+      fetchRedirections();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to move to trash');
+    }
+  };
+
+  const handleRestore = async (id: number) => {
+    try {
+      const res = await fetch(`/api/redirections/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isTrashed: false })
+      });
+      if (!res.ok) throw new Error('Failed to restore');
+      
+      toast.success('Redirection restored');
+      fetchRedirections();
+    } catch (err) {
+      toast.error('Failed to restore');
+    }
+  };
+
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this redirection?')) return;
+    if (!window.confirm('Are you sure you want to permanently delete this redirection?')) return;
     
     try {
       const res = await fetch(`/api/redirections/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       
-      toast.success('Redirection deleted');
+      toast.success('Redirection deleted permanently');
       fetchRedirections();
     } catch (err) {
       toast.error('Failed to delete redirection');
     }
   };
 
+  const handleToggleStatus = async (redir: Redirection) => {
+    try {
+      const res = await fetch(`/api/redirections/${redir.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...redir, status: !redir.status })
+      });
+      if (!res.ok) throw new Error('Failed to update status');
+      fetchRedirections();
+    } catch (err) {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleBulkAction = async () => {
+    if (!bulkAction || selectedIds.length === 0) return;
+    
+    if (bulkAction === 'delete_permanently' && !window.confirm(`Permanently delete ${selectedIds.length} items?`)) return;
+
+    try {
+      for (const id of selectedIds) {
+        if (bulkAction === 'trash') {
+          await fetch(`/api/redirections/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isTrashed: true })
+          });
+        } else if (bulkAction === 'restore') {
+          await fetch(`/api/redirections/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isTrashed: false })
+          });
+        } else if (bulkAction === 'delete_permanently') {
+          await fetch(`/api/redirections/${id}`, { method: 'DELETE' });
+        } else if (bulkAction === 'activate') {
+          await fetch(`/api/redirections/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: true })
+          });
+        } else if (bulkAction === 'deactivate') {
+          await fetch(`/api/redirections/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: false })
+          });
+        }
+      }
+      toast.success('Bulk action completed');
+      setSelectedIds([]);
+      setBulkAction('');
+      fetchRedirections();
+    } catch (e) {
+      toast.error('Some items failed to update');
+    }
+  };
+
+  const toggleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(filteredRedirections.map(r => r.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(i => i !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
+  const filteredRedirections = redirections.filter(r => {
+    if (activeFilter === 'Trash' && !r.isTrashed) return false;
+    if (activeFilter !== 'Trash' && r.isTrashed) return false;
+    if (activeFilter === 'Active' && !r.status) return false;
+    if (activeFilter === 'Inactive' && r.status) return false;
+    if (searchQuery && !r.sourceUrl.toLowerCase().includes(searchQuery.toLowerCase()) && !r.destinationUrl.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
+
+  const activeCount = redirections.filter(r => r.status && !r.isTrashed).length;
+  const inactiveCount = redirections.filter(r => !r.status && !r.isTrashed).length;
+  const trashCount = redirections.filter(r => r.isTrashed).length;
+  const allCount = redirections.filter(r => !r.isTrashed).length;
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '—';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   return (
-    <div className="p-8 max-w-6xl mx-auto">
+    <div className="p-8 max-w-[1400px] mx-auto">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Redirections</h1>
@@ -133,6 +277,66 @@ export default function RedirectionsPage() {
           <Plus size={20} />
           Add New
         </button>
+      </div>
+
+      <div className="flex justify-between items-center mb-4 text-sm">
+        <div className="flex gap-2 text-gray-500">
+          <button onClick={() => setActiveFilter('All')} className={activeFilter === 'All' ? 'font-semibold text-gray-900' : 'hover:text-blue-600'}>
+            All <span className="text-gray-400">({allCount})</span>
+          </button>
+          <span>|</span>
+          <button onClick={() => setActiveFilter('Active')} className={activeFilter === 'Active' ? 'font-semibold text-gray-900' : 'hover:text-blue-600'}>
+            Active <span className="text-gray-400">({activeCount})</span>
+          </button>
+          <span>|</span>
+          <button onClick={() => setActiveFilter('Inactive')} className={activeFilter === 'Inactive' ? 'font-semibold text-gray-900' : 'hover:text-blue-600'}>
+            Inactive <span className="text-gray-400">({inactiveCount})</span>
+          </button>
+          <span>|</span>
+          <button onClick={() => setActiveFilter('Trash')} className={activeFilter === 'Trash' ? 'font-semibold text-gray-900' : 'hover:text-blue-600'}>
+            Trash <span className="text-gray-400">({trashCount})</span>
+          </button>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <input 
+            type="text" 
+            placeholder="Search redirections..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex gap-2">
+          <select 
+            value={bulkAction}
+            onChange={(e) => setBulkAction(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-1.5 text-sm bg-white outline-none"
+          >
+            <option value="">Bulk actions</option>
+            {activeFilter === 'Trash' ? (
+              <>
+                <option value="restore">Restore</option>
+                <option value="delete_permanently">Delete Permanently</option>
+              </>
+            ) : (
+              <>
+                <option value="activate">Activate</option>
+                <option value="deactivate">Deactivate</option>
+                <option value="trash">Move to Trash</option>
+              </>
+            )}
+          </select>
+          <button 
+            onClick={handleBulkAction}
+            className="px-4 py-1.5 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-50 font-medium"
+          >
+            Apply
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -153,55 +357,65 @@ export default function RedirectionsPage() {
             </button>
           </div>
         ) : (
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b border-gray-100">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-gray-900 text-sm">Source URL</th>
-                <th className="px-6 py-4 font-semibold text-gray-900 text-sm">Destination URL</th>
-                <th className="px-6 py-4 font-semibold text-gray-900 text-sm">Type</th>
-                <th className="px-6 py-4 font-semibold text-gray-900 text-sm">Status</th>
-                <th className="px-6 py-4 font-semibold text-gray-900 text-sm text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {redirections.map((redir) => (
-                <tr key={redir.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-900">{redir.sourceUrl}</td>
-                  <td className="px-6 py-4 text-gray-600">{redir.destinationUrl}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {redir.redirectType}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      redir.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {redir.status ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-3">
-                      <button
-                        onClick={() => openModal(redir)}
-                        className="text-gray-400 hover:text-blue-600 transition-colors p-1"
-                        title="Edit"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(redir.id)}
-                        className="text-gray-400 hover:text-red-600 transition-colors p-1"
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-4 w-8 text-center border-r border-gray-100">
+                    <input type="checkbox" onChange={toggleSelectAll} checked={selectedIds.length === filteredRedirections.length && filteredRedirections.length > 0} className="rounded border-gray-300" />
+                  </th>
+                  <th className="px-6 py-4 font-semibold text-gray-900 text-sm whitespace-nowrap">Source URL</th>
+                  <th className="px-6 py-4 font-semibold text-gray-900 text-sm whitespace-nowrap">Destination URL</th>
+                  <th className="px-6 py-4 font-semibold text-gray-900 text-sm whitespace-nowrap text-center">Type</th>
+                  <th className="px-6 py-4 font-semibold text-gray-900 text-sm whitespace-nowrap">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredRedirections.map((redir) => (
+                  <tr key={redir.id} className="hover:bg-gray-50/50 transition-colors group">
+                    <td className="px-6 py-4 text-center align-top pt-5">
+                      <input type="checkbox" checked={selectedIds.includes(redir.id)} onChange={() => toggleSelect(redir.id)} className="rounded border-gray-300" />
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-900 break-all min-w-[200px]">
+                      <span className="text-blue-700 font-medium">{redir.sourceUrl}</span>
+                      <div className="mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity flex gap-3 text-xs font-normal">
+                        {redir.isTrashed ? (
+                          <>
+                            <button onClick={() => handleRestore(redir.id)} className="text-blue-600 hover:underline">Restore</button>
+                            <span className="text-gray-300">|</span>
+                            <button onClick={() => handleDelete(redir.id)} className="text-red-600 hover:underline">Delete Permanently</button>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={() => openModal(redir)} className="text-blue-600 hover:underline">Edit</button>
+                            <span className="text-gray-300">|</span>
+                            <button onClick={() => handleToggleStatus(redir)} className="text-blue-600 hover:underline">{redir.status ? 'Deactivate' : 'Activate'}</button>
+                            <span className="text-gray-300">|</span>
+                            <button onClick={() => handleTrash(redir.id)} className="text-red-600 hover:underline">Trash</button>
+                            <span className="text-gray-300">|</span>
+                            <a href={redir.sourceUrl.startsWith('http') ? redir.sourceUrl : (redir.sourceUrl.startsWith('/') ? redir.sourceUrl : `/${redir.sourceUrl}`)} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">View</a>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 break-all min-w-[200px]">{redir.destinationUrl}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {redir.redirectType}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 align-top pt-5">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        redir.isTrashed ? 'bg-red-100 text-red-800' : (redir.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')
+                      }`}>
+                        {redir.isTrashed ? 'Trashed' : (redir.status ? 'Active' : 'Inactive')}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -263,32 +477,72 @@ export default function RedirectionsPage() {
                 </div>
               </div>
 
-              {/* Redirection Type */}
+              {/* Type and Category */}
               <div className="grid grid-cols-12 gap-4 items-start border-t border-gray-100 pt-6">
                 <div className="col-span-3 pt-2">
-                  <label className="text-sm font-semibold text-gray-900">Redirection Type</label>
+                  <label className="text-sm font-semibold text-gray-900">Settings</label>
                 </div>
-                <div className="col-span-9 flex flex-wrap gap-2">
-                  {[
-                    { val: '301', label: '301 Permanent Move' },
-                    { val: '302', label: '302 Temporary Move' },
-                    { val: '307', label: '307 Temporary Redirect' },
-                    { val: '410', label: '410 Content Deleted' },
-                    { val: '451', label: '451 Unavailable for Legal Reasons' }
-                  ].map(type => (
-                    <button
-                      key={type.val}
-                      type="button"
-                      onClick={() => setRedirectType(type.val)}
-                      className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        redirectType === type.val
-                          ? 'bg-blue-600 border-blue-600 text-white'
-                          : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {type.label}
-                    </button>
-                  ))}
+                <div className="col-span-9 grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Redirection Type</label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setRedirectType('301')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          redirectType === '301' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        301 Permanent Move
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRedirectType('302')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          redirectType === '302' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        302 Temporary Move
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRedirectType('307')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          redirectType === '307' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        307 Temporary Redirect
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRedirectType('410')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          redirectType === '410' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        410 Content Deleted
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setRedirectType('451')}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          redirectType === '451' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        451 Unavailable for Legal Reasons
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -297,14 +551,14 @@ export default function RedirectionsPage() {
                 <div className="col-span-3 pt-2">
                   <label className="text-sm font-semibold text-gray-900">Status</label>
                 </div>
-                <div className="col-span-9 flex gap-2">
+                <div className="col-span-9 flex gap-3">
                   <button
                     type="button"
                     onClick={() => setStatus(true)}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                      status
-                        ? 'bg-blue-600 border-blue-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      status 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     Activate
@@ -312,10 +566,10 @@ export default function RedirectionsPage() {
                   <button
                     type="button"
                     onClick={() => setStatus(false)}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                      !status
-                        ? 'bg-gray-800 border-gray-800 text-white'
-                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      !status 
+                        ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50' 
+                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     Deactivate
@@ -323,29 +577,26 @@ export default function RedirectionsPage() {
                 </div>
               </div>
 
-              {/* Form Actions */}
-              <div className="flex justify-between items-center border-t border-gray-100 pt-6 mt-6">
+              <div className="pt-6 flex justify-between items-center border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors disabled:opacity-70"
                 >
                   {isSubmitting ? 'Saving...' : (editingId ? 'Update Redirection' : 'Add Redirection')}
                 </button>
               </div>
-
             </form>
           </div>
         </div>
       )}
-
     </div>
   );
 }

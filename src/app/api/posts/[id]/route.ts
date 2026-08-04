@@ -6,15 +6,15 @@ export async function GET(req: Request, context: any) {
     const params = await context.params;
     const post = await prisma.post.findUnique({
       where: { id: parseInt(params.id) },
-      include: { categories: true },
+      include: { categories: true, tags: true },
     });
     if (!post) {
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
     return NextResponse.json(post);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ error: 'Error fetching post' }, { status: 500 });
+    return NextResponse.json({ error: 'Error fetching post', details: error.message }, { status: 500 });
   }
 }
 
@@ -48,6 +48,11 @@ export async function PATCH(req: Request, context: any) {
         ...(data.categoryIds !== undefined && {
           categories: {
             set: data.categoryIds.map((id: number) => ({ id }))
+          }
+        }),
+        ...(data.tagIds !== undefined && {
+          tags: {
+            set: data.tagIds.map((id: number) => ({ id }))
           }
         })
       },
