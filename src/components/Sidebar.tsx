@@ -222,7 +222,7 @@ export default function Sidebar({ enableProducts = false }: { enableProducts?: b
         
         <div className="space-y-1">
           <Link 
-            href="/admin/settings" 
+            href="/admin/settings/general" 
             className={clsx(
               "flex items-center justify-between px-4 py-3 rounded-lg transition-colors cursor-pointer",
               isSettingsActive ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "hover:bg-gray-50 hover:text-gray-900"
@@ -245,6 +245,9 @@ export default function Sidebar({ enableProducts = false }: { enableProducts?: b
               </Link>
               <Link href="/admin/settings/reading" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/reading' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Reading
+              </Link>
+              <Link href="/admin/settings/fonts" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/fonts' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
+                Fonts
               </Link>
               <Link href="/admin/settings/advanced" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/advanced' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
                 Advanced

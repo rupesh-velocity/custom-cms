@@ -19,6 +19,7 @@ export default function GeneralSettings() {
     site_icon: '',
     site_logo: '',
     footer_logo: '',
+    copyright_text: '',
     enable_physical_products: 'false',
   });
   const [socialIcons, setSocialIcons] = useState<SocialIcon[]>([]);
@@ -43,6 +44,7 @@ export default function GeneralSettings() {
           site_icon: data.site_icon || '',
           site_logo: data.site_logo || '',
           footer_logo: data.footer_logo || '',
+          copyright_text: data.copyright_text || '',
           enable_physical_products: data.enable_physical_products || 'false',
         });
         
@@ -150,6 +152,19 @@ export default function GeneralSettings() {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#5e3fde] outline-none max-w-2xl"
           />
           <p className="mt-1 text-sm text-gray-500">In a few words, explain what this site is about.</p>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Copyright Text</label>
+          <textarea
+            name="copyright_text"
+            value={settings.copyright_text}
+            onChange={handleChange as any}
+            placeholder="e.g. © %year% Your Company Name | All rights reserved. | Website by Velocity Consultancy"
+            rows={3}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#5e3fde] outline-none max-w-2xl resize-y"
+          />
+          <p className="mt-1 text-sm text-gray-500">Use <strong>%year%</strong> to automatically display the current year. HTML is allowed for adding links.</p>
         </div>
       </section>
 
