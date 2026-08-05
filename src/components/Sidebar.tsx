@@ -250,7 +250,7 @@ export default function Sidebar({ enableProducts = false }: { enableProducts?: b
                 Fonts
               </Link>
               <Link href="/admin/settings/advanced" className={clsx("block px-3 py-2 rounded-lg text-[13px] transition-colors whitespace-nowrap", pathname === '/admin/settings/advanced' ? "bg-[#5e3fde]/10 text-[#5e3fde] font-medium" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50")}>
-                Advanced
+                Custom CSS/JS
               </Link>
             </div>
           </div>
