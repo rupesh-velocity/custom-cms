@@ -608,7 +608,7 @@ export default async function PublicPage(props: { params: Promise<{ slug: string
             breadcrumbSettings={initialBreadcrumbSettings}
           />
           
-          <ContentRenderer html={optimizeHtmlImages(finalHtmlContent, seoSettings, data.title)} className={`max-w-7xl mx-auto px-6 prose prose-lg max-w-none pb-24 ${data.featuredImage ? 'mt-16' : 'mt-12'}`} />
+          <ContentRenderer html={optimizeHtmlImages(finalHtmlContent, seoSettings, data.title)} className="max-w-7xl mx-auto prose prose-lg max-w-none" />
         </main>
       )}
     </>
