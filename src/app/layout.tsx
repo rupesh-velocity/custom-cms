@@ -14,23 +14,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   let fontFamilies: { name: string, variations: { weight: string, style: string, woff2Url: string }[] }[] = [];
-  let customCss = '';
-  let headScripts = '';
-  let bodyScripts = '';
   
   try {
-    const settings = await prisma.setting.findMany();
-    const settingsObj = settings.reduce((acc: any, setting: any) => {
-      acc[setting.key] = setting.value;
-      return acc;
-    }, {});
+    const setting = await prisma.setting.findUnique({
+      where: { key: 'custom_fonts' }
+    });
     
-    if (settingsObj.custom_fonts) {
-      fontFamilies = JSON.parse(settingsObj.custom_fonts);
+    if (setting && setting.value) {
+      fontFamilies = JSON.parse(setting.value);
     }
-    customCss = settingsObj.custom_css || '';
-    headScripts = settingsObj.head_scripts || '';
-    bodyScripts = settingsObj.body_scripts || '';
   } catch (e) {
     // Ignore db connection issues during build
   }
@@ -38,8 +30,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        {headScripts ? <div style={{display: 'none'}} dangerouslySetInnerHTML={{ __html: headScripts }} /> : null}
-        {(fontFamilies.length > 0 || customCss) ? (
+        {fontFamilies.length > 0 ? (
           <style dangerouslySetInnerHTML={{
             __html: `
               ${fontFamilies.map(family => 
@@ -53,12 +44,10 @@ export default async function RootLayout({
                   }
                 `).join('\n')
               ).join('\n')}
-              ${customCss}
             `
           }} />
         ) : null}
         {children}
-        {bodyScripts ? <div style={{display: 'none'}} dangerouslySetInnerHTML={{ __html: bodyScripts }} /> : null}
       </body>
     </html>
   );

@@ -2,7 +2,6 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import { Toaster } from 'react-hot-toast';
 import { prisma } from '@/lib/prisma';
-import { RootHeadSettings, RootBodyScripts } from '@/components/RootSettings';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,8 +36,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <RootHeadSettings />
-      <RootBodyScripts position="top" />
       <div className="flex min-h-screen bg-gray-50 font-sans">
         <Toaster position="top-right" />
         <Sidebar enableProducts={enableProducts} />
@@ -49,7 +46,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </main>
         </div>
       </div>
-      <RootBodyScripts position="bottom" />
     </>
   );
 }

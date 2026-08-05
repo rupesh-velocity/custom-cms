@@ -46,8 +46,8 @@ export function optimizeHtmlImages(html: string | null, seoSettings?: Record<str
 
   // SEO: Optimize Links
   if (seoSettings) {
-    optimized = optimized.replace(/<a([^>]*)>/gi, (match, attribs) => {
-      let newAttribs = attribs;
+    optimized = optimized.replace(/<a(\s[^>]*)?>/gi, (match, attribs) => {
+      let newAttribs = attribs || '';
       
       const isExternal = /href="https?:\/\//i.test(newAttribs) && !newAttribs.includes(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
       const isImageFile = /href="[^"]+\.(jpg|jpeg|png|gif|webp|svg)"/i.test(newAttribs);
@@ -64,7 +64,7 @@ export function optimizeHtmlImages(html: string | null, seoSettings?: Record<str
         newAttribs += ' target="_blank"';
       }
 
-      return `<a ${newAttribs}>`;
+      return `<a${newAttribs}>`;
     });
   }
 
