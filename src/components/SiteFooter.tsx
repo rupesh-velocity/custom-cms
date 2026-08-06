@@ -114,7 +114,7 @@ export default async function SiteFooter() {
           <div className="footer-cta-col lg:col-span-4 lg:col-start-9">
             <h2 className="footer-title">Your Best Move <span className="txt-accent">Starts Now</span></h2>
             <p className="footer-text footer-cta-text">Start with a Free Class and Discover how good Movement can Feel</p>
-            <a href="#" className="theme-btn theme-btn-blue"><span>Start Your Free Class Now</span><span className="btn-icon">↗</span></a>
+            <a href="#" className="theme-btn theme-btn-blue">Start Your Free Class Now<span className="btn-icon">↗</span></a>
           </div>
         </div>
         <div className="footer-line"></div>
