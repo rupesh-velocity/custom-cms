@@ -51,7 +51,7 @@ function MenuNode({ node, depth = 0 }: { node: any, depth?: number }) {
         </Link>
         <span className="ml-1 text-[10px]">⌄</span>
         
-        <div className="absolute top-full left-0 mt-2 hidden group-hover:block min-w-[200px] bg-white border border-gray-100 shadow-xl rounded-lg py-2 z-50">
+        <div className="absolute top-full left-0 hidden group-hover:block min-w-[200px] bg-white border border-gray-100 shadow-xl rounded-lg py-2 z-50">
           {node.children.map((child: any) => (
             <MenuNode key={child.id} node={child} depth={depth + 1} />
           ))}
