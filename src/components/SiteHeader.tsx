@@ -64,7 +64,7 @@ function MenuNode({ node, depth = 0 }: { node: any, depth?: number }) {
     <div className="relative group cursor-pointer">
       <Link 
         href={node.url}
-        className="flex items-center gap-1 justify-between px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600"
+        className="flex items-center gap-1 justify-between"
       >
         {node.label}
         <ChevronDown size={14} className="opacity-70 -rotate-90" />
