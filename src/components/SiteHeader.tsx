@@ -223,7 +223,7 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
         {(!isCustomerOrSubscriber && !hideMenu) && (
           <div className="w-full mt-4 lg:hidden">
             <Link href="#on-demand" className="theme-btn theme-btn-blue w-full flex justify-center items-center">
-              <span>On Demand Classes</span><span className="btn-icon ml-2">↗</span>
+              On Demand Classes <span className="btn-icon ml-2">↗</span>
             </Link>
           </div>
         )}
