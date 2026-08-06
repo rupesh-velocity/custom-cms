@@ -210,7 +210,7 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
             )}
             
             {!isCustomerOrSubscriber && (
-              <Link href="#on-demand" className="theme-btn theme-btn-primary ml-2">
+              <Link href="#on-demand" className="theme-btn theme-btn-blue ml-2">
                 <span>On Demand Classes</span><span className="btn-icon">↗</span>
               </Link>
             )}
