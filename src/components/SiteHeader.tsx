@@ -212,8 +212,8 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
             )}
             
             {!isCustomerOrSubscriber && (
-              <Link href="#on-demand" className="theme-btn theme-btn-blue ml-2">
-                On Demand Classes <span className="btn-icon">↗</span>
+              <Link href="https://custom-cms-three.vercel.app/on-demand/" className="theme-btn theme-btn-blue ml-2">
+                On Demand Classes <span className="btn-icon"><img alt="" src="https://res.cloudinary.com/cgibjxmm/image/upload/f_auto,q_auto/v1785921454/custom-cms/blue-button-arrow.png" /></span>
               </Link>
             )}
           </div>
@@ -222,13 +222,13 @@ export default async function SiteHeader({ hideMenu = false }: { hideMenu?: bool
         </div>
 
         {/* Mobile-only full width button below logo/menu */}
-        {(!isCustomerOrSubscriber && !hideMenu) && (
+        {/* {(!isCustomerOrSubscriber && !hideMenu) && (
           <div className="w-full mt-4 lg:hidden">
             <Link href="#on-demand" className="theme-btn theme-btn-blue w-full flex justify-center items-center">
               On Demand Classes <span className="btn-icon ml-2">↗</span>
             </Link>
           </div>
-        )}
+        )} */}
       </div>
     </header>
   );
