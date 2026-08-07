@@ -38,7 +38,7 @@ function MobileMenuNode({ node, onClick, depth = 0 }: { node: any, onClick: () =
       </div>
       
       {isOpen && (
-        <div className="pl-4 mt-1 mb-2 space-y-1 border-l-2 border-gray-100 ml-2">
+        <div className="pl-4 mt-1 mb-2 space-y-1 ml-2">
           {node.children.map((child: any) => (
             <div key={child.id} className="pl-3">
               <MobileMenuNode node={child} onClick={onClick} depth={depth + 1} />
