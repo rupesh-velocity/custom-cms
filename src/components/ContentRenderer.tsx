@@ -4,8 +4,10 @@ import FrontendForm from './FrontendForm';
 import Breadcrumbs from './Breadcrumbs';
 
 export default function ContentRenderer({ html, className = '' }: { html: string, className?: string }) {
-  // Clean up wrapping <p> tags around shortcodes if they are the only content in the paragraph
-  const cleanHtml = html.replace(/<p>\s*(\[form id="\d+"\]|\[breadcrumbs\])\s*<\/p>/g, '$1');
+  // Clean up wrapping <p> tags around shortcodes if they are the only content in the paragraph, and fix fetchPriority casing for React
+  const cleanHtml = html
+    .replace(/<p>\s*(\[form id="\d+"\]|\[breadcrumbs\])\s*<\/p>/g, '$1')
+    .replace(/fetchpriority/gi, 'fetchPriority');
 
   const options = {
     replace: (domNode: DOMNode) => {
