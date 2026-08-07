@@ -46,15 +46,17 @@ function MenuNode({ node, depth = 0 }: { node: any, depth?: number }) {
   if (depth === 0) {
     return (
       <div className="relative group flex items-center cursor-pointer">
-        <Link href={node.url}>
+        <Link href={node.url} className="flex items-center gap-1">
           {node.label}
+          <ChevronDown size={14} className="opacity-70 transition-transform" />
         </Link>
-        <span className="ml-1 text-[10px]">⌄</span>
         
-        <div className="absolute top-full left-0 hidden group-hover:block min-w-[200px] bg-white border border-gray-100 shadow-xl rounded-lg py-2 z-50">
-          {node.children.map((child: any) => (
-            <MenuNode key={child.id} node={child} depth={depth + 1} />
-          ))}
+        <div className="absolute top-full left-0 pt-2 hidden group-hover:block min-w-[200px] z-50">
+          <div className="bg-white border border-gray-100 shadow-xl rounded-lg py-2">
+            {node.children.map((child: any) => (
+              <MenuNode key={child.id} node={child} depth={depth + 1} />
+            ))}
+          </div>
         </div>
       </div>
     );
