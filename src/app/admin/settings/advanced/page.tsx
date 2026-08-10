@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 export default function AdvancedSettings() {
   const [settings, setSettings] = useState({
     custom_css: '',
+    custom_js: '',
     head_scripts: '',
     body_scripts: '',
   });
@@ -19,6 +20,7 @@ export default function AdvancedSettings() {
       .then(data => {
         setSettings({
           custom_css: data.custom_css || '',
+          custom_js: data.custom_js || '',
           head_scripts: data.head_scripts || '',
           body_scripts: data.body_scripts || '',
         });
@@ -68,6 +70,20 @@ export default function AdvancedSettings() {
           rows={6}
           className="w-full border border-gray-300 rounded-lg px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"
           placeholder="body { background-color: #f3f4f6; }"
+          spellCheck={false}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-semibold text-gray-900 mb-1">Custom JS (Footer)</label>
+        <p className="text-sm text-gray-500 mb-3">Add your own pure Javascript code here (without &lt;script&gt; tags). It will safely execute at the bottom of the page without invisible wrapper elements.</p>
+        <textarea
+          name="custom_js"
+          value={settings.custom_js}
+          onChange={handleChange}
+          rows={6}
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50"
+          placeholder="document.addEventListener('click', function(e) { ... });"
           spellCheck={false}
         />
       </div>
