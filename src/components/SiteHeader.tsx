@@ -46,9 +46,7 @@ function MenuNode({ node, depth = 0 }: { node: any; depth?: number }) {
   if (depth === 0) {
     return (
       <div className="relative group flex items-center cursor-pointer">
-        <Link href={node.url}>
-          {node.label}
-        </Link>
+        <Link href={node.url}>{node.label}</Link>
 
         <div className="absolute top-full left-0 pt-2 hidden group-hover:block min-w-[200px] z-50">
           <div className="bg-white border border-gray-100 shadow-xl rounded-lg py-2">
@@ -65,7 +63,15 @@ function MenuNode({ node, depth = 0 }: { node: any; depth?: number }) {
     <div className="relative group cursor-pointer">
       <Link href={node.url} className="flex items-center gap-1 justify-between">
         {node.label}
-          <MenuNode key={child.id} node={child} depth={depth + 1} />
+        <ChevronDown size={12} className="opacity-70" />
+      </Link>
+
+      <div className="absolute left-full top-0 hidden group-hover:block min-w-[200px] z-50">
+        <div className="bg-white border border-gray-100 shadow-xl rounded-lg py-2">
+          {node.children.map((child: any) => (
+            <MenuNode key={child.id} node={child} depth={depth + 1} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -289,10 +295,14 @@ export default async function SiteHeader({
         </div>
 
         {/* Mobile-only full width button below logo/menu */}
-        {(!isCustomerOrSubscriber && !hideMenu) && (
+        {!isCustomerOrSubscriber && !hideMenu && (
           <div className="w-full mt-4 lg:hidden">
-            <Link href="#on-demand" className="theme-btn theme-btn-primary w-full flex justify-center items-center">
-              <span>On Demand Classes</span><span className="btn-icon ml-2">↗</span>
+            <Link
+              href="#on-demand"
+              className="theme-btn theme-btn-primary w-full flex justify-center items-center"
+            >
+              <span>On Demand Classes</span>
+              <span className="btn-icon ml-2">↗</span>
             </Link>
           </div>
         )}
