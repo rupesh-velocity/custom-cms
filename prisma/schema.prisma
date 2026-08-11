@@ -1,69 +1,70 @@
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "binary"
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "mysql"
 }
 
 model Post {
-  id              Int        @id @default(autoincrement())
-  title           String
-  slug            String     @unique
-  contentHtml     String
-  contentText     String
-  metaDescription String
-  focusKeyword    String
-  seoTitle        String?
-  redirectUrl     String?
-  redirectType    String?
-  noIndex         Boolean    @default(false)
-  seoRobots       String?
+  id                Int        @id @default(autoincrement())
+  title             String
+  slug              String     @unique
+  contentHtml       String
+  contentText       String
+  metaDescription   String
+  focusKeyword      String
+  seoTitle          String?
+  redirectUrl       String?
+  redirectType      String?
+  noIndex           Boolean    @default(false)
+  seoRobots         String?
   seoAdvancedRobots String?
-  status          String     @default("Draft")
-  visibility      String     @default("Public")
-  password        String?
-  schemaJson      String?
-  seoScore        Int        @default(0)
-  isPillar        Boolean    @default(false)
-  authorId        Int?
-  author          User?      @relation(fields: [authorId], references: [id])
-  categories      Category[]
-  tags            Tag[]
-  featuredImage   String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  publishedAt     DateTime?
+  status            String     @default("Draft")
+  visibility        String     @default("Public")
+  password          String?
+  schemaJson        String?
+  seoScore          Int        @default(0)
+  isPillar          Boolean    @default(false)
+  authorId          Int?
+  author            User?      @relation(fields: [authorId], references: [id])
+  categories        Category[]
+  tags              Tag[]
+  featuredImage     String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  publishedAt       DateTime?
 }
 
 model Page {
-  id              Int       @id @default(autoincrement())
-  title           String
-  slug            String    @unique
-  contentHtml     String
-  contentText     String
-  metaDescription String
-  focusKeyword    String
-  seoTitle        String?
-  redirectUrl     String?
-  redirectType    String?
-  noIndex         Boolean   @default(false)
-  seoRobots       String?
+  id                Int       @id @default(autoincrement())
+  title             String
+  slug              String    @unique
+  contentHtml       String
+  contentText       String
+  metaDescription   String
+  focusKeyword      String
+  seoTitle          String?
+  redirectUrl       String?
+  redirectType      String?
+  noIndex           Boolean   @default(false)
+  seoRobots         String?
   seoAdvancedRobots String?
-  status          String    @default("Draft")
-  visibility      String    @default("Public")
-  password        String?
-  hideTitle       Boolean   @default(false)
-  schemaJson      String?
-  seoScore        Int       @default(0)
-  isPillar        Boolean   @default(false)
-  authorId        Int?
-  author          User?     @relation(fields: [authorId], references: [id])
-  featuredImage   String?
-  heroDescription String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  publishedAt     DateTime?
+  status            String    @default("Draft")
+  visibility        String    @default("Public")
+  password          String?
+  hideTitle         Boolean   @default(false)
+  schemaJson        String?
+  seoScore          Int       @default(0)
+  isPillar          Boolean   @default(false)
+  authorId          Int?
+  author            User?     @relation(fields: [authorId], references: [id])
+  featuredImage     String?
+  heroDescription   String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  publishedAt       DateTime?
 }
 
 model User {
@@ -158,18 +159,18 @@ model Media {
 }
 
 model Redirection {
-  id             Int      @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   sourceUrl      String
-  ignoreCase     Boolean  @default(false)
+  ignoreCase     Boolean   @default(false)
   destinationUrl String
-  redirectType   String   @default("301") // 301, 302, 307, 410, 451
-  status         Boolean  @default(true) // Active (true) or Deactivated (false)
-  hits           Int      @default(0)
+  redirectType   String    @default("301") // 301, 302, 307, 410, 451
+  status         Boolean   @default(true) // Active (true) or Deactivated (false)
+  hits           Int       @default(0)
   lastAccessed   DateTime?
-  category       String   @default("Uncategorized")
-  isTrashed      Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  category       String    @default("Uncategorized")
+  isTrashed      Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
 model NotFoundLog {
